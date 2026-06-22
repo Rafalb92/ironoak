@@ -3,13 +3,21 @@
   "display": "NestJS",
   "extends": "./base.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "resolvePackageJsonExports": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
     "declaration": true,
+    "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
+    "target": "ES2023",
     "sourceMap": true,
-    "incremental": true
+    "outDir": "./dist",
+    "incremental": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
   }
 }
