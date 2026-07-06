@@ -13,7 +13,9 @@ export default tseslint.config(
     rules: {
       // Nest na dekoratorach często ma "puste" klasy/konstruktory — luzujemy
       "@typescript-eslint/no-extraneous-class": "off",
-      "@typescript-eslint/no-empty-function": "off"
+      "@typescript-eslint/no-empty-function": "off",
+      "@typescript-eslint/no-empty-object-type": ["error", { allowInterfaces: "with-single-extends" }],
+
     }
   }
 );

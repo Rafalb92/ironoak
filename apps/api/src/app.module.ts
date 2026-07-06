@@ -4,11 +4,13 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import config from './mikro-orm.config';
+import { IdentityModule } from './modules/identity/identity.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     MikroOrmModule.forRoot(config),
+    IdentityModule,
   ],
   controllers: [AppController],
   providers: [AppService],
