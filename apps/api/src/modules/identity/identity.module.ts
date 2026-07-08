@@ -7,6 +7,10 @@ import { ConfigService } from '@nestjs/config';
 import { Argon2PasswordHasher } from './adapters/out/hashing/argon2-password-hasher';
 import { TOKEN_SERVICE } from './application/ports/token-service';
 import { JoseTokenService } from './adapters/out/tokens/jose-token-service';
+import { EntityManager } from '@mikro-orm/postgresql';
+import { MikroOrmUserRepository } from './adapters/out/persistence/mikro-orm-user.repository';
+import { USER_REPOSITORY } from './application/ports/user.repository.port';
+import { RegisterUserUseCase } from './application/use-cases/register-user/register-user.use-case';
 
 @Module({
   imports: [MikroOrmModule.forFeature([UserSchema, AccountSchema])],
@@ -34,6 +38,12 @@ import { JoseTokenService } from './adapters/out/tokens/jose-token-service';
         }),
       inject: [ConfigService],
     },
+    {
+      provide: USER_REPOSITORY,
+      useFactory: (em: EntityManager) => new MikroOrmUserRepository(em),
+      inject: [EntityManager],
+    },
+    RegisterUserUseCase,
   ],
   exports: [PASSWORD_HASHER, TOKEN_SERVICE],
 })
