@@ -23,7 +23,6 @@ coverage
 
 # Build Outputs
 .next/
-out/
 build
 dist
 
@@ -36,3 +35,8 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+*.tsbuildinfo
+# build output — tylko na poziomie apek, nie każdy "out"/"dist" w kodzie
+apps/*/dist/
+packages/*/dist/
