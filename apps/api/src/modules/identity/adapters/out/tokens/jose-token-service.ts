@@ -2,7 +2,7 @@ import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 import type {
   TokenService,
   TokenPayload,
-} from '../../../application/ports/token-service';
+} from '../../../application/ports/token-service.port';
 
 interface JoseTokenConfig {
   accessSecret: Uint8Array;

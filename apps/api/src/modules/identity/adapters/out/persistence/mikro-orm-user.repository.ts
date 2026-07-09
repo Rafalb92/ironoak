@@ -11,6 +11,10 @@ export class MikroOrmUserRepository implements UserRepository {
     return count > 0;
   }
 
+  async findByEmail(email: string): Promise<IUser | null> {
+    return this.em.findOne(UserSchema, { email }, { populate: ['accounts'] });
+  }
+
   async save(user: IUser, account: IAccount): Promise<void> {
     // persist obie encje, flush zapisuje je w jednej transakcji
     this.em.persist(user).persist(account);
