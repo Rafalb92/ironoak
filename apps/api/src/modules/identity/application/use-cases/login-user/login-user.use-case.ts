@@ -11,7 +11,13 @@ import {
   TOKEN_SERVICE,
   type TokenService,
 } from '../../ports/token-service.port';
+import {
+  REFRESH_TOKEN_STORE,
+  type RefreshTokenStore,
+} from '../../ports/refresh-token-store.port';
 import { LoginUserCommand } from './login-user.command';
+
+const REFRESH_TTL_SECONDS = 7 * 24 * 60 * 60;
 
 export interface LoginResult {
   accessToken: string;
@@ -24,6 +30,7 @@ export class LoginUserUseCase {
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
     @Inject(PASSWORD_HASHER) private readonly hasher: PasswordHasher,
     @Inject(TOKEN_SERVICE) private readonly tokens: TokenService,
+    @Inject(REFRESH_TOKEN_STORE) private readonly store: RefreshTokenStore,
   ) {}
 
   async execute(command: LoginUserCommand): Promise<LoginResult> {
@@ -53,11 +60,14 @@ export class LoginUserUseCase {
     }
 
     // 4. wydaj tokeny
-    const [accessToken, refreshToken] = await Promise.all([
+    const [accessToken, issuedRefresh] = await Promise.all([
       this.tokens.issueAccessToken({ userId: user.id }),
       this.tokens.issueRefreshToken({ userId: user.id }),
     ]);
 
-    return { accessToken, refreshToken };
+    // 5. zarejestruj refresh jako ważny (klucz refresh:{userId}:{jti})
+    await this.store.save(user.id, issuedRefresh.jti, REFRESH_TTL_SECONDS);
+
+    return { accessToken, refreshToken: issuedRefresh.token };
   }
 }

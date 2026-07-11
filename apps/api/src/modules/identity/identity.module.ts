@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import Redis from 'ioredis';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { UserSchema } from './domain/user.entity';
 import { AccountSchema } from './domain/account.entity';
@@ -14,7 +15,13 @@ import { RegisterUserUseCase } from './application/use-cases/register-user/regis
 import { RegisterUserController } from './adapters/in/http/register-user.controller';
 import { TOKEN_SERVICE } from './application/ports/token-service.port';
 import { LoginUserController } from './adapters/in/http/login-user.controller';
+import { MeController } from './adapters/in/http/me.controller';
 import { LoginUserUseCase } from './application/use-cases/login-user/login-user.use-case';
+import { JwtAuthGuard } from './adapters/in/http/guards/jwt-auth.guard';
+import { REFRESH_TOKEN_STORE } from './application/ports/refresh-token-store.port';
+import { RedisRefreshTokenStore } from './adapters/out/persistence/redis-refresh-token-store';
+
+const REDIS_CLIENT = Symbol('REDIS_CLIENT');
 
 @Module({
   imports: [MikroOrmModule.forFeature([UserSchema, AccountSchema])],
@@ -47,10 +54,25 @@ import { LoginUserUseCase } from './application/use-cases/login-user/login-user.
       useFactory: (em: EntityManager) => new MikroOrmUserRepository(em),
       inject: [EntityManager],
     },
+    {
+      provide: REDIS_CLIENT,
+      useFactory: (config: ConfigService) =>
+        new Redis({
+          host: config.getOrThrow<string>('REDIS_HOST'),
+          port: Number(config.getOrThrow<string>('REDIS_PORT')),
+        }),
+      inject: [ConfigService],
+    },
+    {
+      provide: REFRESH_TOKEN_STORE,
+      useFactory: (redis: Redis) => new RedisRefreshTokenStore(redis),
+      inject: [REDIS_CLIENT],
+    },
     RegisterUserUseCase,
     LoginUserUseCase,
+    JwtAuthGuard,
   ],
-  controllers: [RegisterUserController, LoginUserController],
+  controllers: [RegisterUserController, LoginUserController, MeController],
   exports: [PASSWORD_HASHER, TOKEN_SERVICE],
 })
 export class IdentityModule {}

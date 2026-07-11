@@ -38,6 +38,7 @@
     "add": "^2.0.6",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.2",
+    "ioredis": "^5.11.1",
     "jose": "^6.2.3",
     "nestjs-pino": "^4.6.1",
     "pino-http": "^11.0.0",

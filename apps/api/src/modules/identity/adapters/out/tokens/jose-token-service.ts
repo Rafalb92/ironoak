@@ -1,7 +1,10 @@
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
+import { randomUUID } from 'node:crypto';
 import type {
   TokenService,
-  TokenPayload,
+  AccessTokenPayload,
+  RefreshTokenPayload,
+  IssuedRefreshToken,
 } from '../../../application/ports/token-service.port';
 
 interface JoseTokenConfig {
@@ -11,53 +14,49 @@ interface JoseTokenConfig {
   refreshTtl: string;
 }
 
+const ARGON2ID = 2; // (jeśli miałeś tu inne stałe, zostaw — to tylko przykład kontekstu)
+
 export class JoseTokenService implements TokenService {
   constructor(private readonly config: JoseTokenConfig) {}
 
-  issueAccessToken(payload: TokenPayload): Promise<string> {
-    return this.sign(payload, this.config.accessSecret, this.config.accessTtl);
-  }
-
-  issueRefreshToken(payload: TokenPayload): Promise<string> {
-    return this.sign(
-      payload,
-      this.config.refreshSecret,
-      this.config.refreshTtl,
-    );
-  }
-
-  async verifyAccessToken(token: string): Promise<TokenPayload> {
-    return this.verify(token, this.config.accessSecret);
-  }
-
-  async verifyRefreshToken(token: string): Promise<TokenPayload> {
-    return this.verify(token, this.config.refreshSecret);
-  }
-
-  private sign(
-    payload: TokenPayload,
-    secret: Uint8Array,
-    ttl: string,
-  ): Promise<string> {
+  issueAccessToken(payload: AccessTokenPayload): Promise<string> {
     return new SignJWT({ userId: payload.userId })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
-      .setExpirationTime(ttl)
-      .sign(secret);
+      .setExpirationTime(this.config.accessTtl)
+      .sign(this.config.accessSecret);
   }
 
-  private async verify(
-    token: string,
-    secret: Uint8Array,
-  ): Promise<TokenPayload> {
-    const { payload } = await jwtVerify(token, secret);
-    return this.toTokenPayload(payload);
+  async issueRefreshToken(
+    payload: AccessTokenPayload,
+  ): Promise<IssuedRefreshToken> {
+    const jti = randomUUID();
+    const token = await new SignJWT({ userId: payload.userId })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setJti(jti)
+      .setIssuedAt()
+      .setExpirationTime(this.config.refreshTtl)
+      .sign(this.config.refreshSecret);
+    return { token, jti };
   }
 
-  private toTokenPayload(payload: JWTPayload): TokenPayload {
+  async verifyAccessToken(token: string): Promise<AccessTokenPayload> {
+    const { payload } = await jwtVerify(token, this.config.accessSecret);
+    return { userId: this.extractUserId(payload) };
+  }
+
+  async verifyRefreshToken(token: string): Promise<RefreshTokenPayload> {
+    const { payload } = await jwtVerify(token, this.config.refreshSecret);
+    if (typeof payload.jti !== 'string') {
+      throw new Error('Refresh token missing jti');
+    }
+    return { userId: this.extractUserId(payload), jti: payload.jti };
+  }
+
+  private extractUserId(payload: JWTPayload): string {
     if (typeof payload.userId !== 'string') {
       throw new Error('Invalid token payload: missing userId');
     }
-    return { userId: payload.userId };
+    return payload.userId;
   }
 }
