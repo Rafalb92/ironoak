@@ -41,12 +41,8 @@ export class LoginUserUseCase {
     }
 
     // 2. znajdź jego account logowania hasłem
-    const credential = user.accounts
-      .getItems()
-      .find((account) => account.providerId === 'credential');
-
+    const credential = await this.users.findCredentialAccount(user.id);
     if (!credential?.password) {
-      // user istnieje, ale nie ma logowania hasłem (np. tylko Google)
       throw new UnauthorizedException('Invalid credentials');
     }
 

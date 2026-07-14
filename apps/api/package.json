@@ -24,7 +24,9 @@
     "db:up": "mikro-orm migration:up",
     "db:down": "mikro-orm migration:down",
     "db:list": "mikro-orm migration:list",
-    "db:fresh": "mikro-orm migration:fresh"
+    "db:fresh": "mikro-orm migration:fresh",
+    "db:seed": "mikro-orm seeder:run",
+    "db:entities": "mikro-orm discovery:export"
   },
   "dependencies": {
     "@mikro-orm/core": "^7.1.4",
@@ -53,6 +55,7 @@
     "@ironoak/typescript-config": "workspace:*",
     "@mikro-orm/cli": "^7.1.4",
     "@mikro-orm/migrations": "^7.1.4",
+    "@mikro-orm/seeder": "^7.1.4",
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",

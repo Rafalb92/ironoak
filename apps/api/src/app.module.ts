@@ -6,9 +6,11 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import config from './mikro-orm.config';
 import { IdentityModule } from './modules/identity/identity.module';
 import { LoggerModule } from 'nestjs-pino';
+import { CatalogModule } from './modules/catalog/catalog.module';
 
 @Module({
   imports: [
+    MikroOrmModule.forRoot(config),
     ConfigModule.forRoot({ isGlobal: true }),
     LoggerModule.forRoot({
       pinoHttp: {
@@ -46,8 +48,9 @@ import { LoggerModule } from 'nestjs-pino';
         },
       },
     }),
-    MikroOrmModule.forRoot(config),
+
     IdentityModule,
+    CatalogModule,
   ],
   controllers: [AppController],
   providers: [AppService],

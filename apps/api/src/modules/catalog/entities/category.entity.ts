@@ -1,13 +1,12 @@
 import { defineEntity, type InferEntity, p } from '@mikro-orm/core';
 
-export const UserSchema = defineEntity({
-  name: 'User',
-  schema: 'identity',
+export const CategorySchema = defineEntity({
+  name: 'Category',
+  schema: 'catalog',
   properties: {
     id: p.uuid().primary().defaultRaw('gen_random_uuid()'),
-    email: p.string().unique(),
-    emailVerified: p.boolean().default(false),
-    // accounts: USUNIĘTE — zrywa cykl importów
+    name: p.string(),
+    slug: p.string().unique(),
     createdAt: p.datetime().onCreate(() => new Date()),
     updatedAt: p
       .datetime()
@@ -16,4 +15,4 @@ export const UserSchema = defineEntity({
   },
 });
 
-export interface IUser extends InferEntity<typeof UserSchema> {}
+export interface ICategory extends InferEntity<typeof CategorySchema> {}

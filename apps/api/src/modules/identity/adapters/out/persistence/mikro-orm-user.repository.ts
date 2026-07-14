@@ -1,7 +1,7 @@
 import { EntityManager } from '@mikro-orm/postgresql';
 import type { UserRepository } from '../../../application/ports/user.repository.port';
 import { UserSchema, type IUser } from '../../../domain/user.entity';
-import { type IAccount } from '../../../domain/account.entity';
+import { AccountSchema, type IAccount } from '../../../domain/account.entity';
 
 export class MikroOrmUserRepository implements UserRepository {
   constructor(private readonly em: EntityManager) {}
@@ -12,7 +12,14 @@ export class MikroOrmUserRepository implements UserRepository {
   }
 
   async findByEmail(email: string): Promise<IUser | null> {
-    return this.em.findOne(UserSchema, { email }, { populate: ['accounts'] });
+    return this.em.findOne(UserSchema, { email });
+  }
+
+  async findCredentialAccount(userId: string): Promise<IAccount | null> {
+    return this.em.findOne(AccountSchema, {
+      user: userId,
+      providerId: 'credential',
+    });
   }
 
   async save(user: IUser, account: IAccount): Promise<void> {
