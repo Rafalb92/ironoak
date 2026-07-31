@@ -1,6 +1,7 @@
 // order-placed.event.ts
 import { DomainEvent } from '../../../../shared-kernel/domain/domain-event.base';
 import { Money } from '../value-objects/money.vo';
+import { OrderEventName } from './order-event-names';
 
 export class OrderPlacedEvent extends DomainEvent {
   constructor(
@@ -11,6 +12,6 @@ export class OrderPlacedEvent extends DomainEvent {
     super();
   }
   get eventName(): string {
-    return 'order.placed';
+    return OrderEventName.PLACED;
   }
 }

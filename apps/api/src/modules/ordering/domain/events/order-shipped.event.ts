@@ -1,10 +1,11 @@
-import { DomainEvent } from 'src/shared-kernel/domain/domain-event.base';
+import { DomainEvent } from '../../../../shared-kernel/domain/domain-event.base';
+import { OrderEventName } from './order-event-names';
 
 export class OrderShippedEvent extends DomainEvent {
   constructor(public readonly orderId: string) {
     super();
   }
   get eventName(): string {
-    return 'order.shipped';
+    return OrderEventName.SHIPPED;
   }
 }

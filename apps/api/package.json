@@ -26,7 +26,7 @@
     "db:list": "mikro-orm migration:list",
     "db:fresh": "mikro-orm migration:fresh",
     "db:seed": "mikro-orm seeder:run",
-    "db:entities": "mikro-orm discovery:export"
+    "db:entities": "mikro-orm discovery:export --path \"src/**/*.entity.ts\" --out src/entities.generated.ts"
   },
   "dependencies": {
     "@mikro-orm/core": "^7.1.4",

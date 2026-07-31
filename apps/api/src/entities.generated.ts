@@ -3,6 +3,7 @@
 
 import { AccountSchema } from './modules/identity/domain/account.entity';
 import { CategorySchema } from './modules/catalog/entities/category.entity';
+import { OrderEntitySchema } from './modules/ordering/infrastructure/persistence/order.entity';
 import { ProductImageSchema } from './modules/catalog/entities/product-image.entity';
 import { ProductSchema } from './modules/catalog/entities/product.entity';
 import { ProductVariantSchema } from './modules/catalog/entities/product-variant.entity';
@@ -12,6 +13,7 @@ import { EntityManager as DriverEntityManager } from '@mikro-orm/postgresql';
 export const entities = [
   AccountSchema,
   CategorySchema,
+  OrderEntitySchema,
   ProductImageSchema,
   ProductSchema,
   ProductVariantSchema,

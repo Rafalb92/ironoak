@@ -1,4 +1,5 @@
-import { DomainEvent } from 'src/shared-kernel/domain/domain-event.base';
+import { DomainEvent } from '../../../../shared-kernel/domain/domain-event.base';
+import { OrderEventName } from './order-event-names';
 
 // order-paid.event.ts
 export class OrderPaidEvent extends DomainEvent {
@@ -6,6 +7,6 @@ export class OrderPaidEvent extends DomainEvent {
     super();
   }
   get eventName(): string {
-    return 'order.paid';
+    return OrderEventName.PAID;
   }
 }
