@@ -17,7 +17,7 @@ import { TOKEN_SERVICE } from './application/ports/token-service.port';
 import { LoginUserController } from './adapters/in/http/login-user.controller';
 import { MeController } from './adapters/in/http/me.controller';
 import { LoginUserUseCase } from './application/use-cases/login-user/login-user.use-case';
-import { JwtAuthGuard } from './adapters/in/http/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { REFRESH_TOKEN_STORE } from './application/ports/refresh-token-store.port';
 import { RedisRefreshTokenStore } from './adapters/out/persistence/redis-refresh-token-store';
 

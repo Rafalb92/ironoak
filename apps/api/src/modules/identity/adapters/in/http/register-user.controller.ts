@@ -10,7 +10,7 @@ import {
   registerUserSchema,
   type RegisterUserDto,
 } from './dto/register-user.schema';
-import { ZodValidationPipe } from './pipes/zod-validation.pipe';
+import { ZodValidationPipe } from '../../../../../shared/pipes/zod-validation.pipe';
 import { RegisterUserUseCase } from '../../../application/use-cases/register-user/register-user.use-case';
 import { RegisterUserCommand } from '../../../application/use-cases/register-user/register-user.command';
 

@@ -8,8 +8,7 @@ import {
   UsePipes,
 } from '@nestjs/common';
 import type { Response } from 'express';
-
-import { ZodValidationPipe } from './pipes/zod-validation.pipe';
+import { ZodValidationPipe } from '../../../../../shared/pipes/zod-validation.pipe';
 import { LoginUserUseCase } from 'src/modules/identity/application/use-cases/login-user/login-user.use-case';
 import { LoginUserCommand } from 'src/modules/identity/application/use-cases/login-user/login-user.command';
 import { type LoginUserDto, loginUserSchema } from './dto/login-user.dto';

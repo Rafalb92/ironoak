@@ -13,6 +13,21 @@ import type { ProductQuery } from './dto/product-query.schema';
 export class CatalogService {
   constructor(private readonly em: EntityManager) {}
 
+  async findVariantsByIds(
+    ids: string[],
+  ): Promise<{ id: string; name: string; price: number; active: boolean }[]> {
+    if (ids.length === 0) return [];
+    const variants = await this.em.find(ProductVariantSchema, {
+      id: { $in: ids },
+    });
+    return variants.map((v) => ({
+      id: v.id,
+      name: v.name,
+      price: v.price,
+      active: v.active,
+    }));
+  }
+
   async findProducts(query: ProductQuery) {
     // --- 1. zbuduj filtr na WARIANTACH (bo tam są cena, waga, materiał) ---
     const variantWhere: FilterQuery<IProductVariant> = { active: true };

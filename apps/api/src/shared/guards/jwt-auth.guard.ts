@@ -9,7 +9,7 @@ import type { Request } from 'express';
 import {
   TOKEN_SERVICE,
   type TokenService,
-} from '../../../../application/ports/token-service.port';
+} from '../../modules/identity/application/ports/token-service.port';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {

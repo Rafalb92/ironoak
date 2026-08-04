@@ -7,6 +7,7 @@ import config from './mikro-orm.config';
 import { IdentityModule } from './modules/identity/identity.module';
 import { LoggerModule } from 'nestjs-pino';
 import { CatalogModule } from './modules/catalog/catalog.module';
+import { OrderingModule } from './modules/ordering/ordering.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { CatalogModule } from './modules/catalog/catalog.module';
 
     IdentityModule,
     CatalogModule,
+    OrderingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

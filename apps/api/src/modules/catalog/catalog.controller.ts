@@ -4,7 +4,7 @@ import {
   productQuerySchema,
   type ProductQuery,
 } from './dto/product-query.schema';
-import { ZodValidationPipe } from '../identity/adapters/in/http/pipes/zod-validation.pipe';
+import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe';
 
 @Controller('products')
 export class CatalogController {

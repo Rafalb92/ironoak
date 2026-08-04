@@ -14,8 +14,6 @@ interface JoseTokenConfig {
   refreshTtl: string;
 }
 
-const ARGON2ID = 2; // (jeśli miałeś tu inne stałe, zostaw — to tylko przykład kontekstu)
-
 export class JoseTokenService implements TokenService {
   constructor(private readonly config: JoseTokenConfig) {}
 

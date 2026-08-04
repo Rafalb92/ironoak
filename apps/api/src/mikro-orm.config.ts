@@ -4,12 +4,6 @@ loadEnv();
 import { defineConfig } from '@mikro-orm/postgresql';
 import { Migrator } from '@mikro-orm/migrations';
 import { SeedManager } from '@mikro-orm/seeder';
-import { ProductImageSchema } from './modules/catalog/entities/product-image.entity';
-import { AccountSchema } from './modules/identity/domain/account.entity';
-import { ProductVariantSchema } from './modules/catalog/entities/product-variant.entity';
-import { ProductSchema } from './modules/catalog/entities/product.entity';
-import { CategorySchema } from './modules/catalog/entities/category.entity';
-import { UserSchema } from './modules/identity/domain/user.entity';
 import { entities } from './entities.generated';
 
 export default defineConfig({
