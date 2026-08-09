@@ -1,3 +1,5 @@
+import { InvalidAddressError } from '../errors/ordering.errors';
+
 export interface AddressProps {
   street: string;
   buildingNumber: string;
@@ -56,7 +58,7 @@ export class Address {
     for (const [field, label] of required) {
       const value = props[field];
       if (!value || value.trim() === '') {
-        throw new Error(`${label} is required`);
+        throw new InvalidAddressError(`${label} is required`);
       }
     }
   }

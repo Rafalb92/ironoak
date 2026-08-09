@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CancelOrderUseCase } from './application/use-cases/cancel-order/cancel-order.use-case';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { CatalogModule } from '../catalog/catalog.module';
 import { CatalogService } from '../catalog/catalog.service';
@@ -10,6 +11,9 @@ import { CatalogServiceGateway } from './infrastructure/catalog/catalog-service.
 import { PlaceOrderUseCase } from './application/use-cases/place-order/place-order.use-case';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { PlaceOrderController } from './infrastructure/http/place-order.controller';
+import { OrderController } from './infrastructure/http/order.controller';
+import { GetMyOrdersUseCase } from './application/use-cases/get-my-orders/get-my-orders.use-case';
+import { GetOrderDetailsUseCase } from './application/use-cases/get-order-details/get-order-details.use-case';
 
 @Module({
   imports: [CatalogModule, IdentityModule], // ← jawna zależność między kontekstami
@@ -26,8 +30,11 @@ import { PlaceOrderController } from './infrastructure/http/place-order.controll
       inject: [CatalogService],
     },
     PlaceOrderUseCase,
+    GetMyOrdersUseCase,
+    GetOrderDetailsUseCase,
+    CancelOrderUseCase,
     JwtAuthGuard,
   ],
-  controllers: [PlaceOrderController],
+  controllers: [PlaceOrderController, OrderController],
 })
 export class OrderingModule {}

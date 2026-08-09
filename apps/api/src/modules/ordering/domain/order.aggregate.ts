@@ -7,6 +7,10 @@ import { OrderPlacedEvent } from './events/order-placed.event';
 import { OrderPaidEvent } from './events/order-paid.event';
 import { OrderShippedEvent } from './events/order-shipped.event';
 import { OrderCancelledEvent } from './events/order-cancelled.event';
+import {
+  EmptyOrderError,
+  InvalidOrderTransitionError,
+} from './errors/ordering.errors';
 
 export enum OrderStatus {
   PENDING_PAYMENT = 'PENDING_PAYMENT',
@@ -41,7 +45,7 @@ export class Order extends AggregateRoot {
   // === TWORZENIE NOWEGO ZAMÓWIENIA ===
   static create(props: CreateOrderProps): Order {
     if (props.lines.length === 0) {
-      throw new Error('Order must contain at least one line');
+      throw new EmptyOrderError();
     }
 
     const order = new Order();
@@ -87,8 +91,9 @@ export class Order extends AggregateRoot {
   // === METODY-PRZEJŚCIA (maszyna stanów) ===
   confirmPayment(): void {
     if (this._status !== OrderStatus.PENDING_PAYMENT) {
-      throw new Error(
-        `Cannot confirm payment for order in status ${this._status}`,
+      throw new InvalidOrderTransitionError(
+        'confirm payment for',
+        this._status,
       );
     }
     this._status = OrderStatus.PAID;
@@ -98,8 +103,9 @@ export class Order extends AggregateRoot {
 
   startFulfillment(): void {
     if (this._status !== OrderStatus.PAID) {
-      throw new Error(
-        `Cannot start fulfillment for order in status ${this._status}`,
+      throw new InvalidOrderTransitionError(
+        'start fulfillment for',
+        this._status,
       );
     }
     this._status = OrderStatus.FULFILLING;
@@ -108,7 +114,7 @@ export class Order extends AggregateRoot {
 
   ship(): void {
     if (this._status !== OrderStatus.FULFILLING) {
-      throw new Error(`Cannot ship order in status ${this._status}`);
+      throw new InvalidOrderTransitionError('ship', this._status);
     }
     this._status = OrderStatus.SHIPPED;
     this.touch();
@@ -117,7 +123,7 @@ export class Order extends AggregateRoot {
 
   markDelivered(): void {
     if (this._status !== OrderStatus.SHIPPED) {
-      throw new Error(`Cannot deliver order in status ${this._status}`);
+      throw new InvalidOrderTransitionError('deliver', this._status);
     }
     this._status = OrderStatus.DELIVERED;
     this.touch();
@@ -126,7 +132,7 @@ export class Order extends AggregateRoot {
   cancel(reason: string): void {
     const cancellable = [OrderStatus.PENDING_PAYMENT, OrderStatus.PAID];
     if (!cancellable.includes(this._status)) {
-      throw new Error(`Cannot cancel order in status ${this._status}`);
+      throw new InvalidOrderTransitionError('cancel', this._status);
     }
     this._status = OrderStatus.CANCELLED;
     this.touch();

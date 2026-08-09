@@ -5,7 +5,6 @@ import {
   HttpStatus,
   Post,
   UseGuards,
-  UsePipes,
 } from '@nestjs/common';
 import { PlaceOrderUseCase } from '../../application/use-cases/place-order/place-order.use-case';
 import { PlaceOrderCommand } from '../../application/use-cases/place-order/place-order.command';

@@ -2,6 +2,10 @@ import { Order, OrderStatus } from './order.aggregate';
 import { OrderLine } from './value-objects/order-line.vo';
 import { Address } from './value-objects/address.vo';
 import { Money } from './value-objects/money.vo';
+import {
+  EmptyOrderError,
+  InvalidOrderTransitionError,
+} from './errors/ordering.errors';
 
 // --- helpery: budują poprawne obiekty do testów (DRY) ---
 const anAddress = () =>
@@ -42,7 +46,7 @@ describe('Order aggregate', () => {
           lines: [],
           deliveryAddress: anAddress(),
         }),
-      ).toThrow();
+      ).toThrow(EmptyOrderError);
     });
 
     it('liczy total jako sumę pozycji (1000 x 2 = 2000)', () => {
@@ -92,7 +96,7 @@ describe('Order aggregate', () => {
   describe('maszyna stanów — przejścia ZAKAZANE (niezmienniki)', () => {
     it('nie można wysłać niezapłaconego zamówienia', () => {
       const order = anOrder(); // PENDING_PAYMENT
-      expect(() => order.ship()).toThrow();
+      expect(() => order.ship()).toThrow(InvalidOrderTransitionError);
     });
 
     it('nie można potwierdzić płatności dwa razy', () => {

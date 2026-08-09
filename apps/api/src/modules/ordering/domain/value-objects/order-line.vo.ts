@@ -1,4 +1,5 @@
 import { Money } from './money.vo';
+import { InvalidOrderLineError } from '../errors/ordering.errors';
 
 export interface OrderLineProps {
   productVariantId: string;
@@ -17,10 +18,10 @@ export class OrderLine {
 
   static of(props: OrderLineProps): OrderLine {
     if (!Number.isInteger(props.quantity) || props.quantity <= 0) {
-      throw new Error('Quantity must be a positive integer');
+      throw new InvalidOrderLineError('Quantity must be a positive integer');
     }
     if (!props.productName.trim()) {
-      throw new Error('Product name is required');
+      throw new InvalidOrderLineError('Product name is required');
     }
     return new OrderLine(
       props.productVariantId,

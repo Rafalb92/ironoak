@@ -33,7 +33,7 @@ import { OrderingModule } from './modules/ordering/ordering.module';
         autoLogging: {
           ignore: (req) => req.url === '/health',
         },
-        customProps: (req) => ({ context: 'HTTP' }),
+        customProps: (_) => ({ context: 'HTTP' }),
         serializers: {
           req: (req) => ({ method: req.method, url: req.url }),
           res: (res) => ({ statusCode: res.statusCode }),

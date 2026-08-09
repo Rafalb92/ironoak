@@ -1,3 +1,8 @@
+import {
+  CurrencyMismatchError,
+  InvalidMoneyAmountError,
+} from '../errors/ordering.errors';
+
 export type Currency = 'USD';
 
 export class Money {
@@ -8,10 +13,12 @@ export class Money {
 
   static of(amount: number, currency: Currency): Money {
     if (!Number.isInteger(amount)) {
-      throw new Error('Money amount must be an integer (cents)');
+      throw new InvalidMoneyAmountError(
+        'Money amount must be an integer (cents)',
+      );
     }
     if (amount < 0) {
-      throw new Error('Money amount cannot be negative');
+      throw new InvalidMoneyAmountError('Money amount cannot be negative');
     }
     return new Money(amount, currency);
   }
@@ -24,13 +31,17 @@ export class Money {
   subtract(other: Money): Money {
     this.assertSameCurrency(other);
     const result = this.amount - other.amount;
-    if (result < 0) throw new Error('Money result cannot be negative');
+    if (result < 0) {
+      throw new InvalidMoneyAmountError('Money result cannot be negative');
+    }
     return Money.of(result, this.currency);
   }
 
   multiply(factor: number): Money {
     if (!Number.isInteger(factor) || factor < 0) {
-      throw new Error('Multiply factor must be a non-negative integer');
+      throw new InvalidMoneyAmountError(
+        'Multiply factor must be a non-negative integer',
+      );
     }
     return Money.of(this.amount * factor, this.currency);
   }
@@ -41,9 +52,7 @@ export class Money {
 
   private assertSameCurrency(other: Money): void {
     if (this.currency !== other.currency) {
-      throw new Error(
-        `Currency mismatch: ${this.currency} vs ${other.currency}`,
-      );
+      throw new CurrencyMismatchError(this.currency, other.currency);
     }
   }
 }
