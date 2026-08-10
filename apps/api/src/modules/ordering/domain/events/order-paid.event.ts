@@ -9,4 +9,8 @@ export class OrderPaidEvent extends DomainEvent {
   get eventName(): string {
     return OrderEventName.PAID;
   }
+
+  toPayload(): Record<string, unknown> {
+    return { orderId: this.orderId };
+  }
 }

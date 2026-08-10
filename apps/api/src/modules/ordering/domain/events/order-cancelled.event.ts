@@ -11,4 +11,8 @@ export class OrderCancelledEvent extends DomainEvent {
   get eventName(): string {
     return OrderEventName.CANCELLED;
   }
+
+  toPayload() {
+    return { orderId: this.orderId, reason: this.reason };
+  }
 }

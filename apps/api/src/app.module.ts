@@ -8,11 +8,16 @@ import { IdentityModule } from './modules/identity/identity.module';
 import { LoggerModule } from 'nestjs-pino';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { OrderingModule } from './modules/ordering/ordering.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { OutboxModule } from './shared-infra/outbox/outbox.module';
 
 @Module({
   imports: [
     MikroOrmModule.forRoot(config),
     ConfigModule.forRoot({ isGlobal: true }),
+    ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot(),
     LoggerModule.forRoot({
       pinoHttp: {
         transport:
@@ -53,6 +58,7 @@ import { OrderingModule } from './modules/ordering/ordering.module';
     IdentityModule,
     CatalogModule,
     OrderingModule,
+    OutboxModule,
   ],
   controllers: [AppController],
   providers: [AppService],

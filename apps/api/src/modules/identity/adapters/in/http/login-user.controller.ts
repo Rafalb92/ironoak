@@ -9,8 +9,8 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { ZodValidationPipe } from '../../../../../shared/pipes/zod-validation.pipe';
-import { LoginUserUseCase } from 'src/modules/identity/application/use-cases/login-user/login-user.use-case';
-import { LoginUserCommand } from 'src/modules/identity/application/use-cases/login-user/login-user.command';
+import { LoginUserUseCase } from '../../../application/use-cases/login-user/login-user.use-case';
+import { LoginUserCommand } from '../../../application/use-cases/login-user/login-user.command';
 import { type LoginUserDto, loginUserSchema } from './dto/login-user.dto';
 
 const ACCESS_TTL_MS = 15 * 60 * 1000; // 15 min

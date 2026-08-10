@@ -8,4 +8,8 @@ export class OrderFulfillmentStartedEvent extends DomainEvent {
   get eventName(): string {
     return OrderEventName.FULFILLMENT_STARTED;
   }
+
+  toPayload(): Record<string, unknown> {
+    return { orderId: this.orderId };
+  }
 }

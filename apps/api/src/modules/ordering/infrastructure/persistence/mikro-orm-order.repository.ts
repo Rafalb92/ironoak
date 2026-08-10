@@ -4,6 +4,7 @@ import { Order } from '../../domain/order.aggregate';
 import { OrderEntitySchema } from './order.entity';
 import { OrderMapper } from './order.mapper';
 import type { OrderRepository } from '../../application/ports/order.repository.port';
+import { OutboxWriter } from '../../../../shared-infra/outbox/outbox-writer';
 
 export class MikroOrmOrderRepository implements OrderRepository {
   constructor(private readonly em: EntityManager) {}
@@ -31,6 +32,9 @@ export class MikroOrmOrderRepository implements OrderRepository {
     } else {
       this.em.create(OrderEntitySchema, data);
     }
+
+    OutboxWriter.append(this.em, order.pullDomainEvents(), order.id, 'Order');
+
     await this.em.flush();
   }
 }

@@ -14,4 +14,13 @@ export class OrderPlacedEvent extends DomainEvent {
   get eventName(): string {
     return OrderEventName.PLACED;
   }
+
+  toPayload(): Record<string, unknown> {
+    return {
+      orderId: this.orderId,
+      customerId: this.customerId,
+      totalAmount: this.total.amount,
+      currency: this.total.currency,
+    };
+  }
 }
