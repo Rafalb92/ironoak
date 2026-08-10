@@ -4,6 +4,10 @@ import {
   REFRESH_TOKEN_STORE,
   type RefreshTokenStore,
 } from '../ports/refresh-token-store.port';
+import {
+  USER_REPOSITORY,
+  type UserRepository,
+} from '../ports/user.repository.port';
 
 @Injectable()
 export class RefreshTokenUseCase {
@@ -15,6 +19,7 @@ export class RefreshTokenUseCase {
     @Inject(TOKEN_SERVICE) private readonly tokenService: TokenService,
     @Inject(REFRESH_TOKEN_STORE)
     private readonly refreshTokenStore: RefreshTokenStore,
+    @Inject(USER_REPOSITORY) private readonly users: UserRepository,
   ) {}
 
   async execute(
@@ -41,8 +46,17 @@ export class RefreshTokenUseCase {
     // 3. Rotacja: usuń zużyty
     await this.refreshTokenStore.remove(userId, jti);
 
+    // Get user:
+    const user = await this.users.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User no longer exists');
+    }
+
     // 4. Nowa para
-    const newAccessToken = await this.tokenService.issueAccessToken({ userId });
+    const newAccessToken = await this.tokenService.issueAccessToken({
+      userId,
+      role: user.role,
+    });
     const newRefresh = await this.tokenService.issueRefreshToken({ userId });
 
     // 5. Zapisz nowy jti

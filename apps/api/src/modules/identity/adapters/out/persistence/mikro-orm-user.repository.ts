@@ -15,6 +15,10 @@ export class MikroOrmUserRepository implements UserRepository {
     return this.em.findOne(UserSchema, { email });
   }
 
+  async findById(id: string): Promise<IUser | null> {
+    return this.em.findOne(UserSchema, { id });
+  }
+
   async findCredentialAccount(userId: string): Promise<IAccount | null> {
     return this.em.findOne(AccountSchema, {
       user: userId,

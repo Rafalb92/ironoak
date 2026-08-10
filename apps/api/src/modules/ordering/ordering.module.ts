@@ -14,6 +14,12 @@ import { PlaceOrderController } from './infrastructure/http/place-order.controll
 import { OrderController } from './infrastructure/http/order.controller';
 import { GetMyOrdersUseCase } from './application/use-cases/get-my-orders/get-my-orders.use-case';
 import { GetOrderDetailsUseCase } from './application/use-cases/get-order-details/get-order-details.use-case';
+import { RolesGuard } from '../../shared/guards/roles.guard';
+import { OrderAdminController } from './infrastructure/http/order-admin.controller';
+import { ShipOrderUseCase } from './application/use-cases/ship-order/ship-order.use-case';
+import { MarkDeliveredUseCase } from './application/use-cases/mark-delivered/mark-delivered.use-case';
+import { StartFulfillmentUseCase } from './application/use-cases/start-fulfillment/start-fulfillment.use-case';
+import { ConfirmPaymentUseCase } from './application/use-cases/confirm-payment/confirm-payment.use-case';
 
 @Module({
   imports: [CatalogModule, IdentityModule], // ← jawna zależność między kontekstami
@@ -33,8 +39,13 @@ import { GetOrderDetailsUseCase } from './application/use-cases/get-order-detail
     GetMyOrdersUseCase,
     GetOrderDetailsUseCase,
     CancelOrderUseCase,
+    ShipOrderUseCase,
+    MarkDeliveredUseCase,
+    StartFulfillmentUseCase,
+    ConfirmPaymentUseCase,
     JwtAuthGuard,
+    RolesGuard,
   ],
-  controllers: [PlaceOrderController, OrderController],
+  controllers: [PlaceOrderController, OrderController, OrderAdminController],
 })
 export class OrderingModule {}

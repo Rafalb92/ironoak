@@ -7,5 +7,6 @@ export interface UserRepository {
   existsByEmail(email: string): Promise<boolean>;
   findCredentialAccount(userId: string): Promise<IAccount | null>;
   findByEmail(email: string): Promise<IUser | null>;
+  findById(userId: string): Promise<IUser | null>;
   save(user: IUser, account: IAccount): Promise<void>;
 }

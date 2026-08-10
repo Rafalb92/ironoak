@@ -5,6 +5,7 @@ import type {
   AccessTokenPayload,
   RefreshTokenPayload,
   IssuedRefreshToken,
+  UserRole,
 } from '../../../application/ports/token-service.port';
 
 interface JoseTokenConfig {
@@ -18,7 +19,7 @@ export class JoseTokenService implements TokenService {
   constructor(private readonly config: JoseTokenConfig) {}
 
   issueAccessToken(payload: AccessTokenPayload): Promise<string> {
-    return new SignJWT({ userId: payload.userId })
+    return new SignJWT({ userId: payload.userId, role: payload.role })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuedAt()
       .setExpirationTime(this.config.accessTtl)
@@ -26,7 +27,7 @@ export class JoseTokenService implements TokenService {
   }
 
   async issueRefreshToken(
-    payload: AccessTokenPayload,
+    payload: RefreshTokenPayload,
   ): Promise<IssuedRefreshToken> {
     const jti = randomUUID();
     const token = await new SignJWT({ userId: payload.userId })
@@ -40,7 +41,9 @@ export class JoseTokenService implements TokenService {
 
   async verifyAccessToken(token: string): Promise<AccessTokenPayload> {
     const { payload } = await jwtVerify(token, this.config.accessSecret);
-    return { userId: this.extractUserId(payload) };
+    const role = payload.role as UserRole;
+
+    return { userId: this.extractUserId(payload), role };
   }
 
   async verifyRefreshToken(token: string): Promise<RefreshTokenPayload> {

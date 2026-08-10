@@ -57,7 +57,10 @@ export class LoginUserUseCase {
 
     // 4. wydaj tokeny
     const [accessToken, issuedRefresh] = await Promise.all([
-      this.tokens.issueAccessToken({ userId: user.id }),
+      this.tokens.issueAccessToken({
+        userId: user.id,
+        role: user.role,
+      }),
       this.tokens.issueRefreshToken({ userId: user.id }),
     ]);
 

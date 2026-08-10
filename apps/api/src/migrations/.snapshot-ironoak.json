@@ -1010,6 +1010,26 @@
           "enumItems": [],
           "mappedType": "uuid"
         },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'USER'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [
+            "USER",
+            "ADMIN"
+          ],
+          "mappedType": "enum"
+        },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamptz(6)",
@@ -1050,7 +1070,14 @@
           "unique": true
         }
       ],
-      "checks": [],
+      "checks": [
+        {
+          "name": "user_role_check",
+          "expression": "\"role\" in ('USER', 'ADMIN')",
+          "definition": "check (\"role\" in ('USER', 'ADMIN'))",
+          "columnName": "role"
+        }
+      ],
       "triggers": [],
       "foreignKeys": {},
       "comment": null

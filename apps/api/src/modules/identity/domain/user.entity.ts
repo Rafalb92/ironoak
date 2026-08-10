@@ -8,6 +8,7 @@ export const UserSchema = defineEntity({
     email: p.string().unique(),
     emailVerified: p.boolean().default(false),
     // accounts: USUNIĘTE — zrywa cykl importów
+    role: p.enum(['USER', 'ADMIN']).default('USER'),
     createdAt: p.datetime().onCreate(() => new Date()),
     updatedAt: p
       .datetime()
