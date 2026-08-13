@@ -49,5 +49,6 @@ import { OrderPlacedListener } from './application/event-handlers/order-placed.l
     OrderPlacedListener,
   ],
   controllers: [PlaceOrderController, OrderController, OrderAdminController],
+  exports: [PlaceOrderUseCase], // ← for cart module to use in checkout
 })
 export class OrderingModule {}

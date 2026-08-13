@@ -1,4 +1,4 @@
-import { UserRole } from '../../../../application/ports/token-service.port';
+import { UserRole } from '../../../../../../shared-infra/auth/token-service.port';
 
 declare global {
   namespace Express {

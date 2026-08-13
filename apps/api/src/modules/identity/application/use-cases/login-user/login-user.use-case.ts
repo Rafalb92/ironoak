@@ -10,7 +10,7 @@ import {
 import {
   TOKEN_SERVICE,
   type TokenService,
-} from '../../ports/token-service.port';
+} from '../../../../../shared-infra/auth/token-service.port';
 import {
   REFRESH_TOKEN_STORE,
   type RefreshTokenStore,

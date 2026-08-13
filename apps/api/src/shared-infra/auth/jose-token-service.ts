@@ -6,7 +6,7 @@ import type {
   RefreshTokenPayload,
   IssuedRefreshToken,
   UserRole,
-} from '../../../application/ports/token-service.port';
+} from './token-service.port';
 
 interface JoseTokenConfig {
   accessSecret: Uint8Array;

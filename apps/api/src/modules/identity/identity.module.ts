@@ -7,21 +7,22 @@ import { PASSWORD_HASHER } from './application/ports/password-hasher.port';
 import { ConfigService } from '@nestjs/config';
 import { Argon2PasswordHasher } from './adapters/out/hashing/argon2-password-hasher';
 
-import { JoseTokenService } from './adapters/out/tokens/jose-token-service';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { MikroOrmUserRepository } from './adapters/out/persistence/mikro-orm-user.repository';
 import { USER_REPOSITORY } from './application/ports/user.repository.port';
 import { RegisterUserUseCase } from './application/use-cases/register-user/register-user.use-case';
 import { RegisterUserController } from './adapters/in/http/register-user.controller';
-import { TOKEN_SERVICE } from './application/ports/token-service.port';
 import { LoginUserController } from './adapters/in/http/login-user.controller';
 import { MeController } from './adapters/in/http/me.controller';
 import { LoginUserUseCase } from './application/use-cases/login-user/login-user.use-case';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { REFRESH_TOKEN_STORE } from './application/ports/refresh-token-store.port';
 import { RedisRefreshTokenStore } from './adapters/out/persistence/redis-refresh-token-store';
-
-const REDIS_CLIENT = Symbol('REDIS_CLIENT');
+import { REDIS_CLIENT } from '../../shared-infra/redis/redis.module';
+import { RefreshTokenUseCase } from './application/use-cases/refresh-token.use-case';
+import { LogoutController } from './adapters/in/http/logout.controller';
+import { RefreshTokenController } from './adapters/in/http/refresh-token.controller';
+import { LogoutUseCase } from './application/use-cases/logout/logout.use-case';
 
 @Module({
   imports: [MikroOrmModule.forFeature([UserSchema, AccountSchema])],
@@ -35,33 +36,9 @@ const REDIS_CLIENT = Symbol('REDIS_CLIENT');
       inject: [ConfigService],
     },
     {
-      provide: TOKEN_SERVICE,
-      useFactory: (config: ConfigService) =>
-        new JoseTokenService({
-          accessSecret: new TextEncoder().encode(
-            config.getOrThrow<string>('JWT_ACCESS_SECRET'),
-          ),
-          refreshSecret: new TextEncoder().encode(
-            config.getOrThrow<string>('JWT_REFRESH_SECRET'),
-          ),
-          accessTtl: config.getOrThrow<string>('JWT_ACCESS_TTL'),
-          refreshTtl: config.getOrThrow<string>('JWT_REFRESH_TTL'),
-        }),
-      inject: [ConfigService],
-    },
-    {
       provide: USER_REPOSITORY,
       useFactory: (em: EntityManager) => new MikroOrmUserRepository(em),
       inject: [EntityManager],
-    },
-    {
-      provide: REDIS_CLIENT,
-      useFactory: (config: ConfigService) =>
-        new Redis({
-          host: config.getOrThrow<string>('REDIS_HOST'),
-          port: Number(config.getOrThrow<string>('REDIS_PORT')),
-        }),
-      inject: [ConfigService],
     },
     {
       provide: REFRESH_TOKEN_STORE,
@@ -71,8 +48,16 @@ const REDIS_CLIENT = Symbol('REDIS_CLIENT');
     RegisterUserUseCase,
     LoginUserUseCase,
     JwtAuthGuard,
+    RefreshTokenUseCase,
+    LogoutUseCase,
   ],
-  controllers: [RegisterUserController, LoginUserController, MeController],
-  exports: [PASSWORD_HASHER, TOKEN_SERVICE],
+  controllers: [
+    RegisterUserController,
+    LoginUserController,
+    MeController,
+    LogoutController,
+    RefreshTokenController,
+  ],
+  exports: [PASSWORD_HASHER],
 })
 export class IdentityModule {}

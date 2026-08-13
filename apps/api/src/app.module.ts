@@ -11,6 +11,9 @@ import { OrderingModule } from './modules/ordering/ordering.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { OutboxModule } from './shared-infra/outbox/outbox.module';
+import { RedisModule } from './shared-infra/redis/redis.module';
+import { CartModule } from './modules/cart/cart.module';
+import { TokenModule } from './shared-infra/auth/token.module';
 
 @Module({
   imports: [
@@ -54,11 +57,13 @@ import { OutboxModule } from './shared-infra/outbox/outbox.module';
         },
       },
     }),
-
+    RedisModule,
     IdentityModule,
     CatalogModule,
     OrderingModule,
     OutboxModule,
+    CartModule,
+    TokenModule,
   ],
   controllers: [AppController],
   providers: [AppService],
