@@ -21,6 +21,8 @@ import { MarkDeliveredUseCase } from './application/use-cases/mark-delivered/mar
 import { StartFulfillmentUseCase } from './application/use-cases/start-fulfillment/start-fulfillment.use-case';
 import { ConfirmPaymentUseCase } from './application/use-cases/confirm-payment/confirm-payment.use-case';
 import { OrderPlacedListener } from './application/event-handlers/order-placed.listener';
+import { CancelOrderBySystemUseCase } from './application/use-cases/cancel-order-by-system/cancel-order-by-system.use-case';
+import { StockReservationFailedListener } from './application/listeners/stock-reservation-failed.listener';
 
 @Module({
   imports: [CatalogModule, IdentityModule], // ← jawna zależność między kontekstami
@@ -47,6 +49,8 @@ import { OrderPlacedListener } from './application/event-handlers/order-placed.l
     JwtAuthGuard,
     RolesGuard,
     OrderPlacedListener,
+    StockReservationFailedListener,
+    CancelOrderBySystemUseCase,
   ],
   controllers: [PlaceOrderController, OrderController, OrderAdminController],
   exports: [PlaceOrderUseCase], // ← for cart module to use in checkout

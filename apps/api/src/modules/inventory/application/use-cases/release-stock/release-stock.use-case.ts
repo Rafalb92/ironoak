@@ -37,16 +37,23 @@ export class ReleaseStockUseCase {
         );
 
         if (!item) {
-          problems.push(`No stock record for variant ${line.productVariantId}`);
-          continue;
-        }
-        if (item.quantityReserved < line.quantity) {
-          problems.push(
-            `Cannot release variant ${line.productVariantId}: requested ${line.quantity}, reserved ${item.quantityReserved}`,
+          this.logger.warn(
+            `No stock record for variant ${line.productVariantId}, skipping release`,
           );
           continue;
         }
-        toRelease.push({ item, quantity: line.quantity });
+
+        // zwolnij tyle, ile realnie zarezerwowano (może być mniej, może być 0)
+        const toRelease = Math.min(line.quantity, item.quantityReserved);
+        if (toRelease === 0) {
+          this.logger.debug(
+            `Nothing to release for variant ${line.productVariantId} (reserved: 0)`,
+          );
+          continue;
+        }
+
+        item.release(toRelease);
+        await this.stock.save(item);
       }
 
       // --- FAZA 2: decyzja — wszystko albo nic ---

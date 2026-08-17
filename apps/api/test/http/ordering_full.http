@@ -14,7 +14,7 @@ GET {{host}}/auth/me
 POST {{host}}/cart/items
 Content-Type: application/json
 
-{ "productVariantId": "{{variantId}}", "quantity": 3 }
+{ "productVariantId": "{{variantId}}", "quantity": 88 }
 
 ### 4. podejrzyj koszyk (ceny z katalogu, na żywo)
 GET {{host}}/cart
@@ -40,7 +40,7 @@ GET {{host}}/cart
 GET {{host}}/orders
 
 ### --- ustaw orderId z odpowiedzi wyżej ---
-@orderId = 57bfcdb8-c859-44b0-b09d-84d6d72c3d3f
+@orderId = 6996c18f-4616-465b-9abc-654a21217749
 
 ### 8. szczegóły zamówienia (status PENDING_PAYMENT)
 GET {{host}}/orders/{{orderId}}
@@ -62,3 +62,20 @@ POST {{host}}/admin/orders/{{orderId}}/deliver
 
 ### 14. status końcowy → DELIVERED
 GET {{host}}/orders/{{orderId}}
+
+
+
+### zamów więcej niż na stanie (masz 22)
+POST {{host}}/cart/items
+Content-Type: application/json
+
+{ "productVariantId": "{{variantId}}", "quantity": 99 }
+
+###
+POST {{host}}/cart/checkout
+Content-Type: application/json
+
+{ "deliveryAddress": { "street": "Main Street", "buildingNumber": "123", "city": "New York", "postalCode": "10001", "country": "US" } }
+
+### weź orderId, odczekaj ~10 sekund (dwa cykle workera!), potem:
+GET {{host}}/orders/6efe6fce-beea-4d7a-b966-18efff43d4bf
