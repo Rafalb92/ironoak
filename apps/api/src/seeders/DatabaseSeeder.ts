@@ -3,6 +3,7 @@ import { Seeder } from '@mikro-orm/seeder';
 import { CategorySchema } from '../modules/catalog/entities/category.entity';
 import { ProductSchema } from '../modules/catalog/entities/product.entity';
 import { ProductVariantSchema } from '../modules/catalog/entities/product-variant.entity';
+import { InventorySeeder } from './InventorySeeder';
 
 export class DatabaseSeeder extends Seeder {
   async run(em: EntityManager): Promise<void> {
@@ -186,6 +187,7 @@ export class DatabaseSeeder extends Seeder {
       attributes: { resistance: 'Water', tankCapacity: '17L', foldable: true },
     });
 
+    this.call(em, [InventorySeeder]);
     await em.flush();
   }
 }

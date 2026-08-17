@@ -9,6 +9,7 @@ import { OutboxMessageSchema } from './shared-infra/outbox/outbox-message.entity
 import { ProductImageSchema } from './modules/catalog/entities/product-image.entity';
 import { ProductSchema } from './modules/catalog/entities/product.entity';
 import { ProductVariantSchema } from './modules/catalog/entities/product-variant.entity';
+import { StockItemEntitySchema } from './modules/inventory/infrastructure/persistence/stock-item.entity';
 import { UserSchema } from './modules/identity/domain/user.entity';
 import { EntityManager as DriverEntityManager } from '@mikro-orm/postgresql';
 
@@ -21,6 +22,7 @@ export const entities = [
   ProductImageSchema,
   ProductSchema,
   ProductVariantSchema,
+  StockItemEntitySchema,
   UserSchema,
 ] as const;
 

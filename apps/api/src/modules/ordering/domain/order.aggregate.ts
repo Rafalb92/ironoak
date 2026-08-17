@@ -51,7 +51,7 @@ export class Order extends AggregateRoot {
     const order = new Order();
     order._id = randomUUID();
     order._customerId = props.customerId;
-    order._lines = props.lines;
+    order._lines = [...props.lines];
     order._deliveryAddress = props.deliveryAddress;
     order._status = OrderStatus.PENDING_PAYMENT;
     order._totalAmount = order.calculateTotal(); // LICZONY, nie podany
@@ -59,7 +59,9 @@ export class Order extends AggregateRoot {
     order._updatedAt = new Date();
 
     order.addDomainEvent(
-      new OrderPlacedEvent(order._id, order._customerId, order._totalAmount),
+      new OrderPlacedEvent(order._id, order._customerId, order._totalAmount, [
+        ...order._lines,
+      ]),
     );
 
     return order;
@@ -79,7 +81,7 @@ export class Order extends AggregateRoot {
     const order = new Order();
     order._id = props.id;
     order._customerId = props.customerId;
-    order._lines = props.lines;
+    order._lines = [...props.lines];
     order._status = props.status;
     order._totalAmount = props.totalAmount;
     order._deliveryAddress = props.deliveryAddress;
@@ -118,7 +120,7 @@ export class Order extends AggregateRoot {
     }
     this._status = OrderStatus.SHIPPED;
     this.touch();
-    this.addDomainEvent(new OrderShippedEvent(this._id));
+    this.addDomainEvent(new OrderShippedEvent(this._id, [...this._lines]));
   }
 
   markDelivered(): void {
@@ -136,7 +138,9 @@ export class Order extends AggregateRoot {
     }
     this._status = OrderStatus.CANCELLED;
     this.touch();
-    this.addDomainEvent(new OrderCancelledEvent(this._id, reason));
+    this.addDomainEvent(
+      new OrderCancelledEvent(this._id, reason, [...this._lines]),
+    );
   }
 
   // === POMOCNICZE ===

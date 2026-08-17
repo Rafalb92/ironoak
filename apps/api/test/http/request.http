@@ -28,7 +28,7 @@ POST http://localhost:3000/auth/logout
 ### Products
 GET http://localhost:3000/products
 ### Products with variant
-GET http://localhost:3000/products?variantId=06502491-8e82-4389-be3e-708c36906517
+GET http://localhost:3000/products?variantId=e0fa09d5-f34d-4827-93f1-7f8e2a2d2499
 
 ### Get Cart
 GET http://localhost:3000/cart
@@ -39,16 +39,16 @@ POST http://localhost:3000/cart/items
 Content-Type: application/json
 
 {
-  "productVariantId": "06502491-8e82-4389-be3e-708c36906517",
+  "productVariantId": "e0fa09d5-f34d-4827-93f1-7f8e2a2d2499",
   "quantity": 2
 }
 
 ### Update item quantity in cart
-PATCH http://localhost:3000/cart/items/06502491-8e82-4389-be3e-708c36906517
+PATCH http://localhost:3000/cart/items/e0fa09d5-f34d-4827-93f1-7f8e2a2d2499
 Content-Type: application/json
 
 {
-  "quantity": 5
+  "quantity": 4
 }
 
 ### Checkout

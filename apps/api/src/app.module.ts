@@ -14,6 +14,7 @@ import { OutboxModule } from './shared-infra/outbox/outbox.module';
 import { RedisModule } from './shared-infra/redis/redis.module';
 import { CartModule } from './modules/cart/cart.module';
 import { TokenModule } from './shared-infra/auth/token.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
 
 @Module({
   imports: [
@@ -64,6 +65,7 @@ import { TokenModule } from './shared-infra/auth/token.module';
     OutboxModule,
     CartModule,
     TokenModule,
+    InventoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

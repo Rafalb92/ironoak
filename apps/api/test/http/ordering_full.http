@@ -1,0 +1,64 @@
+@host = http://localhost:3000
+@variantId = e0fa09d5-f34d-4827-93f1-7f8e2a2d2499
+
+### 1. login (ustawia cookies)
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "rafalb92@ironoak.pl", "password": "supersecret123" }
+
+### 2. kto jestem (sprawdź role: ADMIN)
+GET {{host}}/auth/me
+
+### 3. dodaj 3 sztuki do koszyka
+POST {{host}}/cart/items
+Content-Type: application/json
+
+{ "productVariantId": "{{variantId}}", "quantity": 3 }
+
+### 4. podejrzyj koszyk (ceny z katalogu, na żywo)
+GET {{host}}/cart
+
+### 5. checkout — składa zamówienie i czyści koszyk
+POST {{host}}/cart/checkout
+Content-Type: application/json
+
+{
+  "deliveryAddress": {
+    "street": "Main Street",
+    "buildingNumber": "123",
+    "city": "New York",
+    "postalCode": "10001",
+    "country": "US"
+  }
+}
+
+### 6. koszyk powinien być pusty
+GET {{host}}/cart
+
+### 7. lista zamówień — skopiuj stąd orderId
+GET {{host}}/orders
+
+### --- ustaw orderId z odpowiedzi wyżej ---
+@orderId = 57bfcdb8-c859-44b0-b09d-84d6d72c3d3f
+
+### 8. szczegóły zamówienia (status PENDING_PAYMENT)
+GET {{host}}/orders/{{orderId}}
+
+### 9. próba wysyłki bez opłacenia → 409
+POST {{host}}/admin/orders/{{orderId}}/ship
+
+### 10. potwierdź płatność
+POST {{host}}/admin/orders/{{orderId}}/confirm-payment
+
+### 11. rozpocznij realizację
+POST {{host}}/admin/orders/{{orderId}}/fulfill
+
+### 12. wyślij (to zmniejszy stan magazynu!)
+POST {{host}}/admin/orders/{{orderId}}/ship
+
+### 13. dostarcz
+POST {{host}}/admin/orders/{{orderId}}/deliver
+
+### 14. status końcowy → DELIVERED
+GET {{host}}/orders/{{orderId}}
