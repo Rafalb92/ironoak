@@ -187,7 +187,7 @@ export class DatabaseSeeder extends Seeder {
       attributes: { resistance: 'Water', tankCapacity: '17L', foldable: true },
     });
 
-    this.call(em, [InventorySeeder]);
     await em.flush();
+    await this.call(em, [InventorySeeder]);
   }
 }

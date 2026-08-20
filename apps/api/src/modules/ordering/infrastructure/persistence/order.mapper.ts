@@ -1,7 +1,7 @@
 import { Order, OrderStatus } from '../../domain/order.aggregate';
 import { OrderLine } from '../../domain/value-objects/order-line.vo';
 import { Address } from '../../domain/value-objects/address.vo';
-import { Money } from '../../domain/value-objects/money.vo';
+import { Money } from '../../../../shared-kernel/domain/value-objects/money.vo';
 import type { IOrderEntity, OrderLineData, AddressData } from './order.entity';
 
 export class OrderMapper {

@@ -15,6 +15,7 @@ import { RedisModule } from './shared-infra/redis/redis.module';
 import { CartModule } from './modules/cart/cart.module';
 import { TokenModule } from './shared-infra/auth/token.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
+import { PaymentsModule } from './modules/payments/payments.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { InventoryModule } from './modules/inventory/inventory.module';
     CartModule,
     TokenModule,
     InventoryModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

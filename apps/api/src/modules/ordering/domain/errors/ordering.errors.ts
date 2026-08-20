@@ -20,24 +20,6 @@ export class InvalidOrderTransitionError extends DomainError {
   }
 }
 
-export class InvalidMoneyAmountError extends DomainError {
-  readonly code = 'MONEY_INVALID_AMOUNT';
-
-  readonly httpStatus = HttpStatus.BAD_REQUEST;
-
-  constructor(message: string) {
-    super(message);
-  }
-}
-
-export class CurrencyMismatchError extends DomainError {
-  readonly code = 'MONEY_CURRENCY_MISMATCH';
-  readonly httpStatus = HttpStatus.BAD_REQUEST;
-  constructor(expected: string, actual: string) {
-    super(`Currency mismatch: ${expected} vs ${actual}`);
-  }
-}
-
 export class InvalidAddressError extends DomainError {
   readonly code = 'ADDRESS_INVALID';
   readonly httpStatus = HttpStatus.BAD_REQUEST;

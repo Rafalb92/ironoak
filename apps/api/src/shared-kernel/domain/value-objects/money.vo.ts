@@ -1,7 +1,7 @@
 import {
   CurrencyMismatchError,
   InvalidMoneyAmountError,
-} from '../errors/ordering.errors';
+} from '../errors/money.errors';
 
 export type Currency = 'USD';
 

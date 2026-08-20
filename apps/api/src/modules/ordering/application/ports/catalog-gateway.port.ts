@@ -1,4 +1,4 @@
-import { Money } from '../../domain/value-objects/money.vo';
+import { Money } from '../../../../shared-kernel/domain/value-objects/money.vo';
 
 export const CATALOG_GATEWAY = Symbol('CATALOG_GATEWAY');
 

@@ -1,0 +1,56 @@
+@host = http://localhost:3000
+@variantId = 3e5aa699-3e88-4c0b-aae4-9cf1cf7ceb61
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{ "email": "rafalb92@ironoak.pl", "password": "supersecret123" }
+### 1. login (ustawia cookies)
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "rafalb92@ironoak.pl", "password": "supersecret123" }
+
+### 2. kto jestem (sprawdź role: ADMIN)
+GET {{host}}/auth/me
+
+### Get all products
+GET {{host}}/products
+
+### GEt cart
+GET {{host}}/cart
+
+### Remove all items from cart
+DELETE {{host}}/cart
+
+### 1. złóż zamówienie (przez koszyk lub bezpośrednio)
+POST {{host}}/cart/items
+Content-Type: application/json
+
+{ "productVariantId": "{{variantId}}", "quantity": 2 }
+
+###
+POST {{host}}/cart/checkout
+Content-Type: application/json
+
+{ "deliveryAddress": { "street": "Main Street", "buildingNumber": "123", "city": "New York", "postalCode": "10001", "country": "US" } }
+
+### --- weź orderId ---
+@orderId = 52df2481-0536-4f14-9b30-f96878f97c6f
+
+### 2. zainicjuj płatność → dostajesz checkoutUrl
+POST {{host}}/orders/{{orderId}}/pay
+
+### --- weź sessionId z URL-a ---
+@sessionId = fake_9d9a6992-ffb7-458f-8fae-bad2e4da7679
+
+### 3. druga próba — powinna zwrócić TEN SAM url (idempotencja)
+POST {{host}}/orders/{{orderId}}/pay
+
+### 4. symuluj udaną płatność
+POST {{host}}/payments/simulate/{{sessionId}}
+Content-Type: application/json
+
+{ "outcome": "success" }
+
+### 5. odczekaj ~5s (worker) i sprawdź status
+GET {{host}}/orders/{{orderId}}

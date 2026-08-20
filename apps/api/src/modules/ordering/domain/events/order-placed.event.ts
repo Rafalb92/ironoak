@@ -1,6 +1,6 @@
 // order-placed.event.ts
 import { DomainEvent } from '../../../../shared-kernel/domain/domain-event.base';
-import { Money } from '../value-objects/money.vo';
+import { Money } from '../../../../shared-kernel/domain/value-objects/money.vo';
 import { OrderLine } from '../value-objects/order-line.vo';
 import { OrderEventName } from './order-event-names';
 

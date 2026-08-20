@@ -19,10 +19,12 @@ import { OrderAdminController } from './infrastructure/http/order-admin.controll
 import { ShipOrderUseCase } from './application/use-cases/ship-order/ship-order.use-case';
 import { MarkDeliveredUseCase } from './application/use-cases/mark-delivered/mark-delivered.use-case';
 import { StartFulfillmentUseCase } from './application/use-cases/start-fulfillment/start-fulfillment.use-case';
-import { ConfirmPaymentUseCase } from './application/use-cases/confirm-payment/confirm-payment.use-case';
+import { ConfirmPaymentBySystemUseCase } from './application/use-cases/confirm-payment-by-system/confirm-payment-by-system.use-case';
 import { OrderPlacedListener } from './application/event-handlers/order-placed.listener';
 import { CancelOrderBySystemUseCase } from './application/use-cases/cancel-order-by-system/cancel-order-by-system.use-case';
 import { StockReservationFailedListener } from './application/listeners/stock-reservation-failed.listener';
+import { PaymentSucceededListener } from './application/listeners/payment-succeeded.listener';
+import { OrderQueryService } from './application/services/order-query.service';
 
 @Module({
   imports: [CatalogModule, IdentityModule], // ← jawna zależność między kontekstami
@@ -45,14 +47,16 @@ import { StockReservationFailedListener } from './application/listeners/stock-re
     ShipOrderUseCase,
     MarkDeliveredUseCase,
     StartFulfillmentUseCase,
-    ConfirmPaymentUseCase,
+    ConfirmPaymentBySystemUseCase,
     JwtAuthGuard,
     RolesGuard,
     OrderPlacedListener,
     StockReservationFailedListener,
     CancelOrderBySystemUseCase,
+    PaymentSucceededListener,
+    OrderQueryService,
   ],
   controllers: [PlaceOrderController, OrderController, OrderAdminController],
-  exports: [PlaceOrderUseCase], // ← for cart module to use in checkout
+  exports: [PlaceOrderUseCase, OrderQueryService],
 })
 export class OrderingModule {}

@@ -6,6 +6,7 @@ import { CategorySchema } from './modules/catalog/entities/category.entity';
 import { InboxMessageEntity } from './shared-infra/inbox/inbox-message.entity';
 import { OrderEntitySchema } from './modules/ordering/infrastructure/persistence/order.entity';
 import { OutboxMessageSchema } from './shared-infra/outbox/outbox-message.entity';
+import { PaymentEntitySchema } from './modules/payments/infrastructure/persistence/payment.entity';
 import { ProductImageSchema } from './modules/catalog/entities/product-image.entity';
 import { ProductSchema } from './modules/catalog/entities/product.entity';
 import { ProductVariantSchema } from './modules/catalog/entities/product-variant.entity';
@@ -19,6 +20,7 @@ export const entities = [
   InboxMessageEntity,
   OrderEntitySchema,
   OutboxMessageSchema,
+  PaymentEntitySchema,
   ProductImageSchema,
   ProductSchema,
   ProductVariantSchema,

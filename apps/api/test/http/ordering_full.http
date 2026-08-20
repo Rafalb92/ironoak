@@ -48,8 +48,14 @@ GET {{host}}/orders/{{orderId}}
 ### 9. próba wysyłki bez opłacenia → 409
 POST {{host}}/admin/orders/{{orderId}}/ship
 
-### 10. potwierdź płatność
-POST {{host}}/admin/orders/{{orderId}}/confirm-payment
+### 10. płatność potwierdza się teraz automatycznie — endpoint admin/confirm-payment
+### został usunięty (był tymczasową atrapą webhooka). Prawdziwy webhook dostawcy
+### trafia tutaj i sam wywołuje ConfirmPaymentBySystemUseCase po payment.succeeded:
+### (wymaga istniejącego Payment z sessionId — patrz InitiatePaymentUseCase)
+POST {{host}}/webhooks/stripe
+Content-Type: application/json
+
+{ "eventId": "evt_test_1", "type": "payment.succeeded", "orderId": "{{orderId}}", "sessionId": "fake_replace-with-real-session-id" }
 
 ### 11. rozpocznij realizację
 POST {{host}}/admin/orders/{{orderId}}/fulfill
@@ -78,4 +84,4 @@ Content-Type: application/json
 { "deliveryAddress": { "street": "Main Street", "buildingNumber": "123", "city": "New York", "postalCode": "10001", "country": "US" } }
 
 ### weź orderId, odczekaj ~10 sekund (dwa cykle workera!), potem:
-GET {{host}}/orders/6efe6fce-beea-4d7a-b966-18efff43d4bf
+GET {{host}}/orders/0e7b0107-c03c-4810-b4c9-6bd738096ce1

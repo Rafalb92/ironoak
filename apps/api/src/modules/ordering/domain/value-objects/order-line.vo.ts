@@ -1,4 +1,4 @@
-import { Money } from './money.vo';
+import { Money } from '../../../../shared-kernel/domain/value-objects/money.vo';
 import { InvalidOrderLineError } from '../errors/ordering.errors';
 
 export interface OrderLineProps {

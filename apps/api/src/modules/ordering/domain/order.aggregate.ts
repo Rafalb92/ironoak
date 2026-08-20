@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { AggregateRoot } from '../../../shared-kernel/domain/aggregate-root.base';
-import { Money } from './value-objects/money.vo';
+import { Money } from '../../../shared-kernel/domain/value-objects/money.vo';
 import { Address } from './value-objects/address.vo';
 import { OrderLine } from './value-objects/order-line.vo';
 import { OrderPlacedEvent } from './events/order-placed.event';

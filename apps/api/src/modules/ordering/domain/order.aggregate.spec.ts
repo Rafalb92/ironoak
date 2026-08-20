@@ -1,7 +1,7 @@
 import { Order, OrderStatus } from './order.aggregate';
 import { OrderLine } from './value-objects/order-line.vo';
 import { Address } from './value-objects/address.vo';
-import { Money } from './value-objects/money.vo';
+import { Money } from '../../../shared-kernel/domain/value-objects/money.vo';
 import {
   EmptyOrderError,
   InvalidOrderTransitionError,
