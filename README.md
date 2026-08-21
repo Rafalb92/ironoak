@@ -2,6 +2,8 @@
 
 This Turborepo starter is maintained by the Turborepo core team.
 
+Key architectural decisions are documented as [ADRs](docs/adr/).
+
 ## Using this example
 
 Run the following command:
