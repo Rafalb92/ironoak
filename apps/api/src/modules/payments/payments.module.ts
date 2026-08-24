@@ -12,6 +12,7 @@ import { PaymentWebhookController } from './infrastructure/http/payment-webhook.
 import { InitiatePaymentController } from './infrastructure/http/initiate-payment.controller';
 import { InitiatePaymentUseCase } from './application/use-cases/initiate-payment/initiate-payment.use-case';
 import { HandlePaymentWebhookUseCase } from './application/use-cases/handle-payment-webhook/handle-payment-webhook.use-case';
+import { StripePaymentProvider } from './infrastructure/providers/stripe-payment.provider';
 
 @Module({
   imports: [OrderingModule], // ← OrderQueryService, do OrderLookup
@@ -23,7 +24,10 @@ import { HandlePaymentWebhookUseCase } from './application/use-cases/handle-paym
     },
     {
       provide: PAYMENT_PROVIDER,
-      useClass: FakePaymentProvider,
+      useClass:
+        process.env.PAYMENT_PROVIDER === 'stripe'
+          ? StripePaymentProvider
+          : FakePaymentProvider,
     },
     {
       provide: ORDER_LOOKUP,

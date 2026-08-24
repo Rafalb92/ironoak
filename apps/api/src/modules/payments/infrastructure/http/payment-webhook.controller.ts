@@ -6,10 +6,12 @@ import {
   HttpStatus,
   Req,
   Headers,
+  BadRequestException,
 } from '@nestjs/common';
 import type { Request } from 'express';
 import {
   PAYMENT_PROVIDER,
+  PaymentWebhookEvent,
   type PaymentProvider,
 } from '../../application/ports/payment-provider.port';
 import { HandlePaymentWebhookUseCase } from '../../application/use-cases/handle-payment-webhook/handle-payment-webhook.use-case';
@@ -17,6 +19,7 @@ import { EntityManager } from '@mikro-orm/postgresql';
 
 import { UniqueConstraintViolationException } from '@mikro-orm/core';
 import { InboxMessageEntity } from '../../../../shared-infra/inbox/inbox-message.entity';
+import { UnsupportedWebhookEventError } from '../providers/stripe-payment.provider';
 
 @Controller('webhooks')
 export class PaymentWebhookController {
@@ -32,11 +35,15 @@ export class PaymentWebhookController {
     @Req() req: Request,
     @Headers('stripe-signature') signature: string,
   ): Promise<{ received: true }> {
-    const event = this.provider.verifyWebhook(
-      req.body as unknown as Buffer,
-      signature,
-    );
-
+    let event: PaymentWebhookEvent;
+    try {
+      event = this.provider.verifyWebhook(req.body as Buffer, signature);
+    } catch (error) {
+      if (error instanceof UnsupportedWebhookEventError) {
+        return { received: true }; // ignorujemy, ale potwierdzamy odbiór
+      }
+      throw new BadRequestException('Invalid webhook signature');
+    }
     // idempotencja — eventId od dostawcy
     const em = this.em.fork();
     try {

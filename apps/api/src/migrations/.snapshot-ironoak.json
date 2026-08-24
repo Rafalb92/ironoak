@@ -1092,20 +1092,20 @@
       "columns": {
         "event_id": {
           "name": "event_id",
-          "type": "uuid",
+          "type": "varchar(255)",
           "unsigned": false,
           "autoincrement": false,
           "primary": true,
           "nullable": false,
           "unique": false,
-          "length": null,
+          "length": 255,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "uuid"
+          "mappedType": "string"
         },
         "handler_name": {
           "name": "handler_name",
@@ -1720,20 +1720,20 @@
         },
         "checkout_url": {
           "name": "checkout_url",
-          "type": "varchar(255)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": false,
-          "length": 255,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "created_at": {
           "name": "created_at",
@@ -1805,20 +1805,20 @@
         },
         "provider_session_id": {
           "name": "provider_session_id",
-          "type": "varchar(255)",
+          "type": "text",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": true,
           "unique": false,
-          "length": 255,
+          "length": null,
           "precision": null,
           "scale": null,
           "default": null,
           "comment": null,
           "collation": null,
           "enumItems": [],
-          "mappedType": "string"
+          "mappedType": "text"
         },
         "status": {
           "name": "status",

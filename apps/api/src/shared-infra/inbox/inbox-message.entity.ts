@@ -5,7 +5,7 @@ export const InboxMessageEntity = defineEntity({
   schema: 'inbox', // analogicznie do Twojego outboxa
   properties: {
     // Kompozytowy klucz główny (eventId + handlerName)
-    eventId: p.uuid().primary(),
+    eventId: p.string().primary(),
     handlerName: p.string().primary(),
 
     processedAt: p.datetime().onCreate(() => new Date()),

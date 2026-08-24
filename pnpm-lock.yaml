@@ -91,6 +91,9 @@ importers:
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
+      stripe:
+        specifier: ^22.5.0
+        version: 22.5.0(@types/node@24.13.2)
       zod:
         specifier: ^4.4.3
         version: 4.4.3
@@ -5913,6 +5916,18 @@ packages:
       }
     engines: { node: '>=14.16' }
 
+  stripe@22.5.0:
+    resolution:
+      {
+        integrity: sha512-QVwMwriC0bbySx6R4dpsvJ0W//GojC1kwWVS6rPSoVqDUIZX4Hy3TaUrd2AZeXEAaKbfWIjQjvo3vKAReHZ0vQ==,
+      }
+    engines: { node: '>=18' }
+    peerDependencies:
+      '@types/node': '>=18'
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+
   strtok3@10.3.5:
     resolution:
       {
@@ -10308,6 +10323,10 @@ snapshots:
   strip-json-comments@3.1.1: {}
 
   strip-json-comments@5.0.3: {}
+
+  stripe@22.5.0(@types/node@24.13.2):
+    optionalDependencies:
+      '@types/node': 24.13.2
 
   strtok3@10.3.5:
     dependencies:

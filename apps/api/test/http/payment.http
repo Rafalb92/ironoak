@@ -35,7 +35,7 @@ Content-Type: application/json
 { "deliveryAddress": { "street": "Main Street", "buildingNumber": "123", "city": "New York", "postalCode": "10001", "country": "US" } }
 
 ### --- weź orderId ---
-@orderId = 52df2481-0536-4f14-9b30-f96878f97c6f
+@orderId = ca96ccd6-a134-4f62-98ac-57d3cbf14286
 
 ### 2. zainicjuj płatność → dostajesz checkoutUrl
 POST {{host}}/orders/{{orderId}}/pay
