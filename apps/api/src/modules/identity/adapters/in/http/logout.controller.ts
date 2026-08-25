@@ -8,13 +8,21 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { LogoutUseCase } from '../../../application/use-cases/logout/logout.use-case';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('auth')
 @Controller('auth')
 export class LogoutController {
   constructor(private readonly logout: LogoutUseCase) {}
 
   @Post('logout')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Log out',
+    description:
+      'Clears both cookies and revokes the refresh token. Always succeeds.',
+  })
+  @ApiResponse({ status: 200, description: 'Logged out' })
   async logoutUser(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,

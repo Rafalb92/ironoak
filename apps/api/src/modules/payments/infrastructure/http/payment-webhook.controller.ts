@@ -20,7 +20,9 @@ import { EntityManager } from '@mikro-orm/postgresql';
 import { UniqueConstraintViolationException } from '@mikro-orm/core';
 import { InboxMessageEntity } from '../../../../shared-infra/inbox/inbox-message.entity';
 import { UnsupportedWebhookEventError } from '../providers/stripe-payment.provider';
+import { ApiExcludeEndpoint, ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('payments')
 @Controller('webhooks')
 export class PaymentWebhookController {
   constructor(
@@ -31,6 +33,13 @@ export class PaymentWebhookController {
 
   @Post('stripe')
   @HttpCode(HttpStatus.OK)
+  @ApiExcludeEndpoint() // opcjonalnie — ukryj z docs
+  @ApiOperation({
+    summary: 'Stripe webhook',
+    description:
+      'Called by Stripe, not by clients. Authenticated by signature, not by session. ' +
+      'Always returns 200, including for duplicate or unsupported events, to prevent retries.',
+  })
   async stripe(
     @Req() req: Request,
     @Headers('stripe-signature') signature: string,

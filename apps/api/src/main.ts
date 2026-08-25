@@ -24,6 +24,9 @@ async function bootstrap() {
     json()(req, res, next);
   });
 
+  app.enableShutdownHooks();
+  app.disable('x-powered-by');
+
   app.use(cookieParser());
   // Swagger
   const config = new DocumentBuilder()

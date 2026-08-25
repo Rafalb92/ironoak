@@ -1,6 +1,4 @@
-// modules/cart/cart.controller.ts
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -24,24 +22,43 @@ import {
   mergeCartSchema,
   type MergeCartDto,
 } from './dto/cart.schema';
-import { PlaceOrderCommand } from '../ordering/application/use-cases/place-order/place-order.command';
-import { type CheckoutDto, checkoutSchema } from './dto/checkout.schema';
-import { PlaceOrderUseCase } from '../ordering/application/use-cases/place-order/place-order.use-case';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('cart')
 @Controller('cart')
 @UseGuards(JwtAuthGuard)
 export class CartController {
-  constructor(
-    private readonly cart: CartService,
-    private readonly placeOrder: PlaceOrderUseCase,
-  ) {}
+  constructor(private readonly cart: CartService) {}
 
   @Get()
+  @ApiOperation({ summary: 'Get current user cart' })
+  @ApiResponse({
+    status: 200,
+    description: 'Current user cart with items and total price',
+  })
   get(@CurrentUser() user: { userId: string }) {
     return this.cart.getCart(user.userId);
   }
 
   @Post('items')
+  @ApiOperation({ summary: 'Add item to cart' })
+  @ApiResponse({
+    status: 200,
+    description: 'Item added to cart with updated cart state',
+  })
+  @ApiBody({
+    description: 'Product variant ID and quantity to add to cart',
+    schema: {
+      type: 'object',
+      properties: {
+        productVariantId: { type: 'string' },
+        quantity: { type: 'number' },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Invalid request body' })
+  @ApiResponse({ status: 404, description: 'Product variant not found' })
+  @ApiResponse({ status: 409, description: 'Insufficient stock for variant' })
   @HttpCode(HttpStatus.OK)
   addItem(
     @Body(new ZodValidationPipe(addItemSchema)) dto: AddItemDto,
@@ -80,31 +97,5 @@ export class CartController {
     @CurrentUser() user: { userId: string },
   ) {
     return this.cart.merge(user.userId, dto.items);
-  }
-
-  @Post('checkout')
-  @HttpCode(HttpStatus.CREATED)
-  async checkout(
-    @Body(new ZodValidationPipe(checkoutSchema)) dto: CheckoutDto,
-    @CurrentUser() user: { userId: string },
-  ): Promise<{ orderId: string }> {
-    const items = await this.cart.getRawItems(user.userId);
-    if (items.length === 0) {
-      throw new BadRequestException('Cart is empty');
-    }
-
-    const result = await this.placeOrder.execute(
-      new PlaceOrderCommand(
-        user.userId,
-        items.map((i) => ({
-          productVariantId: i.productVariantId,
-          quantity: i.quantity,
-        })),
-        dto.deliveryAddress,
-      ),
-    );
-
-    await this.cart.clear(user.userId);
-    return result;
   }
 }

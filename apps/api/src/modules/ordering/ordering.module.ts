@@ -25,9 +25,11 @@ import { CancelOrderBySystemUseCase } from './application/use-cases/cancel-order
 import { StockReservationFailedListener } from './application/listeners/stock-reservation-failed.listener';
 import { PaymentSucceededListener } from './application/listeners/payment-succeeded.listener';
 import { OrderQueryService } from './application/services/order-query.service';
+import { CheckoutController } from './infrastructure/http/checkout.controller';
+import { CartModule } from '../cart/cart.module';
 
 @Module({
-  imports: [CatalogModule, IdentityModule], // ← jawna zależność między kontekstami
+  imports: [CatalogModule, IdentityModule, CartModule], // ← jawna zależność między kontekstami
   providers: [
     {
       provide: ORDER_REPOSITORY,
@@ -56,7 +58,12 @@ import { OrderQueryService } from './application/services/order-query.service';
     PaymentSucceededListener,
     OrderQueryService,
   ],
-  controllers: [PlaceOrderController, OrderController, OrderAdminController],
-  exports: [PlaceOrderUseCase, OrderQueryService],
+  controllers: [
+    PlaceOrderController,
+    OrderController,
+    OrderAdminController,
+    CheckoutController,
+  ],
+  exports: [OrderQueryService],
 })
 export class OrderingModule {}

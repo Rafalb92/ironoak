@@ -11,10 +11,7 @@ import { PlaceOrderCommand } from '../../application/use-cases/place-order/place
 import { ZodValidationPipe } from '../../../../shared/pipes/zod-validation.pipe';
 import { CurrentUser } from '../../../../shared/decorators/current-user.decorator';
 
-import {
-  type PlaceOrderDto,
-  placeOrderSchema,
-} from '../../dto/place-order.schema';
+import { type PlaceOrderDto, placeOrderSchema } from './dto/place-order.schema';
 import { JwtAuthGuard } from '../../../../shared/guards/jwt-auth.guard';
 
 @Controller('orders')
