@@ -29,7 +29,7 @@ Content-Type: application/json
 { "productVariantId": "{{variantId}}", "quantity": 2 }
 
 ###
-POST {{host}}/cart/checkout
+POST {{host}}/checkout
 Content-Type: application/json
 
 { "deliveryAddress": { "street": "Main Street", "buildingNumber": "123", "city": "New York", "postalCode": "10001", "country": "US" } }

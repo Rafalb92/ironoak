@@ -1,4 +1,5 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   USER_REPOSITORY,
   type UserRepository,
@@ -17,8 +18,6 @@ import {
 } from '../../ports/refresh-token-store.port';
 import { LoginUserCommand } from './login-user.command';
 
-const REFRESH_TTL_SECONDS = 7 * 24 * 60 * 60;
-
 export interface LoginResult {
   accessToken: string;
   refreshToken: string;
@@ -31,7 +30,12 @@ export class LoginUserUseCase {
     @Inject(PASSWORD_HASHER) private readonly hasher: PasswordHasher,
     @Inject(TOKEN_SERVICE) private readonly tokens: TokenService,
     @Inject(REFRESH_TOKEN_STORE) private readonly store: RefreshTokenStore,
+    private readonly config: ConfigService,
   ) {}
+
+  private get refreshTtlSeconds(): number {
+    return Number(this.config.getOrThrow<string>('REFRESH_TTL_SECONDS'));
+  }
 
   async execute(command: LoginUserCommand): Promise<LoginResult> {
     // 1. znajdź usera (z accountami)
@@ -65,7 +69,7 @@ export class LoginUserUseCase {
     ]);
 
     // 5. zarejestruj refresh jako ważny (klucz refresh:{userId}:{jti})
-    await this.store.save(user.id, issuedRefresh.jti, REFRESH_TTL_SECONDS);
+    await this.store.save(user.id, issuedRefresh.jti, this.refreshTtlSeconds);
 
     return { accessToken, refreshToken: issuedRefresh.token };
   }

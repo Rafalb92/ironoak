@@ -1,4 +1,5 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { REDIS_CLIENT } from '../../shared-infra/redis/redis.module';
 import { CatalogService } from '../catalog/catalog.service';
@@ -24,14 +25,17 @@ export interface CartView {
   currency: string;
 }
 
-const CART_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 dni
-
 @Injectable()
 export class CartService {
   constructor(
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
     private readonly catalog: CatalogService,
+    private readonly config: ConfigService,
   ) {}
+
+  private get cartTtlSeconds(): number {
+    return Number(this.config.getOrThrow<string>('CART_TTL_SECONDS'));
+  }
 
   private key(userId: string): string {
     return `cart:${userId}`;
@@ -53,7 +57,7 @@ export class CartService {
       this.key(userId),
       JSON.stringify(items),
       'EX',
-      CART_TTL_SECONDS,
+      this.cartTtlSeconds,
     );
   }
 

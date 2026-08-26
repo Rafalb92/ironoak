@@ -23,10 +23,21 @@ export class RedisRefreshTokenStore implements RefreshTokenStore {
   }
 
   async removeAllForUser(userId: string): Promise<void> {
-    // znajdź wszystkie klucze usera i skasuj — o pułapce niżej
-    const keys = await this.redis.keys(`refresh:${userId}:*`);
-    if (keys.length > 0) {
-      await this.redis.del(...keys);
+    const pattern = `refresh:${userId}:*`;
+    const stream = this.redis.scanStream({ match: pattern, count: 100 });
+
+    const pipeline = this.redis.pipeline();
+    let found = 0;
+
+    for await (const keys of stream) {
+      if (keys.length > 0) {
+        pipeline.del(...(keys as string[]));
+        found += keys.length;
+      }
+    }
+
+    if (found > 0) {
+      await pipeline.exec();
     }
   }
 }

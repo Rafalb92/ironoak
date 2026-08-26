@@ -7,9 +7,6 @@ import { InventorySeeder } from './InventorySeeder';
 
 export class DatabaseSeeder extends Seeder {
   async run(em: EntityManager): Promise<void> {
-    console.log('CategorySchema:', CategorySchema);
-    console.log('ProductSchema:', ProductSchema);
-    console.log('ProductVariantSchema:', ProductVariantSchema);
     // --- kategorie ---
     const racks = em.create(CategorySchema, {
       name: 'Racks & Rigs',
@@ -37,7 +34,8 @@ export class DatabaseSeeder extends Seeder {
       name: 'Atlas Rack',
       slug: 'atlas-rack',
       description:
-        'Modułowy rack ze stali konstrukcyjnej i akcentami z litego dębu. Podstawa Twojej domowej siłowni.',
+        'Modular rack in structural steel with solid oak accents. The foundation of your home gym.',
+
       category: racks,
     });
     em.create(ProductVariantSchema, {
@@ -68,7 +66,8 @@ export class DatabaseSeeder extends Seeder {
       name: 'Heirloom Barbell',
       slug: 'heirloom-barbell',
       description:
-        'Gryf olimpijski kuty ze stali sprężynowej. Radełkowanie IPF, obrotowe tuleje igiełkowe.',
+        'Forged spring-steel Olympic barbell. IPF knurling, needle-bearing rotating sleeves.',
+
       category: barbells,
     });
     em.create(ProductVariantSchema, {
@@ -107,7 +106,8 @@ export class DatabaseSeeder extends Seeder {
       name: 'Forge Plates',
       slug: 'forge-plates',
       description:
-        'Kalibrowane talerze żeliwne. Tolerancja ±10g, szlifowana powierzchnia.',
+        'Calibrated cast iron plates. ±10g tolerance, machined face.',
+
       category: plates,
     });
     for (const [w, price] of [
@@ -134,7 +134,8 @@ export class DatabaseSeeder extends Seeder {
       name: 'Anvil Kettlebell',
       slug: 'anvil-kettlebell',
       description:
-        'Odlewany jednoczęściowo kettlebell z gładkim uchwytem. Bez spawów, bez kompromisów.',
+        'Single-piece cast kettlebell with a smooth handle. No welds, no compromises.',
+
       category: kettlebells,
     });
     for (const [w, price] of [
@@ -161,7 +162,7 @@ export class DatabaseSeeder extends Seeder {
       name: 'Solstice Rower',
       slug: 'solstice-rower',
       description:
-        'Wioślarz wodny z litego dębu. Opór wody, cisza fal, mebel sam w sobie.',
+        'Solid oak water rower. Water resistance, the sound of waves, furniture in its own right.',
       category: cardio,
     });
     em.create(ProductVariantSchema, {

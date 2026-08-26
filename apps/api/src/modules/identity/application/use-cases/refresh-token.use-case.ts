@@ -1,4 +1,5 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   TOKEN_SERVICE,
   type TokenService,
@@ -14,16 +15,17 @@ import {
 
 @Injectable()
 export class RefreshTokenUseCase {
-  // Czas życia refresh tokena w sekundach (np. 7 dni).
-  // Najlepiej przenieść to do ConfigService/zmiennych środowiskowych.
-  private readonly REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60;
-
   constructor(
     @Inject(TOKEN_SERVICE) private readonly tokenService: TokenService,
     @Inject(REFRESH_TOKEN_STORE)
     private readonly refreshTokenStore: RefreshTokenStore,
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
+    private readonly config: ConfigService,
   ) {}
+
+  private get refreshTtlSeconds(): number {
+    return Number(this.config.getOrThrow<string>('REFRESH_TTL_SECONDS'));
+  }
 
   async execute(
     refreshToken: string,
@@ -66,7 +68,7 @@ export class RefreshTokenUseCase {
     await this.refreshTokenStore.save(
       userId,
       newRefresh.jti,
-      this.REFRESH_TOKEN_TTL,
+      this.refreshTtlSeconds,
     );
 
     // 6. Zwróć
