@@ -8,6 +8,9 @@ import { ShipStockUseCase } from './application/use-cases/ship-stock/ship-stock.
 import { InventoryOrderPlacedListener } from './application/listeners/order-placed.listener';
 import { InventoryOrderCancelledListener } from './application/listeners/order-cancelled.listener';
 import { InventoryOrderShippedListener } from './application/listeners/order-shipped.listener';
+import { AdjustStockUseCase } from './application/use-cases/adjust-stock/adjust-stock.use-case';
+import { CreateStockItemUseCase } from './application/use-cases/create-stock/create-stock.use-case';
+import { InventoryVariantCreatedListener } from './application/listeners/variant-created.listener';
 
 @Module({
   providers: [
@@ -22,6 +25,10 @@ import { InventoryOrderShippedListener } from './application/listeners/order-shi
     InventoryOrderPlacedListener,
     InventoryOrderCancelledListener,
     InventoryOrderShippedListener,
+    AdjustStockUseCase,
+    CreateStockItemUseCase,
+    InventoryVariantCreatedListener,
   ],
+  exports: [AdjustStockUseCase, CreateStockItemUseCase],
 })
 export class InventoryModule {}

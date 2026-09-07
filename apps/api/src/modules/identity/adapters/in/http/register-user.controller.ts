@@ -7,9 +7,10 @@ import {
   UsePipes,
 } from '@nestjs/common';
 import {
-  registerUserSchema,
-  type RegisterUserDto,
-} from './dto/register-user.schema';
+  registerSchema as registerUserSchema,
+  type RegisterInput as RegisterUserDto,
+  type RegisterResult,
+} from '@ironoak/contracts';
 import { ZodValidationPipe } from '../../../../../shared/pipes/zod-validation.pipe';
 import { RegisterUserUseCase } from '../../../application/use-cases/register-user/register-user.use-case';
 import { RegisterUserCommand } from '../../../application/use-cases/register-user/register-user.command';
@@ -47,7 +48,7 @@ export class RegisterUserController {
     description: 'Invalid email or password too short',
   })
   @ApiResponse({ status: 409, description: 'Email already in use' })
-  async register(@Body() dto: RegisterUserDto): Promise<{ userId: string }> {
+  async register(@Body() dto: RegisterUserDto): Promise<RegisterResult> {
     return this.registerUser.execute(
       new RegisterUserCommand(dto.email, dto.password),
     );

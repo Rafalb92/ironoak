@@ -3,26 +3,12 @@ import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { REDIS_CLIENT } from '../../shared-infra/redis/redis.module';
 import { CatalogService } from '../catalog/catalog.service';
+import type { CartView } from '@ironoak/contracts';
 
 // to, co realnie leży w Redisie — minimum
 interface CartItem {
   productVariantId: string;
   quantity: number;
-}
-
-// to, co zwracamy klientowi — wzbogacone o dane z katalogu
-export interface CartView {
-  items: Array<{
-    productVariantId: string;
-    productName: string;
-    variantName: string;
-    unitPrice: number;
-    quantity: number;
-    lineTotal: number;
-    available: boolean;
-  }>;
-  totalAmount: number;
-  currency: string;
 }
 
 @Injectable()

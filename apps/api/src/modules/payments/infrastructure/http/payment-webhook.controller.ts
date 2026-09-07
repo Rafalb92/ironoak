@@ -21,6 +21,7 @@ import { UniqueConstraintViolationException } from '@mikro-orm/core';
 import { InboxMessageEntity } from '../../../../shared-infra/inbox/inbox-message.entity';
 import { UnsupportedWebhookEventError } from '../providers/stripe-payment.provider';
 import { ApiExcludeEndpoint, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { WebhookReceived } from '@ironoak/contracts';
 
 @ApiTags('payments')
 @Controller('webhooks')
@@ -43,7 +44,7 @@ export class PaymentWebhookController {
   async stripe(
     @Req() req: Request,
     @Headers('stripe-signature') signature: string,
-  ): Promise<{ received: true }> {
+  ): Promise<WebhookReceived> {
     let event: PaymentWebhookEvent;
     try {
       event = this.provider.verifyWebhook(req.body as Buffer, signature);

@@ -17,6 +17,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import type { InitiatePaymentResult } from '@ironoak/contracts';
 
 @ApiTags('payments')
 @ApiCookieAuth('access_token')
@@ -51,7 +52,7 @@ export class InitiatePaymentController {
   async pay(
     @Param('id', ParseUUIDPipe) orderId: string,
     @CurrentUser() user: { userId: string },
-  ): Promise<{ checkoutUrl: string }> {
+  ): Promise<InitiatePaymentResult> {
     return this.initiatePayment.execute(orderId, user.userId);
   }
 }

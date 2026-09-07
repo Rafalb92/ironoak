@@ -9,6 +9,7 @@ import {
 import type { Request, Response } from 'express';
 import { LogoutUseCase } from '../../../application/use-cases/logout/logout.use-case';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import type { AuthSuccess } from '@ironoak/contracts';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -26,7 +27,7 @@ export class LogoutController {
   async logoutUser(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ success: true }> {
+  ): Promise<AuthSuccess> {
     await this.logout.execute(req.cookies?.['refresh_token']);
 
     // Wyczyść oba ciasteczka — path MUSI się zgadzać z tym przy ustawianiu

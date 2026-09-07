@@ -16,12 +16,12 @@ import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe';
 import { CartService } from './cart.service';
 import {
   addItemSchema,
-  type AddItemDto,
+  type AddItemInput as AddItemDto,
   updateQuantitySchema,
-  type UpdateQuantityDto,
+  type UpdateQuantityInput as UpdateQuantityDto,
   mergeCartSchema,
-  type MergeCartDto,
-} from './dto/cart.schema';
+  type MergeCartInput as MergeCartDto,
+} from '@ironoak/contracts';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('cart')

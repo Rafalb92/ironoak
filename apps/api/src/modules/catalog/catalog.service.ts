@@ -7,7 +7,7 @@ import {
 } from './entities/product-variant.entity';
 import { ProductImageSchema } from './entities/product-image.entity';
 import { CategorySchema } from './entities/category.entity';
-import type { ProductQuery } from './dto/product-query.schema';
+import type { ProductQuery } from '@ironoak/contracts';
 
 @Injectable()
 export class CatalogService {

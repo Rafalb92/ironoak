@@ -11,7 +11,11 @@ import type { Response } from 'express';
 import { ZodValidationPipe } from '../../../../../shared/pipes/zod-validation.pipe';
 import { LoginUserUseCase } from '../../../application/use-cases/login-user/login-user.use-case';
 import { LoginUserCommand } from '../../../application/use-cases/login-user/login-user.command';
-import { type LoginUserDto, loginUserSchema } from './dto/login-user.dto';
+import {
+  loginSchema as loginUserSchema,
+  type LoginInput as LoginUserDto,
+  type AuthSuccess,
+} from '@ironoak/contracts';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 const ACCESS_TTL_MS = 15 * 60 * 1000; // 15 min
@@ -50,7 +54,7 @@ export class LoginUserController {
   async login(
     @Body() dto: LoginUserDto,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ success: true }> {
+  ): Promise<AuthSuccess> {
     const { accessToken, refreshToken } = await this.loginUser.execute(
       new LoginUserCommand(dto.email, dto.password),
     );

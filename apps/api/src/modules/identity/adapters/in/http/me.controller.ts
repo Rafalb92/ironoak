@@ -7,6 +7,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import type { CurrentUser as CurrentUserDto } from '@ironoak/contracts';
 
 @ApiTags('auth')
 @ApiCookieAuth('access_token')
@@ -27,7 +28,7 @@ export class MeController {
     },
   })
   @ApiResponse({ status: 401, description: 'Missing or invalid access token' })
-  me(@CurrentUser() user: { userId: string }) {
-    return user;
+  me(@CurrentUser() user: { userId: string }): CurrentUserDto {
+    return user as CurrentUserDto;
   }
 }

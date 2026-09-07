@@ -1,9 +1,6 @@
 import { Controller, Get, Param, Query, UsePipes } from '@nestjs/common';
 import { CatalogService } from './catalog.service';
-import {
-  productQuerySchema,
-  type ProductQuery,
-} from './dto/product-query.schema';
+import { productQuerySchema, type ProductQuery } from '@ironoak/contracts';
 import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe';
 import {
   ApiTags,

@@ -86,6 +86,20 @@ export class StockItem extends AggregateRoot {
     this._quantityOnHand += quantity;
   }
 
+  setOnHand(quantity: number): void {
+    if (!Number.isInteger(quantity) || quantity < 0) {
+      throw new InvalidStockQuantityError(
+        'Quantity on hand must be a non-negative integer',
+      );
+    }
+    if (quantity < this._quantityReserved) {
+      throw new InvalidStockQuantityError(
+        `Cannot set on-hand (${quantity}) below reserved (${this._quantityReserved})`,
+      );
+    }
+    this._quantityOnHand = quantity;
+  }
+
   private assertPositive(quantity: number): void {
     if (!Number.isInteger(quantity) || quantity <= 0) {
       throw new InvalidStockQuantityError(

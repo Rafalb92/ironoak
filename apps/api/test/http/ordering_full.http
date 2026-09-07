@@ -40,7 +40,7 @@ GET {{host}}/cart
 GET {{host}}/orders
 
 ### --- ustaw orderId z odpowiedzi wyżej ---
-@orderId = 6996c18f-4616-465b-9abc-654a21217749
+@orderId = c99abaa9-e050-4762-b6a7-a78a3573e820
 
 ### 8. szczegóły zamówienia (status PENDING_PAYMENT)
 GET {{host}}/orders/{{orderId}}

@@ -7,6 +7,10 @@ import { ProductImageSchema } from './entities/product-image.entity';
 import { CatalogService } from './catalog.service';
 import { CatalogController } from './catalog.controller';
 import { CategoryController } from './category.controller';
+import { AdminCatalogController } from './admin-catalog.controller';
+import { AdminVariantController } from './admin-variant.controller';
+import { AdminCatalogService } from './admin-catalog.service';
+import { InventoryModule } from '../inventory/inventory.module';
 
 @Module({
   imports: [
@@ -16,9 +20,15 @@ import { CategoryController } from './category.controller';
       ProductVariantSchema,
       ProductImageSchema,
     ]),
+    InventoryModule,
   ],
-  controllers: [CatalogController, CategoryController],
-  providers: [CatalogService],
+  controllers: [
+    CatalogController,
+    CategoryController,
+    AdminCatalogController,
+    AdminVariantController,
+  ],
+  providers: [CatalogService, AdminCatalogService],
   exports: [CatalogService],
 })
 export class CatalogModule {}

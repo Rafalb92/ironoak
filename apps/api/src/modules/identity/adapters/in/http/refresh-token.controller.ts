@@ -10,6 +10,7 @@ import {
 import type { Request, Response } from 'express';
 import { RefreshTokenUseCase } from '../../../application/use-cases/refresh-token.use-case';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import type { AuthSuccess } from '@ironoak/contracts';
 
 const ACCESS_TTL_MS = 15 * 60 * 1000;
 const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -36,7 +37,7 @@ export class RefreshTokenController {
   async refresh(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ success: true }> {
+  ): Promise<AuthSuccess> {
     const token = req.cookies?.['refresh_token'];
     if (!token) {
       throw new UnauthorizedException('Missing refresh token');

@@ -1,0 +1,107 @@
+@host = http://localhost:3000
+
+### 1. login jako admin
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "rafalb92@ironoak.pl", "password": "supersecret123" }
+
+### 2. weź categoryId z listy
+GET {{host}}/categories
+
+### --- wklej categoryId ---
+@categoryId = c8eb5aa6-b32d-4f6c-87aa-a51757a09eed
+
+### 3. utwórz produkt z dwoma wariantami
+POST {{host}}/admin/products
+Content-Type: application/json
+
+{
+  "name": "Sentinel Bench",
+  "slug": "sentinel-bench",
+  "description": "Adjustable flat-to-incline bench in powder-coated steel with oak trim.",
+  "categoryId": "{{categoryId}}",
+  "variants": [
+    {
+      "sku": "SEN-BCH-BLK",
+      "name": "Ink Black",
+      "price": 129900,
+      "weightGrams": 34000,
+      "color": "Black",
+      "material": "Steel / Oak",
+      "finish": "Powder Coat",
+      "initialStock": 12
+    },
+    {
+      "sku": "SEN-BCH-OAK",
+      "name": "Natural Oak",
+      "price": 139900,
+      "weightGrams": 34500,
+      "color": "Natural Oak",
+      "material": "Steel / Oak",
+      "finish": "Natural Oil",
+      "initialStock": 8
+    }
+  ]
+}
+
+### utwórz produkt z jednym wariantem
+POST {{host}}/admin/products
+Content-Type: application/json
+
+{
+  "name": "Keystone Dip Station",
+  "slug": "keystone-dip-station",
+  "description": "Freestanding dip station in structural steel with oak handles. Rated to 250 kg.",
+  "categoryId": "{{categoryId}}",
+  "variants": [
+    {
+      "sku": "KEY-DIP-BLK",
+      "name": "Ink Black",
+      "price": 79900,
+      "weightGrams": 42000,
+      "color": "Black",
+      "material": "Steel / Oak",
+      "finish": "Powder Coat",
+      "attributes": {
+        "loadRating": "250kg",
+        "handleDiameter": "40mm",
+        "footprint": "900x700mm"
+      },
+      "initialStock": 15
+    }
+  ]
+}
+
+### 4. sprawdź listę admina (widzi też nieaktywne)
+GET {{host}}/admin/products
+
+### 5. czy produkt widać w publicznym katalogu
+GET {{host}}/products/sentinel-bench
+
+### produkt bez wariantów → 400
+POST {{host}}/admin/products
+Content-Type: application/json
+
+{
+  "name": "No Variants", "slug": "no-variants",
+  "description": "Should fail.", "categoryId": "{{categoryId}}",
+  "variants": []
+}
+
+@variantId = f4216d3b-25bc-4e18-9c96-958208d1749a
+
+### zmień cenę
+PATCH {{host}}/admin/variants/{{variantId}}
+Content-Type: application/json
+
+{ "price": 119900 }
+
+### ustaw stan magazynowy
+PATCH {{host}}/admin/variants/{{variantId}}/stock
+Content-Type: application/json
+
+{ "quantityOnHand": 50 }
+
+### dezaktywuj jeden wariant → OK (drugi zostaje)
+DELETE {{host}}/admin/variants/{{variantId}}

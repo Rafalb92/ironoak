@@ -21,4 +21,18 @@ export class OutboxWriter {
       });
     }
   }
+
+  static appendRaw(
+    em: EntityManager,
+    data: {
+      eventId: string;
+      aggregateId: string;
+      aggregateType: string;
+      eventName: string;
+      payload: Record<string, unknown>;
+      occurredAt: Date;
+    },
+  ): void {
+    em.create(OutboxMessageSchema, data);
+  }
 }

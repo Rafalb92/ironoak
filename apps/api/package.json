@@ -29,6 +29,7 @@
     "db:entities": "mikro-orm discovery:export --path \"src/**/*.entity.ts\" --out src/entities.generated.ts"
   },
   "dependencies": {
+    "@ironoak/contracts": "workspace:*",
     "@mikro-orm/core": "^7.1.4",
     "@mikro-orm/decorators": "^7.1.4",
     "@mikro-orm/nestjs": "^7.0.2",
