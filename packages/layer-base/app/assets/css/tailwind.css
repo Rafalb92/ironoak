@@ -1,0 +1,302 @@
+/* IRONOAK — tailwind.css
+ * Design tokens + most do shadcn-vue.
+ * Te same nazwy tokenów co w Figmie (ironoak-tokens.json).
+ * Zasada: jeśli token nazywa się inaczej w kodzie niż w Figmie, system jest martwy.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+
+@import "tailwindcss";
+@import "tw-animate-css";
+@source "../../../../layer-admin/app";
+@source "../../components";
+@source "../../pages";
+/* System jest dark-first. Jasny motyw włącza [data-theme="light"],
+ * więc wariant `dark:` musi być jego zaprzeczeniem, nie klasą .dark. */
+@custom-variant dark (&:not([data-theme="light"] *));
+
+:root {
+  /* ---- Primitives ---------------------------------------------------- */
+  --color-ink: #141414;
+  --color-charcoal: #1f1f1f;
+  --color-graphite: #2a2a2c;
+  --color-iron: #3a3a3c;
+  --color-steel: #6b6b6e;
+  --color-ash: #9c9c9f;
+  --color-bone: #f2efe9;
+  --color-bone-dim: #c9c5bd;
+  --color-oak: #c08f5b;
+  --color-oak-deep: #9a6e42;
+  --color-smoked-oak: #7a5433;
+  --color-brass: #b08d57;
+  --color-brass-bright: #d4b483;
+  --color-rust: #8c4a32;
+  --color-moss: #4f6552;
+
+  /* ---- Skala ---------------------------------------------------------- */
+  --space-1: 2px;   --space-2: 4px;   --space-3: 8px;   --space-4: 12px;
+  --space-5: 16px;  --space-6: 24px;  --space-7: 32px;  --space-8: 48px;
+  --space-9: 64px;  --space-10: 96px; --space-11: 128px; --space-12: 160px;
+
+  --radius-none: 0px;
+  --radius-milled: 2px;   /* jedyny promień w systemie */
+  --radius-plate: 4px;
+  --border-hairline: 1px;
+  --border-plate: 2px;
+
+  /* ---- Typografia ------------------------------------------------------ */
+  --font-display: "Archivo Expanded", "Archivo", system-ui, sans-serif;
+  --font-body: "Geist", system-ui, sans-serif;
+  --font-data: "Geist Mono", ui-monospace, monospace;
+
+  --track-engraved: 0.18em;
+  --track-label: 0.08em;
+  --track-tight: -0.02em;
+
+  /* ---- Motion ---------------------------------------------------------- */
+  --duration-instant: 80ms;
+  --duration-fast: 160ms;
+  --duration-base: 280ms;
+  --duration-slow: 480ms;
+  --duration-heavy: 720ms;
+  --stagger: 60ms;
+
+  --ease-iron: cubic-bezier(0.16, 1, 0.3, 1);      /* szybki start, długi ogon = masa */
+  --ease-settle: cubic-bezier(0.33, 0, 0.15, 1);   /* wejście ciężkiego elementu */
+  --ease-lift: cubic-bezier(0.4, 0, 0.2, 1);       /* hover, drobne stany */
+
+  --rise: 16px;
+  --nudge: 4px;
+  --parallax: 48px;
+
+  /* ---- Semantic: DARK (domyślny) --------------------------------------- */
+  --bg-canvas: var(--color-ink);
+  --bg-surface: var(--color-charcoal);
+  --bg-raised: var(--color-graphite);
+  --bg-inverse: var(--color-bone);
+  --bg-scrim: rgb(10 10 10 / 0.72);
+
+  --text-primary: var(--color-bone);
+  --text-secondary: var(--color-bone-dim);
+  --text-muted: var(--color-ash);
+  --text-accent: var(--color-oak);
+  --text-inverse: var(--color-ink);
+
+  --border-subtle: rgb(242 239 233 / 0.08);
+  --border-default: rgb(242 239 233 / 0.16);
+  --border-strong: var(--color-steel);
+  --border-accent: var(--color-brass);
+
+  --action-primary-bg: var(--color-bone);
+  --action-primary-fg: var(--color-ink);
+  --action-primary-bg-hover: #ffffff;
+  --action-secondary-fg: var(--color-bone);
+  --action-secondary-border: var(--color-steel);
+  --action-accent-bg: var(--color-oak);
+  --action-accent-fg: var(--color-ink);
+  --action-disabled-bg: var(--color-iron);
+  --action-disabled-fg: var(--color-steel);
+  --focus-ring: var(--color-brass-bright);
+
+  --status-danger: var(--color-rust);
+  --status-success: var(--color-moss);
+
+  /* ---- Most do shadcn --------------------------------------------------
+   * shadcn-vue oczekuje własnych nazw zmiennych. Nie duplikujemy wartości —
+   * mapujemy je na tokeny IRONOAK, żeby system pozostał jednym źródłem prawdy.
+   * Zmiana tokenu semantycznego wyżej propaguje się tutaj automatycznie. */
+  --background: var(--bg-canvas);
+  --foreground: var(--text-primary);
+
+  --card: var(--bg-surface);
+  --card-foreground: var(--text-primary);
+  --popover: var(--bg-raised);
+  --popover-foreground: var(--text-primary);
+
+  --primary: var(--action-primary-bg);
+  --primary-foreground: var(--action-primary-fg);
+
+  --secondary: var(--bg-raised);
+  --secondary-foreground: var(--action-secondary-fg);
+
+  --muted: var(--bg-raised);
+  --muted-foreground: var(--text-muted);
+
+  --accent: var(--action-accent-bg);
+  --accent-foreground: var(--action-accent-fg);
+
+  --destructive: var(--status-danger);
+  --destructive-foreground: var(--color-bone);
+
+  --border: var(--border-default);
+  --input: var(--border-default);
+  --ring: var(--focus-ring);
+
+  --radius: var(--radius-milled);
+
+  /* sidebar — używany przez shadcn Sidebar, przyda się w panelu admina */
+  --sidebar: var(--bg-surface);
+  --sidebar-foreground: var(--text-primary);
+  --sidebar-primary: var(--action-accent-bg);
+  --sidebar-primary-foreground: var(--action-accent-fg);
+  --sidebar-accent: var(--bg-raised);
+  --sidebar-accent-foreground: var(--text-primary);
+  --sidebar-border: var(--border-subtle);
+  --sidebar-ring: var(--focus-ring);
+}
+
+/* ---- Semantic: LIGHT ---------------------------------------------------- */
+[data-theme="light"] {
+  --bg-canvas: var(--color-bone);
+  --bg-surface: #eae6de;
+  --bg-raised: #ffffff;
+  --bg-inverse: var(--color-ink);
+  --bg-scrim: rgb(20 20 20 / 0.6);
+
+  --text-primary: var(--color-ink);
+  --text-secondary: var(--color-iron);
+  --text-muted: var(--color-steel);
+  --text-accent: var(--color-oak-deep);
+  --text-inverse: var(--color-bone);
+
+  --border-subtle: rgb(20 20 20 / 0.08);
+  --border-default: rgb(20 20 20 / 0.16);
+  --border-strong: var(--color-iron);
+
+  --action-primary-bg: var(--color-ink);
+  --action-primary-fg: var(--color-bone);
+  --action-primary-bg-hover: var(--color-charcoal);
+  --action-secondary-fg: var(--color-ink);
+  --action-secondary-border: var(--color-iron);
+  --action-accent-bg: var(--color-oak-deep);
+  --action-accent-fg: var(--color-bone);
+  --action-disabled-bg: #d8d4cc;
+  --focus-ring: var(--color-oak-deep);
+
+  /* aliasy shadcn dziedziczą automatycznie — wskazują na tokeny semantyczne
+   * nadpisane powyżej. Jawnie tylko to, co nie ma odpowiednika. */
+  --destructive-foreground: var(--color-bone);
+}
+
+/* ---- Tailwind v4: eksport tokenów jako utilities ------------------------ */
+@theme inline {
+  /* IRONOAK — nazwy własne */
+  --color-canvas: var(--bg-canvas);
+  --color-surface: var(--bg-surface);
+  --color-raised: var(--bg-raised);
+  --color-fg: var(--text-primary);
+  --color-fg-secondary: var(--text-secondary);
+  --color-fg-muted: var(--text-muted);
+  --color-line: var(--border-default);
+  --color-line-subtle: var(--border-subtle);
+  --color-brass: var(--color-brass);
+  --color-oak: var(--color-oak);
+
+  /* shadcn — wymagane przez komponenty */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Promienie — wszystkie praktycznie ostre. To jest decyzja, nie niedopatrzenie. */
+  --radius-sm: var(--radius-none);
+  --radius-md: var(--radius-milled);
+  --radius-lg: var(--radius-plate);
+  --radius-xl: var(--radius-plate);
+  --radius-milled: var(--radius-milled);
+
+  /* Fonty */
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-data);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-data: var(--font-data);
+
+  /* Motion */
+  --ease-iron: var(--ease-iron);
+  --ease-settle: var(--ease-settle);
+  --ease-lift: var(--ease-lift);
+}
+
+/* ---- Style tekstowe (1:1 z text styles w Figmie) ------------------------ */
+@layer components {
+  .t-display-hero {
+    font-family: var(--font-display); font-weight: 600; font-size: clamp(48px, 8vw, 120px);
+    line-height: 1; letter-spacing: var(--track-tight); text-transform: uppercase;
+  }
+  .t-display-xl {
+    font-family: var(--font-display); font-weight: 600; font-size: clamp(36px, 5vw, 64px);
+    line-height: 1.1; letter-spacing: var(--track-tight); text-transform: uppercase;
+  }
+  .t-display-lg {
+    font-family: var(--font-display); font-weight: 500; font-size: clamp(28px, 3vw, 36px);
+    line-height: 1.1; text-transform: uppercase;
+  }
+  .t-wordmark {
+    font-family: var(--font-display); font-weight: 500; font-size: 18px;
+    line-height: 1; letter-spacing: var(--track-engraved); text-transform: uppercase;
+  }
+  .t-body-lead { font-family: var(--font-body); font-size: 22px; line-height: 1.3; }
+  .t-body-md   { font-family: var(--font-body); font-size: 16px; line-height: 1.6; }
+  .t-body-sm   { font-family: var(--font-body); font-size: 14px; line-height: 1.6; }
+
+  /* Liczby zawsze monospace — ceny, kilogramy, wymiary. To jest podpis marki. */
+  .t-price { font-family: var(--font-data); font-weight: 500; font-size: 22px; line-height: 1;
+             font-variant-numeric: tabular-nums; }
+  .t-spec  { font-family: var(--font-data); font-size: 14px; line-height: 1.3;
+             font-variant-numeric: tabular-nums; }
+  .t-label { font-family: var(--font-data); font-weight: 500; font-size: 12px; line-height: 1;
+             letter-spacing: var(--track-label); text-transform: uppercase; }
+  .t-eyebrow { font-family: var(--font-data); font-size: 11px; line-height: 1;
+               letter-spacing: var(--track-engraved); text-transform: uppercase; }
+}
+
+/* ---- Podłoga jakości ---------------------------------------------------- */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+  }
+
+  :where(a, button, [tabindex]):focus-visible {
+    outline: var(--border-plate) solid var(--focus-ring);
+    outline-offset: var(--space-2);
+    border-radius: var(--radius-none);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

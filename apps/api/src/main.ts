@@ -18,6 +18,11 @@ async function bootstrap() {
   const logger = app.get(Logger);
   app.useLogger(logger);
 
+  app.enableCors({
+    origin: ['http://localhost:3001'],
+    credentials: true, // kluczowe dla cookies
+  });
+
   app.use('/webhooks', raw({ type: '*/*' }));
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.path.startsWith('/webhooks')) return next();
