@@ -8,11 +8,13 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@ironoak/contracts": "workspace:*",
     "@ironoak/layer-base": "workspace:*",
-    "@ironoak/contracts": "workspace:*"
+    "@pinia/colada": "^1.4.4",
+    "@pinia/colada-nuxt": "^1.1.0"
   },
   "devDependencies": {
     "nuxt": "^4.5.2",
-   "typescript": "5.9.2"
+    "typescript": "5.9.2"
   }
 }
