@@ -11,7 +11,8 @@
     "@ironoak/contracts": "workspace:*",
     "@ironoak/layer-base": "workspace:*",
     "@pinia/colada": "^1.4.4",
-    "@pinia/colada-nuxt": "^1.1.0"
+    "@pinia/colada-nuxt": "^1.1.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "nuxt": "^4.5.2",

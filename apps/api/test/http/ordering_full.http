@@ -9,6 +9,8 @@ Content-Type: application/json
 
 ### 2. kto jestem (sprawdź role: ADMIN)
 GET {{host}}/auth/me
+### 2.1. Lista produktów
+GET {{host}}/products
 
 ### 3. dodaj 3 sztuki do koszyka
 POST {{host}}/cart/items
