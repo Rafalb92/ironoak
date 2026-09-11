@@ -4,8 +4,8 @@ import {
 } from '@mikro-orm/postgresql';
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { CatalogEventName } from 'src/modules/catalog/events/catalog-event-names';
-import { InboxMessageEntity } from 'src/shared-infra/inbox/inbox-message.entity';
+import { CatalogEventName } from '../../../catalog/events/catalog-event-names';
+import { InboxMessageEntity } from '../../../../shared-infra/inbox/inbox-message.entity';
 import { CreateStockItemUseCase } from '../use-cases/create-stock/create-stock.use-case';
 
 @Injectable()

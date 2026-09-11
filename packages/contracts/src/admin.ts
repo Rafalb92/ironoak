@@ -81,6 +81,52 @@ export const adminProductListSchema = z.object({
   page: z.number().int(),
   limit: z.number().int(),
 });
+
+export const variantStockSchema = z.object({
+  onHand: z.number().int(),
+  reserved: z.number().int(),
+  available: z.number().int(),
+});
+
+export const adminVariantDetailSchema = z.object({
+  id: z.uuid(),
+  sku: z.string(),
+  name: z.string(),
+  price: z.number().int(),
+  active: z.boolean(),
+  weightGrams: z.number().int().nullable(),
+  color: z.string().nullable(),
+  material: z.string().nullable(),
+  finish: z.string().nullable(),
+  attributes: z.record(z.string(), z.unknown()).nullable(),
+  stock: variantStockSchema.nullable(),
+});
+export type AdminVariantDetail = z.infer<typeof adminVariantDetailSchema>;
+
+export const adminProductImageSchema = z.object({
+  id: z.uuid(),
+  url: z.string(),
+  alt: z.string(),
+  role: z.string(),
+  position: z.number().int(),
+  variantId: z.uuid().nullable(),
+});
+
+export const adminProductDetailSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  slug: z.string(),
+  description: z.string(),
+  active: z.boolean(),
+  category: z.object({ id: z.uuid(), name: z.string(), slug: z.string() }),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+  variants: z.array(adminVariantDetailSchema),
+  images: z.array(adminProductImageSchema),
+});
+export type AdminProductDetail = z.infer<typeof adminProductDetailSchema>;
+
+
 export type AdminProductList = z.infer<typeof adminProductListSchema>;
 
 export const productIdResultSchema = z.object({

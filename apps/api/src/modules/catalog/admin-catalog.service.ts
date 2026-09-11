@@ -2,8 +2,11 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  Inject,
 } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
+import type { StockLookup } from './application/ports/stock-lookup.port';
+import { STOCK_LOOKUP } from './application/ports/stock-lookup.port';
 import { randomUUID } from 'node:crypto';
 import { ProductSchema } from './entities/product.entity';
 import { ProductVariantSchema } from './entities/product-variant.entity';
@@ -16,10 +19,83 @@ import type {
   CreateVariantInput as CreateVariantDto,
   UpdateVariantInput as UpdateVariantDto,
 } from '@ironoak/contracts';
+import { ProductImageSchema } from './entities/product-image.entity';
 
 @Injectable()
 export class AdminCatalogService {
-  constructor(private readonly em: EntityManager) {}
+  constructor(
+    private readonly em: EntityManager,
+    @Inject(STOCK_LOOKUP) private readonly stockLookup: StockLookup,
+  ) {}
+
+  async getProductDetail(id: string) {
+    const product = await this.em.findOne(
+      ProductSchema,
+      { id },
+      { populate: ['category'] },
+    );
+    if (!product) throw new NotFoundException('Product not found');
+
+    // wszystkie warianty — także nieaktywne, bo to widok admina
+    const variants = await this.em.find(
+      ProductVariantSchema,
+      { product: id },
+      { orderBy: { createdAt: 'asc' } },
+    );
+
+    const images = await this.em.find(
+      ProductImageSchema,
+      { product: id },
+      { orderBy: { position: 'asc' } },
+    );
+
+    const stock = await this.stockLookup.findForVariants(
+      variants.map((v) => v.id),
+    );
+    const stockByVariant = new Map(stock.map((s) => [s.productVariantId, s]));
+
+    return {
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      description: product.description,
+      active: product.active,
+      category: {
+        id: product.category.id,
+        name: product.category.name,
+        slug: product.category.slug,
+      },
+      createdAt: product.createdAt,
+      updatedAt: product.updatedAt,
+      variants: variants.map((v) => {
+        const s = stockByVariant.get(v.id);
+        return {
+          id: v.id,
+          sku: v.sku,
+          name: v.name,
+          price: v.price,
+          active: v.active,
+          weightGrams: v.weightGrams,
+          color: v.color,
+          material: v.material,
+          finish: v.finish,
+          attributes: v.attributes,
+          // null = pozycja magazynowa jeszcze nie powstała
+          stock: s
+            ? { onHand: s.onHand, reserved: s.reserved, available: s.available }
+            : null,
+        };
+      }),
+      images: images.map((i) => ({
+        id: i.id,
+        url: i.url,
+        alt: i.alt,
+        role: i.role,
+        position: i.position,
+        variantId: i.variant?.id ?? null,
+      })),
+    };
+  }
 
   async createProduct(dto: CreateProductDto) {
     const variantId = randomUUID();

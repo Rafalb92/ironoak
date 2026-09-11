@@ -1,8 +1,5 @@
 import { Module } from '@nestjs/common';
 import Redis from 'ioredis';
-import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { UserSchema } from './domain/user.entity';
-import { AccountSchema } from './domain/account.entity';
 import { PASSWORD_HASHER } from './application/ports/password-hasher.port';
 import { ConfigService } from '@nestjs/config';
 import { Argon2PasswordHasher } from './adapters/out/hashing/argon2-password-hasher';
@@ -25,7 +22,6 @@ import { RefreshTokenController } from './adapters/in/http/refresh-token.control
 import { LogoutUseCase } from './application/use-cases/logout/logout.use-case';
 
 @Module({
-  imports: [MikroOrmModule.forFeature([UserSchema, AccountSchema])],
   providers: [
     {
       provide: PASSWORD_HASHER,

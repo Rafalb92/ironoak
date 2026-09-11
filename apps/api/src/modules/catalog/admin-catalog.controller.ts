@@ -12,6 +12,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { ApiParam } from '@nestjs/swagger';
 import {
   ApiCookieAuth,
   ApiOperation,
@@ -44,6 +45,20 @@ export class AdminCatalogController {
   @ApiOperation({ summary: 'List all products, including inactive' })
   list(@Query('page') page = 1, @Query('limit') limit = 20) {
     return this.admin.listProducts(Number(page), Number(limit));
+  }
+
+  @Get(':id')
+  @ApiOperation({
+    summary: 'Product detail for admin',
+    description:
+      'Returns the product with all variants (including inactive ones), stock levels ' +
+      'from the Inventory context, and images. The public endpoint returns only active data.',
+  })
+  @ApiParam({ name: 'id', format: 'uuid' })
+  @ApiResponse({ status: 200, description: 'Full product detail with stock' })
+  @ApiResponse({ status: 404, description: 'Product not found' })
+  detail(@Param('id', ParseUUIDPipe) id: string) {
+    return this.admin.getProductDetail(id);
   }
 
   @Post()
