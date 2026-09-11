@@ -1,6 +1,6 @@
 // packages/layer-admin/app/queries/products.ts
 import { defineQueryOptions } from '@pinia/colada';
-import type { AdminProductList } from '@ironoak/contracts';
+import { type AdminProductList, type AdminProductDetail, adminProductDetailSchema } from '@ironoak/contracts';
 
 export const PRODUCT_QUERY_KEYS = {
   root: ['admin', 'products'] as const,
@@ -16,3 +16,12 @@ export const adminProductListQuery = defineQueryOptions(
     staleTime: 30_000,
   }),
 );
+
+export const adminProductDetailQuery = defineQueryOptions((id: string) => ({
+  key: PRODUCT_QUERY_KEYS.byId(id),
+  query: async () => {
+    const raw = await useApi()(`/admin/products/${id}`);
+    return adminProductDetailSchema.parse(raw);
+  },
+  staleTime: 30_000,
+}));
