@@ -10,6 +10,7 @@ import { InventoryStockLookup } from './infrastructure/stock/inventory-stock-loo
 import { STOCK_LOOKUP } from './application/ports/stock-lookup.port';
 import { RolesGuard } from '../../shared/guards/roles.guard';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
+import { AdminImageController } from './admin-image.controller';
 
 @Module({
   imports: [InventoryModule],
@@ -18,6 +19,7 @@ import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
     CategoryController,
     AdminCatalogController,
     AdminVariantController,
+    AdminImageController,
   ],
   providers: [
     CatalogService,

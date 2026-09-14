@@ -18,6 +18,8 @@ import type {
   UpdateProductInput as UpdateProductDto,
   CreateVariantInput as CreateVariantDto,
   UpdateVariantInput as UpdateVariantDto,
+  UpdateImageInput,
+  CreateImageInput,
 } from '@ironoak/contracts';
 import { ProductImageSchema } from './entities/product-image.entity';
 
@@ -27,6 +29,72 @@ export class AdminCatalogService {
     private readonly em: EntityManager,
     @Inject(STOCK_LOOKUP) private readonly stockLookup: StockLookup,
   ) {}
+
+  async addImage(productId: string, dto: CreateImageInput) {
+    const product = await this.em.findOne(ProductSchema, { id: productId });
+    if (!product) throw new NotFoundException('Product not found');
+
+    // wariant musi należeć do tego produktu
+    let variant = null;
+    if (dto.variantId) {
+      variant = await this.em.findOne(ProductVariantSchema, {
+        id: dto.variantId,
+        product: productId,
+      });
+      if (!variant) {
+        throw new NotFoundException('Variant not found in this product');
+      }
+    }
+
+    const image = this.em.create(ProductImageSchema, {
+      id: randomUUID(),
+      product,
+      variant,
+      url: dto.url,
+      alt: dto.alt,
+      role: dto.role,
+      position: dto.position,
+    });
+
+    await this.em.flush();
+    return { imageId: image.id };
+  }
+
+  async updateImage(imageId: string, dto: UpdateImageInput) {
+    const image = await this.em.findOne(ProductImageSchema, { id: imageId });
+    if (!image) throw new NotFoundException('Image not found');
+
+    if (dto.variantId !== undefined) {
+      if (dto.variantId === null) {
+        image.variant = null;
+      } else {
+        const variant = await this.em.findOne(ProductVariantSchema, {
+          id: dto.variantId,
+          product: image.product.id,
+        });
+        if (!variant)
+          throw new NotFoundException('Variant not found in this product');
+        image.variant = variant;
+      }
+    }
+
+    if (dto.alt !== undefined) image.alt = dto.alt;
+    if (dto.role !== undefined) image.role = dto.role;
+    if (dto.position !== undefined) image.position = dto.position;
+
+    await this.em.flush();
+    return { imageId: image.id };
+  }
+
+  async removeImage(imageId: string) {
+    const image = await this.em.findOne(ProductImageSchema, { id: imageId });
+    if (!image) throw new NotFoundException('Image not found');
+
+    // twarde usunięcie — zdjęcie nie jest częścią historii zamówień
+    this.em.remove(image);
+    await this.em.flush();
+    return { imageId, deleted: true };
+  }
 
   async getProductDetail(id: string) {
     const product = await this.em.findOne(
@@ -250,6 +318,31 @@ export class AdminCatalogService {
     if (dto.finish !== undefined) variant.finish = dto.finish ?? null;
     if (dto.attributes !== undefined)
       variant.attributes = dto.attributes ?? null;
+    if (dto.active !== undefined) {
+      if (dto.active) {
+        // nie aktywuj wariantu w nieaktywnym produkcie — powstałby stan nie do pokazania
+        const product = await this.em.findOne(ProductSchema, {
+          id: variant.product.id,
+        });
+        if (!product?.active) {
+          throw new ConflictException(
+            'Cannot activate a variant of an inactive product',
+          );
+        }
+      } else {
+        // ta sama reguła co przy deactivateVariant
+        const activeCount = await this.em.count(ProductVariantSchema, {
+          product: variant.product.id,
+          active: true,
+        });
+        if (activeCount <= 1 && variant.active) {
+          throw new ConflictException(
+            'Cannot deactivate the last active variant',
+          );
+        }
+      }
+      variant.active = dto.active;
+    }
 
     await this.em.flush();
     return { variantId: variant.id };

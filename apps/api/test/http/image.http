@@ -1,0 +1,42 @@
+@host = http://localhost:3000
+@variantId = e0fa09d5-f34d-4827-93f1-7f8e2a2d2499
+
+### 1. login (ustawia cookies)
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "rafalb92@ironoak.pl", "password": "supersecret123" }
+
+### 2. kto jestem (sprawdź role: ADMIN)
+GET {{host}}/auth/me
+
+### Get products
+GET {{host}}/admin/products
+
+@productId = cc047441-868c-438c-8025-5806673b4379
+
+### dodaj zdjęcie
+POST {{host}}/admin/products/{{productId}}/images
+Content-Type: application/json
+
+{
+  "url": "https://images.unsplash.com/photo-1534438327276-14e5300c3a48",
+  "alt": "Atlas Rack in a home gym",
+  "role": "LIFESTYLE",
+  "position": 0
+}
+
+### set imageId for later use
+@imageId = ea83e57b-8ee4-4a86-bd97-1d1c5e6bf719
+@variantId = 08b0dcfa-1639-4149-a20d-6496cf669849
+### przypisz do wariantu
+PATCH {{host}}/admin/images/{{imageId}}
+Content-Type: application/json
+
+{ "variantId": "{{variantId}}" }
+
+### aktywuj wariant
+PATCH {{host}}/admin/variants/{{variantId}}
+Content-Type: application/json
+
+{ "active": true }

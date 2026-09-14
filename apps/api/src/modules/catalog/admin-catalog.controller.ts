@@ -25,12 +25,14 @@ import { RolesGuard } from '../../shared/guards/roles.guard';
 import { Roles } from '../../shared/decorators/roles.decorator';
 import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe';
 import {
+  createImageSchema,
   type CreateProductInput as CreateProductDto,
   createProductSchema,
   type CreateVariantInput as CreateVariantDto,
   createVariantSchema,
   type UpdateProductInput as UpdateProductDto,
   updateProductSchema,
+  type CreateImageInput as CreateImageInput,
 } from '@ironoak/contracts';
 
 @ApiTags('admin')
@@ -40,6 +42,16 @@ import {
 @Roles('ADMIN')
 export class AdminCatalogController {
   constructor(private readonly admin: AdminCatalogService) {}
+
+  @Post(':id/images')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Attach an image to a product' })
+  addImage(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(createImageSchema)) dto: CreateImageInput,
+  ) {
+    return this.admin.addImage(id, dto);
+  }
 
   @Get()
   @ApiOperation({ summary: 'List all products, including inactive' })

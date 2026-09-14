@@ -47,7 +47,9 @@ export type CreateVariantInput = z.infer<typeof createVariantSchema>;
 
 export const updateVariantSchema = variantInputSchema
   .partial()
-  .omit({ initialStock: true });
+  .omit({ initialStock: true })
+  .extend({ active: z.boolean().optional() });
+  
 export type UpdateVariantInput = z.infer<typeof updateVariantSchema>;
 
 export const adjustStockSchema = z.object({
@@ -124,6 +126,29 @@ export const adminProductDetailSchema = z.object({
   variants: z.array(adminVariantDetailSchema),
   images: z.array(adminProductImageSchema),
 });
+
+export const imageRoleSchema = z.enum(['HERO', 'DETAIL', 'LIFESTYLE']);
+
+export const createImageSchema = z.object({
+  url: z.string().url(),
+  alt: z.string().min(1).max(200),
+  role: imageRoleSchema,
+  position: z.number().int().nonnegative().default(0),
+  variantId: z.uuid().nullable().optional(),
+});
+export type CreateImageInput = z.infer<typeof createImageSchema>;
+
+export const updateImageSchema = z.object({
+  alt: z.string().min(1).max(200).optional(),
+  role: imageRoleSchema.optional(),
+  position: z.number().int().nonnegative().optional(),
+  variantId: z.uuid().nullable().optional(),
+});
+export type UpdateImageInput = z.infer<typeof updateImageSchema>;
+
+export const imageIdResultSchema = z.object({ imageId: z.uuid() });
+
+
 export type AdminProductDetail = z.infer<typeof adminProductDetailSchema>;
 
 
