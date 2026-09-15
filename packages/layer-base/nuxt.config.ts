@@ -15,6 +15,7 @@ export default defineNuxtConfig({
   pinia: {
     storesDirs: [join(currentDir, './app/stores')],
   },
+  
   css: [join(currentDir, './app/assets/css/tailwind.css')],
   vite: {
     plugins: [tailwindcss()],

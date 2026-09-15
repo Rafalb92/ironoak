@@ -4,10 +4,11 @@ import { adminProductDetailQuery } from '../../queries/products';
 
 const route = useRoute();
 const productId = computed(() => route.params.id as string);
+const editOpen = ref(false);
+const addVariantOpen = ref(false);
+const editingVariantId = ref<string | null>(null);
 
-const { state, asyncStatus } = useQuery(() =>
-  adminProductDetailQuery(productId.value),
-);
+const { state, asyncStatus } = useQuery(() => adminProductDetailQuery(productId.value));
 
 function formatPrice(cents: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -49,16 +50,21 @@ function formatDate(date: Date): string {
             <span class="t-spec text-fg-muted">{{ state.data.slug }}</span>
             <span
               class="t-label px-2 py-1"
-              :class="state.data.active
-                ? 'bg-[var(--status-success)]/15 text-[var(--status-success)]'
-                : 'bg-raised text-fg-muted'"
+              :class="
+                state.data.active
+                  ? 'bg-(--status-success)/15 text-(--status-success)'
+                  : 'bg-raised text-fg-muted'
+              "
             >
               {{ state.data.active ? 'Active' : 'Inactive' }}
             </span>
           </div>
         </div>
+        <!-- ...w nagłówku, zamiast disabled Button -->
+        <Button variant="outline" @click="editOpen = true">Edit</Button>
 
-        <Button variant="outline" disabled>Edit</Button>
+        <!-- na końcu, wewnątrz v-else gdzie state.data istnieje -->
+        <ProductEditDialog v-model:open="editOpen" :product="state.data" />
       </div>
 
       <!-- metadane -->
@@ -91,7 +97,11 @@ function formatDate(date: Date): string {
       <section class="space-y-3">
         <div class="flex items-center justify-between">
           <h2 class="t-label text-fg-muted">Variants</h2>
-          <Button variant="outline" size="sm" disabled>Add variant</Button>
+          <!-- w nagłówku sekcji wariantów -->
+          <Button variant="outline" size="sm" @click="addVariantOpen = true">Add variant</Button>
+
+          <!-- obok pozostałych dialogów -->
+          <AddVariantDialog v-model:open="addVariantOpen" :product-id="state.data.id" />
         </div>
 
         <div class="space-y-3">
@@ -101,13 +111,30 @@ function formatDate(date: Date): string {
             class="border border-line"
             :class="{ 'opacity-50': !variant.active }"
           >
-            <header class="flex items-center justify-between border-b border-line bg-surface px-5 py-3">
+            <header
+              class="flex items-center justify-between border-b border-line bg-surface px-5 py-3"
+            >
               <div class="flex items-center gap-4">
                 <span class="t-body-sm font-medium">{{ variant.name }}</span>
                 <span class="t-spec text-fg-muted">{{ variant.sku }}</span>
                 <span v-if="!variant.active" class="t-label text-fg-muted">Inactive</span>
               </div>
               <span class="t-price">{{ formatPrice(variant.price) }}</span>
+              <Button variant="ghost" size="sm" @click="editingVariantId = variant.id">Edit</Button>
+
+              <!-- dialog per wariant -->
+              <ProductEditVariantDialog
+                v-for="variant in state.data.variants"
+                :key="`dialog-${variant.id}`"
+                :variant="variant"
+                :product-active="state.data.active"
+                :open="editingVariantId === variant.id"
+                @update:open="
+                  (v) => {
+                    if (!v) editingVariantId = null;
+                  }
+                "
+              />
             </header>
 
             <div class="grid grid-cols-2 gap-x-8 gap-y-4 p-5 lg:grid-cols-4">
@@ -129,31 +156,16 @@ function formatDate(date: Date): string {
               </div>
             </div>
 
-            <!-- stan magazynowy -->
+            <!-- zamiast statycznego bloku stock -->
             <div class="border-t border-line px-5 py-4">
               <div class="t-label mb-2 text-fg-muted">Stock</div>
-              <div v-if="variant.stock" class="flex gap-8">
-                <div>
-                  <span class="t-spec text-fg-muted">On hand</span>
-                  <div class="t-price mt-1">{{ variant.stock.onHand }}</div>
-                </div>
-                <div>
-                  <span class="t-spec text-fg-muted">Reserved</span>
-                  <div class="t-price mt-1">{{ variant.stock.reserved }}</div>
-                </div>
-                <div>
-                  <span class="t-spec text-fg-muted">Available</span>
-                  <div
-                    class="t-price mt-1"
-                    :class="variant.stock.available === 0 ? 'text-destructive' : ''"
-                  >
-                    {{ variant.stock.available }}
-                  </div>
-                </div>
-              </div>
-              <p v-else class="t-body-sm text-fg-muted">
-                No stock record — the inventory event may still be in flight.
-              </p>
+              <ProductStockEditor
+                v-if="variant.stock"
+                :variant-id="variant.id"
+                :stock="variant.stock"
+                :product-id="state.data.id"
+              />
+              <p v-else class="t-body-sm text-fg-muted">No stock record yet.</p>
             </div>
 
             <!-- atrybuty -->
@@ -163,7 +175,11 @@ function formatDate(date: Date): string {
             >
               <div class="t-label mb-2 text-fg-muted">Attributes</div>
               <dl class="grid grid-cols-2 gap-x-8 gap-y-2 lg:grid-cols-3">
-                <div v-for="(value, attrKey) in variant.attributes" :key="attrKey" class="flex justify-between gap-4">
+                <div
+                  v-for="(value, attrKey) in variant.attributes"
+                  :key="attrKey"
+                  class="flex justify-between gap-4"
+                >
                   <dt class="t-spec text-fg-muted">{{ attrKey }}</dt>
                   <dd class="t-spec">{{ value }}</dd>
                 </div>
@@ -176,16 +192,9 @@ function formatDate(date: Date): string {
       <!-- zdjęcia -->
       <section class="space-y-3">
         <h2 class="t-label text-fg-muted">Images</h2>
-        <p v-if="!state.data.images.length" class="t-body-sm text-fg-muted">
-          No images yet.
-        </p>
+        <p v-if="!state.data.images.length" class="t-body-sm text-fg-muted">No images yet.</p>
         <div v-else class="grid grid-cols-3 gap-4 lg:grid-cols-5">
-          <figure v-for="image in state.data.images" :key="image.id" class="space-y-2">
-            <img :src="image.url" :alt="image.alt" class="aspect-square w-full border border-line object-cover" />
-            <figcaption class="t-spec text-fg-muted">
-              {{ image.role }}{{ image.variantId ? ' · variant' : ' · shared' }}
-            </figcaption>
-          </figure>
+          <ProductImageManager :product="state.data" />
         </div>
       </section>
 

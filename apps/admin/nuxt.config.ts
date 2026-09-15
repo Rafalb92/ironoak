@@ -7,6 +7,7 @@ export default defineNuxtConfig({
 
   // panel admina — brak potrzeby SSR, wszystko za auth
   ssr: false,
+  
 
   devServer: { port: 3001 },
   css: ['~/assets/css/main.css'],
