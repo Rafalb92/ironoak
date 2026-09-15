@@ -1,6 +1,14 @@
 <script setup lang="ts">
 import type { AdminProductDetail } from '@ironoak/contracts';
+import { useClipboard } from '@vueuse/core';
 
+const { copy, copied } = useClipboard();
+const toast = useToast();
+
+async function copyUrl(url: string) {
+  await copy(url);
+  toast.success('URL copied');
+}
 const { product } = defineProps<{ product: AdminProductDetail }>();
 
 const updateImage = useUpdateImage();
@@ -10,13 +18,11 @@ const addOpen = ref(false);
 const SHARED = '__shared__';
 
 const nextPosition = computed(() =>
-  product.images.length === 0
-    ? 0
-    : Math.max(...product.images.map((i) => i.position)) + 1,
+  product.images.length === 0 ? 0 : Math.max(...product.images.map((i) => i.position)) + 1,
 );
 
 const variantName = (id: string | null) =>
-  id === null ? 'Shared' : product.variants.find((v) => v.id === id)?.name ?? 'Unknown';
+  id === null ? 'Shared' : (product.variants.find((v) => v.id === id)?.name ?? 'Unknown');
 
 async function reassign(imageId: string, value: string) {
   await updateImage.mutateAsync({
@@ -42,9 +48,7 @@ async function move(index: number, direction: -1 | 1) {
   ]);
 }
 
-const sortedImages = computed(() =>
-  [...product.images].sort((a, b) => a.position - b.position),
-);
+const sortedImages = computed(() => [...product.images].sort((a, b) => a.position - b.position));
 </script>
 
 <template>
@@ -70,16 +74,23 @@ const sortedImages = computed(() =>
           class="size-24 shrink-0 border border-line object-cover"
         />
 
-        <div class="flex flex-1 flex-col justify-between gap-3">
+        <div class="flex min-w-0 flex-1 flex-col justify-between gap-3 w-full">
           <div>
             <p class="t-body-sm">{{ image.alt }}</p>
-            <p class="t-spec truncate text-fg-muted">{{ image.url }}</p>
+            <div class="flex  items-center gap-2">
+              <p class="t-spec truncate text-fg-muted " :title="image.url">{{ image.url }}</p>
+              <Button variant="ghost" size="sm" class="shrink-0" @click="copyUrl(image.url)">
+                Copy
+              </Button>
+            </div>
           </div>
 
           <div class="flex flex-wrap items-center gap-3">
             <Select
               :model-value="image.role"
-              @update:model-value="(v) => changeRole(image.id, v as 'HERO' | 'DETAIL' | 'LIFESTYLE')"
+              @update:model-value="
+                (v) => changeRole(image.id, v as 'HERO' | 'DETAIL' | 'LIFESTYLE')
+              "
             >
               <SelectTrigger class="h-8 w-32">
                 <SelectValue />
@@ -122,9 +133,7 @@ const sortedImages = computed(() =>
           >
             ↓
           </Button>
-          <Button variant="ghost" size="sm" @click="removeImage.mutate(image.id)">
-            ✕
-          </Button>
+          <Button variant="ghost" size="sm" @click="removeImage.mutate(image.id)"> ✕ </Button>
         </div>
       </article>
     </div>

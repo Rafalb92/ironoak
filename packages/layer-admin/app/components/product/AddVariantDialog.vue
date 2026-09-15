@@ -70,7 +70,7 @@ async function onSubmit() {
       </DialogHeader>
 
       <form class="space-y-6" @submit.prevent="onSubmit">
-        <VariantFields v-model="form" :issues="issues" />
+        <ProductVariantFields v-model="form" :issues="issues" />
 
         <DialogFooter>
           <Button type="button" variant="outline" @click="open = false">Cancel</Button>

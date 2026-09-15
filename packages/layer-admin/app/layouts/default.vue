@@ -28,8 +28,8 @@ const nav = [
       </nav>
     </aside>
 
-    <div class="flex flex-1 flex-col">
-      <header class="flex h-14 items-center justify-between border-b border-line px-6">
+    <div class="flex min-w-0 flex-1 flex-col">
+    <header class="flex h-14 items-center justify-between border-b border-line px-6">
         <span class="t-eyebrow text-fg-muted">Admin panel</span>
         <div class="flex items-center gap-4">
           <span class="t-spec text-fg-muted">{{ auth.user?.role }}</span>
@@ -37,7 +37,7 @@ const nav = [
         </div>
       </header>
 
-      <main class="flex-1 p-6">
+      <main class="min-w-0 flex-1 p-6">
         <slot />
       </main>
     </div>

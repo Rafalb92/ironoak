@@ -31,7 +31,7 @@ function formatDate(date: Date): string {
 </script>
 
 <template>
-  <div class="space-y-8">
+  <div class="space-y-8 min-w-0">
     <p v-if="state.status === 'pending'" class="t-body-sm text-fg-muted">Loading…</p>
 
     <p v-else-if="state.status === 'error'" class="t-body-sm text-destructive">
@@ -101,14 +101,14 @@ function formatDate(date: Date): string {
           <Button variant="outline" size="sm" @click="addVariantOpen = true">Add variant</Button>
 
           <!-- obok pozostałych dialogów -->
-          <AddVariantDialog v-model:open="addVariantOpen" :product-id="state.data.id" />
+          <ProductAddVariantDialog v-model:open="addVariantOpen" :product-id="state.data.id" />
         </div>
 
-        <div class="space-y-3">
+        <div class="space-y-3 min-w-0">
           <article
             v-for="variant in state.data.variants"
             :key="variant.id"
-            class="border border-line"
+            class="border border-line "
             :class="{ 'opacity-50': !variant.active }"
           >
             <header
@@ -190,12 +190,8 @@ function formatDate(date: Date): string {
       </section>
 
       <!-- zdjęcia -->
-      <section class="space-y-3">
-        <h2 class="t-label text-fg-muted">Images</h2>
-        <p v-if="!state.data.images.length" class="t-body-sm text-fg-muted">No images yet.</p>
-        <div v-else class="grid grid-cols-3 gap-4 lg:grid-cols-5">
+      <section class="space-y-3 min-w-0">
           <ProductImageManager :product="state.data" />
-        </div>
       </section>
 
       <span v-if="asyncStatus === 'loading'" class="t-spec text-fg-muted">Refreshing…</span>
