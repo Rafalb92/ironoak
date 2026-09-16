@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { orderStatusSchema } from './orders.js';
 
 // --- wejście ---
 const variantInputSchema = z.object({
@@ -40,6 +41,62 @@ export const updateProductSchema = z.object({
   categoryId: z.uuid().optional(),
   active: z.boolean().optional(),
 });
+
+
+// packages/contracts/src/admin.ts
+export const adminOrderQuerySchema = z.object({
+  status: orderStatusSchema.optional(),
+  search: z.string().optional(),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+});
+export type AdminOrderQuery = z.infer<typeof adminOrderQuerySchema>;
+
+export const adminOrderListItemSchema = z.object({
+  id: z.uuid(),
+  customerId: z.uuid(),
+  customerEmail: z.string().nullable(),
+  status: orderStatusSchema,
+  totalAmount: z.number().int(),
+  currency: z.string(),
+  itemCount: z.number().int(),
+  createdAt: z.coerce.date(),
+});
+
+export const adminOrderListSchema = z.object({
+  items: z.array(adminOrderListItemSchema),
+  total: z.number().int(),
+  page: z.number().int(),
+  limit: z.number().int(),
+});
+export type AdminOrderList = z.infer<typeof adminOrderListSchema>;
+
+export const adminOrderDetailSchema = z.object({
+  id: z.uuid(),
+  customerId: z.uuid(),
+  customerEmail: z.string().nullable(),
+  status: orderStatusSchema,
+  totalAmount: z.number().int(),
+  currency: z.string(),
+  lines: z.array(z.object({
+    productVariantId: z.uuid(),
+    productName: z.string(),
+    unitPriceAmount: z.number().int(),
+    quantity: z.number().int(),
+  })),
+  deliveryAddress: z.object({
+    street: z.string(),
+    buildingNumber: z.string(),
+    apartmentNumber: z.string().nullable(),
+    city: z.string(),
+    postalCode: z.string(),
+    country: z.string(),
+  }),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+export type AdminOrderDetail = z.infer<typeof adminOrderDetailSchema>;
+
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;
 
 export const createVariantSchema = variantInputSchema;

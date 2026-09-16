@@ -27,6 +27,9 @@ import { PaymentSucceededListener } from './application/listeners/payment-succee
 import { OrderQueryService } from './application/services/order-query.service';
 import { CheckoutController } from './infrastructure/http/checkout.controller';
 import { CartModule } from '../cart/cart.module';
+import { AdminOrderQueryService } from './application/services/admin-order-query.service';
+import { CUSTOMER_LOOKUP } from './application/ports/customer-lookup.port';
+import { IdentityCustomerLookup } from './infrastructure/customer/identity-customer-lookup';
 
 @Module({
   imports: [CatalogModule, IdentityModule, CartModule], // ← jawna zależność między kontekstami
@@ -42,6 +45,11 @@ import { CartModule } from '../cart/cart.module';
         new CatalogServiceGateway(catalog),
       inject: [CatalogService],
     },
+    {
+      provide: CUSTOMER_LOOKUP,
+      useClass: IdentityCustomerLookup,
+    },
+    AdminOrderQueryService,
     PlaceOrderUseCase,
     GetMyOrdersUseCase,
     GetOrderDetailsUseCase,

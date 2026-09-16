@@ -38,7 +38,6 @@ export class OrderAdminController {
 
   @Post(':id/fulfill')
   @HttpCode(HttpStatus.OK)
-  @Post(':id/fulfill')
   @ApiOperation({
     summary: 'Start fulfillment',
     description: 'PAID → FULFILLING',

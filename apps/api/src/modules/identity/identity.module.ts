@@ -20,6 +20,7 @@ import { RefreshTokenUseCase } from './application/use-cases/refresh-token.use-c
 import { LogoutController } from './adapters/in/http/logout.controller';
 import { RefreshTokenController } from './adapters/in/http/refresh-token.controller';
 import { LogoutUseCase } from './application/use-cases/logout/logout.use-case';
+import { CustomerQueryService } from './application/services/customer-query.service';
 
 @Module({
   providers: [
@@ -46,6 +47,7 @@ import { LogoutUseCase } from './application/use-cases/logout/logout.use-case';
     JwtAuthGuard,
     RefreshTokenUseCase,
     LogoutUseCase,
+    CustomerQueryService,
   ],
   controllers: [
     RegisterUserController,
