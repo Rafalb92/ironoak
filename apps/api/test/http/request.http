@@ -1,9 +1,9 @@
 ### Login
-POST http://localhost:3000/auth/login
+POST http://localhost:3000/auth/register
 Content-Type: application/json
 
 {
-  "email": "rafalb92@ironoak.pl",
+  "email": "rafalboch92@gmail.com",
   "password": "supersecret123"
 }
 

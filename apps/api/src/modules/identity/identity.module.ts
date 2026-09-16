@@ -21,6 +21,7 @@ import { LogoutController } from './adapters/in/http/logout.controller';
 import { RefreshTokenController } from './adapters/in/http/refresh-token.controller';
 import { LogoutUseCase } from './application/use-cases/logout/logout.use-case';
 import { CustomerQueryService } from './application/services/customer-query.service';
+import { AdminUserController } from './adapters/in/http/admin-user.controller';
 
 @Module({
   providers: [
@@ -55,7 +56,8 @@ import { CustomerQueryService } from './application/services/customer-query.serv
     MeController,
     LogoutController,
     RefreshTokenController,
+    AdminUserController,
   ],
-  exports: [PASSWORD_HASHER],
+  exports: [PASSWORD_HASHER, CustomerQueryService],
 })
 export class IdentityModule {}

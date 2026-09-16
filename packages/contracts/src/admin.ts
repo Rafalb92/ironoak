@@ -95,6 +95,36 @@ export const adminOrderDetailSchema = z.object({
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });
+
+export const adminUserQuerySchema = z.object({
+  search: z.string().optional(),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+});
+export type AdminUserQuery = z.infer<typeof adminUserQuerySchema>;
+
+export const changeRoleSchema = z.object({
+  role: z.enum(['USER', 'ADMIN']),
+});
+export type ChangeRoleInput = z.infer<typeof changeRoleSchema>;
+
+export const adminUserListItemSchema = z.object({
+  id: z.uuid(),
+  email: z.string(),
+  role: z.enum(['USER', 'ADMIN']),
+  emailVerified: z.boolean(),
+  createdAt: z.coerce.date(),
+});
+
+export const adminUserListSchema = z.object({
+  items: z.array(adminUserListItemSchema),
+  total: z.number().int(),
+  page: z.number().int(),
+  limit: z.number().int(),
+});
+export type AdminUserList = z.infer<typeof adminUserListSchema>;
+
+
 export type AdminOrderDetail = z.infer<typeof adminOrderDetailSchema>;
 
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;

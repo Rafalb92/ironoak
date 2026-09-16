@@ -87,3 +87,24 @@ Content-Type: application/json
 
 ### weź orderId, odczekaj ~10 sekund (dwa cykle workera!), potem:
 GET {{host}}/orders/0e7b0107-c03c-4810-b4c9-6bd738096ce1
+
+
+@userId=22cbdc32-2ae1-49fc-afc4-3389cc0fae70
+@otherUserId=1c7016d2-4cce-4fd8-9e1d-e61f4f927f39
+
+### lista użytkowników admina
+GET {{host}}/admin/users
+### wyszukiwanie użytkowników admina
+GET {{host}}/admin/users?search=rafal
+
+### degradacja siebie → 409
+PATCH {{host}}/admin/users/{{userId}}/role
+Content-Type: application/json
+
+{ "role": "USER" }
+
+### awans innego użytkownika
+PATCH {{host}}/admin/users/{{otherUserId}}/role
+Content-Type: application/json
+
+{ "role": "ADMIN" }
