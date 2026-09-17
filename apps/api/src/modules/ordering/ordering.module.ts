@@ -30,6 +30,7 @@ import { CartModule } from '../cart/cart.module';
 import { AdminOrderQueryService } from './application/services/admin-order-query.service';
 import { CUSTOMER_LOOKUP } from './application/ports/customer-lookup.port';
 import { IdentityCustomerLookup } from './infrastructure/customer/identity-customer-lookup';
+import { AdminOrderQueryController } from './infrastructure/http/admin-order-query.controller';
 
 @Module({
   imports: [CatalogModule, IdentityModule, CartModule], // ← jawna zależność między kontekstami
@@ -71,6 +72,7 @@ import { IdentityCustomerLookup } from './infrastructure/customer/identity-custo
     OrderController,
     OrderAdminController,
     CheckoutController,
+    AdminOrderQueryController,
   ],
   exports: [OrderQueryService],
 })
