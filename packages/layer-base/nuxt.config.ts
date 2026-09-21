@@ -34,4 +34,5 @@ export default defineNuxtConfig({
      */
     componentDir: join(currentDir, './app/components/ui'),
   },
+
 });

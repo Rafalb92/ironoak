@@ -4,6 +4,11 @@ import Redis from 'ioredis';
 import { REDIS_CLIENT } from '../../shared-infra/redis/redis.module';
 import { CatalogService } from '../catalog/catalog.service';
 import type { CartView } from '@ironoak/contracts';
+import { MAX_ORDER_QUANTITY } from '../catalog/catalog.constants';
+import {
+  STOCK_LOOKUP,
+  type StockLookup,
+} from '../catalog/application/ports/stock-lookup.port';
 
 // to, co realnie leży w Redisie — minimum
 interface CartItem {
@@ -17,6 +22,7 @@ export class CartService {
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
     private readonly catalog: CatalogService,
     private readonly config: ConfigService,
+    @Inject(STOCK_LOOKUP) private readonly stockLookup: StockLookup,
   ) {}
 
   private get cartTtlSeconds(): number {
@@ -116,19 +122,28 @@ export class CartService {
     );
     const byId = new Map(variants.map((v) => [v.id, v]));
 
+    const stock = await this.stockLookup.findForVariants(
+      items.map((i) => i.productVariantId),
+    );
+    const stockById = new Map(stock.map((s) => [s.productVariantId, s]));
+
     const enriched = items.map((item) => {
       const variant = byId.get(item.productVariantId);
-      const available = variant?.active ?? false;
-      const unitPrice = variant?.price ?? 0;
+      const s = stockById.get(item.productVariantId);
+      const availableQty = s?.available ?? 0;
 
       return {
         productVariantId: item.productVariantId,
         productName: variant?.name ?? 'Unavailable product',
         variantName: variant?.name ?? '',
-        unitPrice, // AKTUALNA cena
+        unitPrice: variant?.price ?? 0,
         quantity: item.quantity,
-        lineTotal: unitPrice * item.quantity,
-        available,
+        lineTotal: (variant?.price ?? 0) * item.quantity,
+        available: (variant?.active ?? false) && availableQty > 0,
+        // ile realnie można kupić — front ograniczy selektor
+        maxOrderQuantity: Math.min(availableQty, MAX_ORDER_QUANTITY),
+        // sygnał, że w koszyku jest więcej, niż zostało
+        exceedsStock: item.quantity > availableQty,
       };
     });
 

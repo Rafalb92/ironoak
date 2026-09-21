@@ -5,6 +5,7 @@ const nav = [
   { to: '/', label: 'Dashboard' },
   { to: '/products', label: 'Products' },
   { to: '/orders', label: 'Orders' },
+  { to: '/users', label: 'Customers' },
 ];
 </script>
 

@@ -5,7 +5,7 @@ import { CartService } from './cart.service';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 
 @Module({
-  imports: [CatalogModule],
+  imports: [CatalogModule, CatalogModule],
   controllers: [CartController],
   providers: [CartService, JwtAuthGuard],
   exports: [CartService], // przyda się przy checkoucie

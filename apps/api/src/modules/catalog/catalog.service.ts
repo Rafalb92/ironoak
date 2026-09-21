@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager, type FilterQuery } from '@mikro-orm/postgresql';
 import { ProductSchema, type IProduct } from './entities/product.entity';
 import {
@@ -8,10 +8,46 @@ import {
 import { ProductImageSchema } from './entities/product-image.entity';
 import { CategorySchema } from './entities/category.entity';
 import type { ProductQuery } from '@ironoak/contracts';
+import {
+  STOCK_LOOKUP,
+  type StockLookup,
+} from './application/ports/stock-lookup.port';
+import { MAX_ORDER_QUANTITY, LOW_STOCK_THRESHOLD } from './catalog.constants';
+
+export interface VariantAvailability {
+  inStock: boolean;
+  maxOrderQuantity: number;
+  lowStock: boolean;
+}
 
 @Injectable()
 export class CatalogService {
-  constructor(private readonly em: EntityManager) {}
+  constructor(
+    private readonly em: EntityManager,
+    @Inject(STOCK_LOOKUP) private readonly stockLookup: StockLookup,
+  ) {}
+
+  /**
+   * Mapuje surowy stan magazynowy na to, co widzi klient.
+   * Celowo nie ujawnia dokładnej liczby — wystarczy limit zamówienia
+   * i sygnał o niskim stanie.
+   */
+  private async availabilityFor(
+    variantIds: string[],
+  ): Promise<Map<string, VariantAvailability>> {
+    const stock = await this.stockLookup.findForVariants(variantIds);
+
+    return new Map(
+      stock.map((s) => [
+        s.productVariantId,
+        {
+          inStock: s.available > 0,
+          maxOrderQuantity: Math.min(s.available, MAX_ORDER_QUANTITY),
+          lowStock: s.available > 0 && s.available <= LOW_STOCK_THRESHOLD,
+        },
+      ]),
+    );
+  }
 
   async findVariantsByIds(
     ids: string[],
@@ -105,9 +141,23 @@ export class CatalogService {
       ),
     ]);
 
+    const variantIds = variants.map((v) => v.id);
+    const availability = await this.availabilityFor(variantIds);
+
+    // wariant jest widoczny tylko wtedy, gdy jest aktywny I dostępny
+    const purchasable = variants.filter(
+      (v) => availability.get(v.id)?.inStock ?? false,
+    );
+
+    // produkt znika z listingu, gdy nie ma żadnego wariantu do kupienia
+    const productIdsWithStock = new Set(purchasable.map((v) => v.product.id));
+    const visibleProducts = products.filter((p) =>
+      productIdsWithStock.has(p.id),
+    );
+
     // --- 5. zmapuj na DTO ---
     return {
-      items: products.map((p) => ({
+      items: visibleProducts.map((p) => ({
         id: p.id,
         name: p.name,
         slug: p.slug,
@@ -116,19 +166,25 @@ export class CatalogService {
         priceFrom: Math.min(
           ...variants.filter((v) => v.product.id === p.id).map((v) => v.price),
         ),
-        variants: variants
+        variants: purchasable
           .filter((v) => v.product.id === p.id)
-          .map((v) => ({
-            id: v.id,
-            sku: v.sku,
-            name: v.name,
-            price: v.price,
-            weightGrams: v.weightGrams,
-            color: v.color,
-            material: v.material,
-            finish: v.finish,
-            attributes: v.attributes,
-          })),
+          .map((v) => {
+            const a = availability.get(v.id)!;
+            return {
+              id: v.id,
+              sku: v.sku,
+              name: v.name,
+              price: v.price,
+              weightGrams: v.weightGrams,
+              color: v.color,
+              material: v.material,
+              finish: v.finish,
+              attributes: v.attributes,
+              inStock: a.inStock,
+              maxOrderQuantity: a.maxOrderQuantity,
+              lowStock: a.lowStock,
+            };
+          }),
         images: images
           .filter((i) => i.product.id === p.id)
           .map((i) => ({
@@ -150,18 +206,19 @@ export class CatalogService {
       { slug, active: true },
       { populate: ['category'] },
     );
-    if (!product) {
-      throw new NotFoundException(`Product '${slug}' not found`);
-    }
+    if (!product) throw new NotFoundException(`Product '${slug}' not found`);
 
-    const [variants, images] = await Promise.all([
-      this.em.find(ProductVariantSchema, { product: product.id, active: true }),
-      this.em.find(
-        ProductImageSchema,
-        { product: product.id },
-        { orderBy: { position: 'asc' } },
-      ),
-    ]);
+    const variants = await this.em.find(ProductVariantSchema, {
+      product: product.id,
+      active: true,
+    });
+    const images = await this.em.find(
+      ProductImageSchema,
+      { product: product.id },
+      { orderBy: { position: 'asc' } },
+    );
+
+    const availability = await this.availabilityFor(variants.map((v) => v.id));
 
     return {
       id: product.id,
@@ -169,22 +226,34 @@ export class CatalogService {
       slug: product.slug,
       description: product.description,
       category: { name: product.category.name, slug: product.category.slug },
-      variants: variants.map((v) => ({
-        id: v.id,
-        sku: v.sku,
-        name: v.name,
-        price: v.price,
-        weightGrams: v.weightGrams,
-        color: v.color,
-        material: v.material,
-        finish: v.finish,
-        attributes: v.attributes,
-      })),
+      // czy cokolwiek da się kupić — front pokaże "Out of stock"
+      inStock: variants.some((v) => availability.get(v.id)?.inStock ?? false),
+      variants: variants.map((v) => {
+        const a = availability.get(v.id) ?? {
+          inStock: false,
+          maxOrderQuantity: 0,
+          lowStock: false,
+        };
+        return {
+          id: v.id,
+          sku: v.sku,
+          name: v.name,
+          price: v.price,
+          weightGrams: v.weightGrams,
+          color: v.color,
+          material: v.material,
+          finish: v.finish,
+          attributes: v.attributes,
+          inStock: a.inStock,
+          maxOrderQuantity: a.maxOrderQuantity,
+          lowStock: a.lowStock,
+        };
+      }),
       images: images.map((i) => ({
         url: i.url,
         alt: i.alt,
         role: i.role,
-        variantId: i.variant?.id ?? null, // null = wspólne dla produktu
+        variantId: i.variant?.id ?? null,
       })),
     };
   }

@@ -31,6 +31,8 @@ export const cartLineSchema = z.object({
   quantity: z.number().int(),
   lineTotal: z.number().int(),
   available: z.boolean(),
+  maxOrderQuantity: z.number().int(),
+  exceedsStock: z.boolean(),
 });
 export type CartLine = z.infer<typeof cartLineSchema>;
 

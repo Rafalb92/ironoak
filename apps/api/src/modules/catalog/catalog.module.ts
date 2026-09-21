@@ -31,6 +31,6 @@ import { AdminImageController } from './admin-image.controller';
     JwtAuthGuard,
     RolesGuard,
   ],
-  exports: [CatalogService],
+  exports: [CatalogService, STOCK_LOOKUP],
 })
 export class CatalogModule {}

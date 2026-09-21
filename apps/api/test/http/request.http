@@ -10,7 +10,7 @@ Content-Type: application/json
 ### Get Me
 GET http://localhost:3000/auth/me
 ### Get products
-GET http://localhost:3000/admin/products
+GET http://localhost:3000/products/heirloom-barbell
 ### Single product
 GET http://localhost:3000/admin/products/64e33979-3730-4453-9826-b6e8b2e8f2a2
 

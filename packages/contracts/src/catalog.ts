@@ -22,12 +22,15 @@ export const productVariantSchema = z.object({
   id: z.uuid(),
   sku: z.string(),
   name: z.string(),
-  price: z.number().int(), // centy
+  price: z.number().int(),
   weightGrams: z.number().int().nullable(),
   color: z.string().nullable(),
   material: z.string().nullable(),
   finish: z.string().nullable(),
   attributes: z.record(z.string(), z.unknown()).nullable(),
+  inStock: z.boolean(),
+  maxOrderQuantity: z.number().int(),
+  lowStock: z.boolean(),
 });
 export type ProductVariant = z.infer<typeof productVariantSchema>;
 
@@ -59,7 +62,16 @@ export const productListSchema = z.object({
 });
 export type ProductList = z.infer<typeof productListSchema>;
 
-export const productDetailSchema = productListItemSchema.omit({ priceFrom: true });
+export const productDetailSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  slug: z.string(),
+  description: z.string(),
+  category: z.object({ name: z.string(), slug: z.string() }),
+  inStock: z.boolean(),
+  variants: z.array(productVariantSchema),
+  images: z.array(productImageSchema),
+});
 export type ProductDetail = z.infer<typeof productDetailSchema>;
 
 export const categorySchema = z.object({
