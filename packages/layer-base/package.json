@@ -5,7 +5,7 @@
   "type": "module",
   "main": "./nuxt.config.ts",
   "scripts": {
-    "prepare": "nuxt prepare"
+    "prepare": "nuxt cleanup && nuxt prepare"
   },
   "dependencies": {
     "@ironoak/contracts": "workspace:*",

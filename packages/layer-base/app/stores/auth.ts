@@ -1,5 +1,6 @@
+// packages/layer-base/app/stores/auth.ts
 import { defineStore } from 'pinia';
-import type { CurrentUser, LoginInput } from '@ironoak/contracts';
+import { currentUserSchema, type CurrentUser, type LoginInput } from '@ironoak/contracts';
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<CurrentUser | null>(null);
@@ -7,6 +8,43 @@ export const useAuthStore = defineStore('auth', () => {
   const isAdmin = computed(() => user.value?.role === 'ADMIN');
 
   const api = useApi();
+  const config = useRuntimeConfig();
+
+  async function me(): Promise<CurrentUser> {
+    return currentUserSchema.parse(await api('/auth/me'));
+  }
+
+  /**
+   * Ustala tożsamość na podstawie cookies.
+   * /auth/me jest wyłączone z refreshu w interceptorze, więc wygasły access token
+   * obsługujemy tutaj jawnie: jeden refresh, jedna ponowna próba.
+   */
+  async function fetchUser(): Promise<void> {
+    try {
+      user.value = await me();
+      return;
+    } catch {
+      // access token brak albo wygasł — spróbujemy odnowić sesję niżej
+    }
+
+    // Na serwerze refresh nie ma sensu — nowe cookies nie dotarłyby do przeglądarki
+    if (import.meta.server) {
+      user.value = null;
+      return;
+    }
+
+    const refreshed = await tryRefresh(config.public.apiBase);
+    if (!refreshed) {
+      user.value = null; // zwykły gość — bez przekierowania
+      return;
+    }
+
+    try {
+      user.value = await me();
+    } catch {
+      user.value = null;
+    }
+  }
 
   async function login(credentials: LoginInput): Promise<void> {
     await api('/auth/login', { method: 'POST', body: credentials });
@@ -22,14 +60,5 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // wywoływane przy starcie i po logowaniu
-  async function fetchUser(): Promise<void> {
-    try {
-      user.value = await api<CurrentUser>('/auth/me');
-    } catch {
-      user.value = null;
-    }
-  }
-
-  return { user, isAuthenticated, isAdmin, login, logout, fetchUser };
+  return { user, isAuthenticated, isAdmin, fetchUser, login, logout };
 });
