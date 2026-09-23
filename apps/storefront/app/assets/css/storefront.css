@@ -14,3 +14,22 @@
 .page-leave-to {
   opacity: 0;
 }
+
+/* Entrance on first paint. Order is set per element with --i.
+ * Reduced motion is handled globally in layer-base. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--rise));
+  }
+}
+
+.rise-in {
+  animation: rise-in var(--duration-heavy) var(--ease-iron) both;
+  animation-delay: calc(var(--i, 0) * var(--stagger) * 2);
+}
+
+  .t-hero {
+    font-family: var(--font-body); font-weight: 700; font-size: clamp(36px, 4.2vw, 64px);
+    line-height: 1.05; letter-spacing: var(--track-tight);
+  }

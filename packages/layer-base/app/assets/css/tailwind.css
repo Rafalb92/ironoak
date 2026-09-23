@@ -1,25 +1,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
 
+/* ---break---
+ */
+
 /* IRONOAK — tailwind.css
- * Design tokens + most do shadcn-vue.
- * Te same nazwy tokenów co w Figmie (ironoak-tokens.json).
- * Zasada: jeśli token nazywa się inaczej w kodzie niż w Figmie, system jest martwy.
+ * Design tokens + bridge to shadcn-vue.
+ * Same token names as in Figma (ironoak-tokens.json).
+ * Rule: if a token is named differently in code than in Figma, the system is dead.
  */
 
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* Tailwind generuje klasy tylko z plików, które widzi.
- * Warstwy i aplikacje to osobne pakiety — każdy trzeba wskazać jawnie. */
+/* Tailwind only generates classes from files it can see.
+ * Layers and apps are separate packages — each must be listed explicitly. */
 @source "../../components";
 @source "../../pages";
 @source "../../../../layer-admin/app";
 @source "../../../../../apps/storefront/app";
 
-/* System jest dark-first. Jasny motyw włącza [data-theme="light"],
- * więc wariant `dark:` musi być jego zaprzeczeniem, nie klasą .dark. */
+/* The system is dark-first. Light theme is enabled by [data-theme="light"] on <html>,
+ * so the `dark:` variant is its negation, not a .dark class. */
 @custom-variant dark (&:not([data-theme="light"] *));
 
+/* IMPORTANT: this :root must stay OUTSIDE any @layer.
+ * @theme inline below re-declares the same names (e.g. --color-brass: var(--color-brass)).
+ * Tailwind emits those inside @layer theme, and unlayered styles always beat layered ones,
+ * so the self-reference is discarded and the value from here wins.
+ * Wrapping this block in @layer would make the self-reference win -> cycle -> tokens vanish. */
 :root {
   /* ---- Primitives ---------------------------------------------------- */
   --color-ink: #141414;
@@ -38,20 +46,21 @@
   --color-rust: #8c4a32;
   --color-moss: #4f6552;
 
-  /* ---- Skala ---------------------------------------------------------- */
+  /* ---- Scale ---------------------------------------------------------- */
   --space-1: 2px;   --space-2: 4px;   --space-3: 8px;   --space-4: 12px;
   --space-5: 16px;  --space-6: 24px;  --space-7: 32px;  --space-8: 48px;
   --space-9: 64px;  --space-10: 96px; --space-11: 128px; --space-12: 160px;
 
   --radius-none: 0px;
-  --radius-milled: 2px;   /* jedyny promień w systemie */
+  --radius-milled: 2px;   /* the only radius in content */
   --radius-plate: 4px;
+  --radius-panel: 16px;   /* large storefront surfaces only: hero media, info cards */
+  --radius-pill: 9999px;  /* storefront navigation chrome and badges only */
   --border-hairline: 1px;
   --border-plate: 2px;
-    --radius-pill: 9999px;
   --container-site: 1440px;
 
-  /* ---- Typografia ------------------------------------------------------ */
+  /* ---- Typography ------------------------------------------------------ */
   --font-display: "Archivo Expanded", "Archivo", system-ui, sans-serif;
   --font-body: "Geist", system-ui, sans-serif;
   --font-data: "Geist Mono", ui-monospace, monospace;
@@ -68,15 +77,15 @@
   --duration-heavy: 720ms;
   --stagger: 60ms;
 
-  --ease-iron: cubic-bezier(0.16, 1, 0.3, 1);      /* szybki start, długi ogon = masa */
-  --ease-settle: cubic-bezier(0.33, 0, 0.15, 1);   /* wejście ciężkiego elementu */
-  --ease-lift: cubic-bezier(0.4, 0, 0.2, 1);       /* hover, drobne stany */
+  --ease-iron: cubic-bezier(0.16, 1, 0.3, 1);      /* fast start, long tail = mass */
+  --ease-settle: cubic-bezier(0.33, 0, 0.15, 1);   /* heavy element entering */
+  --ease-lift: cubic-bezier(0.4, 0, 0.2, 1);       /* hover, small state changes */
 
   --rise: 16px;
   --nudge: 4px;
   --parallax: 48px;
 
-  /* ---- Semantic: DARK (domyślny) --------------------------------------- */
+  /* ---- Semantic: DARK (default) ---------------------------------------- */
   --bg-canvas: var(--color-ink);
   --bg-surface: var(--color-charcoal);
   --bg-raised: var(--color-graphite);
@@ -108,10 +117,10 @@
   --status-danger: var(--color-rust);
   --status-success: var(--color-moss);
 
-  /* ---- Most do shadcn --------------------------------------------------
-   * shadcn-vue oczekuje własnych nazw zmiennych. Nie duplikujemy wartości —
-   * mapujemy je na tokeny IRONOAK, żeby system pozostał jednym źródłem prawdy.
-   * Zmiana tokenu semantycznego wyżej propaguje się tutaj automatycznie. */
+  /* ---- Bridge to shadcn ------------------------------------------------
+   * shadcn-vue expects its own variable names. We don't duplicate values —
+   * we map them onto IRONOAK tokens so the system stays a single source of truth.
+   * A change to a semantic token above propagates here automatically. */
   --background: var(--bg-canvas);
   --foreground: var(--text-primary);
 
@@ -141,7 +150,7 @@
 
   --radius: var(--radius-milled);
 
-  /* sidebar — używany przez shadcn Sidebar, przyda się w panelu admina */
+  /* sidebar — used by shadcn Sidebar in the admin panel */
   --sidebar: var(--bg-surface);
   --sidebar-foreground: var(--text-primary);
   --sidebar-primary: var(--action-accent-bg);
@@ -180,14 +189,16 @@
   --action-disabled-bg: #d8d4cc;
   --focus-ring: var(--color-oak-deep);
 
-  /* aliasy shadcn dziedziczą automatycznie — wskazują na tokeny semantyczne
-   * nadpisane powyżej. Jawnie tylko to, co nie ma odpowiednika. */
+  /* shadcn aliases follow automatically — they point at the semantic tokens
+   * overridden above. Only what has no counterpart is set explicitly. */
   --destructive-foreground: var(--color-bone);
 }
 
-/* ---- Tailwind v4: eksport tokenów jako utilities ------------------------ */
+/* ---- Tailwind v4: tokens exported as utilities --------------------------
+ * Self-references (--color-brass: var(--color-brass)) are intentional —
+ * see the note above :root for why they resolve to the :root value. */
 @theme inline {
-  /* IRONOAK — nazwy własne */
+  /* IRONOAK — semantic */
   --color-canvas: var(--bg-canvas);
   --color-surface: var(--bg-surface);
   --color-raised: var(--bg-raised);
@@ -196,12 +207,25 @@
   --color-fg-muted: var(--text-muted);
   --color-line: var(--border-default);
   --color-line-subtle: var(--border-subtle);
-  --color-brass: var(--color-brass);
-  --color-oak: var(--color-oak);
-  --radius-pill: 9999px;
-  --container-site: 1440px;
 
-  /* shadcn — wymagane przez komponenty */
+  /* IRONOAK — primitives (theme-independent: dark card on a photo, brand accents) */
+  --color-ink: var(--color-ink);
+  --color-charcoal: var(--color-charcoal);
+  --color-graphite: var(--color-graphite);
+  --color-iron: var(--color-iron);
+  --color-steel: var(--color-steel);
+  --color-ash: var(--color-ash);
+  --color-bone: var(--color-bone);
+  --color-bone-dim: var(--color-bone-dim);
+  --color-oak: var(--color-oak);
+  --color-oak-deep: var(--color-oak-deep);
+  --color-smoked-oak: var(--color-smoked-oak);
+  --color-brass: var(--color-brass);
+  --color-brass-bright: var(--color-brass-bright);
+  --color-rust: var(--color-rust);
+  --color-moss: var(--color-moss);
+
+  /* shadcn — required by components */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -231,16 +255,24 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Promienie — wszystkie praktycznie ostre. To jest decyzja, nie niedopatrzenie. */
+  /* Radii — sharp by decision, not by oversight. Pill and panel are named exceptions. */
   --radius-sm: var(--radius-none);
   --radius-md: var(--radius-milled);
   --radius-lg: var(--radius-plate);
   --radius-xl: var(--radius-plate);
+  --radius-none: var(--radius-none);
   --radius-milled: var(--radius-milled);
+  --radius-plate: var(--radius-plate);
+  --radius-panel: var(--radius-panel);
+  --radius-pill: var(--radius-pill);
 
-  /* Fonty */
+  /* Layout */
+  --container-site: var(--container-site);
+
+  /* Fonts */
   --font-sans: var(--font-body);
   --font-mono: var(--font-data);
+  --font-heading: var(--font-sans);
   --font-display: var(--font-display);
   --font-body: var(--font-body);
   --font-data: var(--font-data);
@@ -249,11 +281,14 @@
   --ease-iron: var(--ease-iron);
   --ease-settle: var(--ease-settle);
   --ease-lift: var(--ease-lift);
-  --font-heading: var(--font-sans);
 }
 
-/* ---- Style tekstowe (1:1 z text styles w Figmie) ------------------------ */
+/* ---- Text styles (1:1 with Figma text styles) --------------------------- */
 @layer components {
+  .t-hero {
+    font-family: var(--font-body); font-weight: 700; font-size: clamp(36px, 4.2vw, 64px);
+    line-height: 1.05; letter-spacing: var(--track-tight);
+  }
   .t-display-hero {
     font-family: var(--font-display); font-weight: 600; font-size: clamp(48px, 8vw, 120px);
     line-height: 1; letter-spacing: var(--track-tight); text-transform: uppercase;
@@ -274,7 +309,7 @@
   .t-body-md   { font-family: var(--font-body); font-size: 16px; line-height: 1.6; }
   .t-body-sm   { font-family: var(--font-body); font-size: 14px; line-height: 1.6; }
 
-  /* Liczby zawsze monospace — ceny, kilogramy, wymiary. To jest podpis marki. */
+  /* Numbers are always monospace — prices, kilograms, dimensions. Brand signature. */
   .t-price { font-family: var(--font-data); font-weight: 500; font-size: 22px; line-height: 1;
              font-variant-numeric: tabular-nums; }
   .t-spec  { font-family: var(--font-data); font-size: 14px; line-height: 1.3;
@@ -285,7 +320,7 @@
                letter-spacing: var(--track-engraved); text-transform: uppercase; }
 }
 
-/* ---- Podłoga jakości ---------------------------------------------------- */
+/* ---- Quality floor ------------------------------------------------------ */
 @layer base {
   * {
     @apply border-border outline-ring/50;
