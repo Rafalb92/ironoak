@@ -1,8 +1,4 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap');
-
-/* ---break---
- */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
 
 /* IRONOAK — tailwind.css
  * Design tokens + most do shadcn-vue.
@@ -12,9 +8,14 @@
 
 @import "tailwindcss";
 @import "tw-animate-css";
-@source "../../../../layer-admin/app";
+
+/* Tailwind generuje klasy tylko z plików, które widzi.
+ * Warstwy i aplikacje to osobne pakiety — każdy trzeba wskazać jawnie. */
 @source "../../components";
 @source "../../pages";
+@source "../../../../layer-admin/app";
+@source "../../../../../apps/storefront/app";
+
 /* System jest dark-first. Jasny motyw włącza [data-theme="light"],
  * więc wariant `dark:` musi być jego zaprzeczeniem, nie klasą .dark. */
 @custom-variant dark (&:not([data-theme="light"] *));
@@ -47,6 +48,8 @@
   --radius-plate: 4px;
   --border-hairline: 1px;
   --border-plate: 2px;
+    --radius-pill: 9999px;
+  --container-site: 1440px;
 
   /* ---- Typografia ------------------------------------------------------ */
   --font-display: "Archivo Expanded", "Archivo", system-ui, sans-serif;
@@ -195,6 +198,8 @@
   --color-line-subtle: var(--border-subtle);
   --color-brass: var(--color-brass);
   --color-oak: var(--color-oak);
+  --radius-pill: 9999px;
+  --container-site: 1440px;
 
   /* shadcn — wymagane przez komponenty */
   --color-background: var(--background);

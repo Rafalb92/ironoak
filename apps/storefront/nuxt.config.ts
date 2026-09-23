@@ -3,8 +3,10 @@ export default defineNuxtConfig({
   extends: ['@ironoak/layer-base'],
 
   devServer: { port: 3002 },
-  modules: ['@pinia/nuxt','@pinia/colada-nuxt'],
+
   components: [{ path: '~/components', pathPrefix: false }],
+
+  css: ['~/assets/css/storefront.css'],
 
   routeRules: {
     '/': { isr: 3600 },
@@ -18,8 +20,10 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      htmlAttrs: { lang: 'en' },
+      // storefront jest jasny; panel admina zostaje przy domyślnym ciemnym motywie
+      htmlAttrs: { lang: 'en', 'data-theme': 'light' },
       titleTemplate: '%s — IRONOAK',
     },
+    pageTransition: { name: 'page', mode: 'out-in' },
   },
 });

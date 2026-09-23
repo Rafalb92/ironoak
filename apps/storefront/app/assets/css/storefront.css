@@ -1,0 +1,16 @@
+/* Wejście ciężkiego elementu: krótki podjazd, bez odbicia. Motion z tokenów. */
+.page-enter-active,
+.page-leave-active {
+  transition:
+    opacity var(--duration-base) var(--ease-settle),
+    transform var(--duration-base) var(--ease-settle);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(var(--nudge));
+}
+
+.page-leave-to {
+  opacity: 0;
+}
