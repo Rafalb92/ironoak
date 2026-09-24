@@ -44,4 +44,9 @@
     line-height: 0.9;
     letter-spacing: var(--track-tight);
   }
+
+    .t-section {
+    font-family: var(--font-body); font-weight: 700; font-size: clamp(32px, 3.5vw, 48px);
+    line-height: 1.05; letter-spacing: var(--track-tight);
+  }
 }

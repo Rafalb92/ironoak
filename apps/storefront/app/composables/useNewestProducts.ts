@@ -1,6 +1,6 @@
 import { useQuery } from '@pinia/colada';
-import type { ProductListItem } from '@ironoak/contracts';
 import { productListQuery } from '../queries/products';
+import { pickPrimaryImage } from '../utils/productImage';
 
 export interface HeroSlide {
   id: string;
@@ -10,30 +10,13 @@ export interface HeroSlide {
   image: { url: string | null; alt: string };
 }
 
-/**
- * Image of the first variant wins; shared product images are the fallback.
- * HERO role is preferred within each group.
- */
-function pickImage(product: ProductListItem) {
-  const variantId = product.variants[0]?.id;
-  const { images } = product;
-
-  return (
-    images.find((i) => i.variantId === variantId && i.role === 'HERO') ??
-    images.find((i) => i.variantId === variantId) ??
-    images.find((i) => i.variantId === null && i.role === 'HERO') ??
-    images[0] ??
-    null
-  );
-}
-
 export function useNewestProducts(limit = 3) {
   const query = useQuery(() => productListQuery({ sort: 'newest', limit }));
 
   // every product becomes a slide — a missing image is a presentation concern
   const slides = computed<HeroSlide[]>(() =>
     (query.data.value?.items ?? []).map((product) => {
-      const image = pickImage(product);
+      const image = pickPrimaryImage(product);
       return {
         id: product.id,
         name: product.name,
