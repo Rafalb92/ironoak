@@ -1,5 +1,6 @@
 <template>
   <div class="flex min-h-dvh flex-col bg-canvas text-fg">
+    
     <a
       href="#main"
       class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:rounded-pill focus:bg-surface focus:px-5 focus:py-2.5 focus:font-data focus:text-sm"
@@ -9,7 +10,8 @@
 
     <SiteHeader />
 
-    <main id="main" class="mx-auto w-full min-w-0 max-w-site flex-1 space-y-22 px-4 py-10 md:px-6">
+    <!-- layout owns the frame (width, gutters); each page owns its own section rhythm -->
+    <main id="main" class="mx-auto w-full min-w-0 max-w-site flex-1 px-4 py-10 md:px-6">
       <slot />
     </main>
 
