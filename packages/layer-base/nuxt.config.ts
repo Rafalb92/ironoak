@@ -6,7 +6,7 @@ const currentDir = dirname(fileURLToPath(import.meta.url));
 
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
-  modules: ['shadcn-nuxt', '@pinia/nuxt', '@pinia/colada-nuxt'],
+  modules: ['shadcn-nuxt', '@pinia/nuxt', '@pinia/colada-nuxt', '@nuxt/image'],
   runtimeConfig: {
     public: {
       apiBase: process.env.API_BASE || 'http://localhost:3000',

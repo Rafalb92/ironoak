@@ -29,7 +29,19 @@
   animation-delay: calc(var(--i, 0) * var(--stagger) * 2);
 }
 
+@layer components {
   .t-hero {
-    font-family: var(--font-body); font-weight: 700; font-size: clamp(36px, 4.2vw, 64px);
-    line-height: 1.05; letter-spacing: var(--track-tight);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: clamp(36px, 4.2vw, 64px);
+    line-height: 1.05;
+    letter-spacing: var(--track-tight);
   }
+  .t-series {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: clamp(56px, 9vw, 144px);
+    line-height: 0.9;
+    letter-spacing: var(--track-tight);
+  }
+}

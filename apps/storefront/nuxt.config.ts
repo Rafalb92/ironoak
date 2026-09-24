@@ -1,11 +1,8 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   extends: ['@ironoak/layer-base'],
-
   devServer: { port: 3002 },
-
   components: [{ path: '~/components', pathPrefix: false }],
-
   css: ['~/assets/css/storefront.css'],
 
   routeRules: {
@@ -26,4 +23,6 @@ export default defineNuxtConfig({
     },
     pageTransition: { name: 'page', mode: 'out-in' },
   },
+
+  modules: ['@nuxt/image'],
 });

@@ -8,4 +8,5 @@ useSeoMeta({
 
 <template>
   <HeroSection />
+   <DiptychSection />
 </template>

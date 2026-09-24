@@ -9,7 +9,7 @@
 
     <SiteHeader />
 
-    <main id="main" class="mx-auto w-full min-w-0 max-w-site flex-1 px-4 py-10 md:px-6">
+    <main id="main" class="mx-auto w-full min-w-0 max-w-site flex-1 space-y-22 px-4 py-10 md:px-6">
       <slot />
     </main>
 
