@@ -13,6 +13,7 @@ import { InitiatePaymentController } from './infrastructure/http/initiate-paymen
 import { InitiatePaymentUseCase } from './application/use-cases/initiate-payment/initiate-payment.use-case';
 import { HandlePaymentWebhookUseCase } from './application/use-cases/handle-payment-webhook/handle-payment-webhook.use-case';
 import { StripePaymentProvider } from './infrastructure/providers/stripe-payment.provider';
+import { PaymentSimulationEnabledGuard } from './infrastructure/http/payment-simulation-enabled.guard';
 
 @Module({
   imports: [OrderingModule], // ← OrderQueryService, do OrderLookup
@@ -35,6 +36,7 @@ import { StripePaymentProvider } from './infrastructure/providers/stripe-payment
     },
     InitiatePaymentUseCase,
     HandlePaymentWebhookUseCase,
+    PaymentSimulationEnabledGuard,
   ],
   controllers: [
     InitiatePaymentController,
