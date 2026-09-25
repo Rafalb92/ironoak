@@ -61,3 +61,12 @@ query every five seconds even when idle — the partial index
 process. A consumer failure does not trigger redelivery, because the outbox
 row is already marked processed. Acceptable for a single-node application;
 a real broker would change this.
+
+## Implementation note
+
+Raw queries must run through the transactional `EntityManager` (`tx.execute`),
+not `tx.getConnection().execute`. The connection object is not bound to the
+transaction: `FOR UPDATE SKIP LOCKED` issued through it runs in autocommit and
+releases its locks immediately, silently disabling the worker coordination
+this ADR relies on. Found and verified with `txid_current()`: the two paths
+returned different transaction ids (1267 vs 1268); after the fix, equal.
