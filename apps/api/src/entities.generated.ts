@@ -8,6 +8,7 @@ import { OrderEntitySchema } from './modules/ordering/infrastructure/persistence
 import { OutboxMessageSchema } from './shared-infra/outbox/outbox-message.entity';
 import { PaymentEntitySchema } from './modules/payments/infrastructure/persistence/payment.entity';
 import { ProductImageSchema } from './modules/catalog/entities/product-image.entity';
+import { ProductSalesSchema } from './modules/catalog/entities/product-sales.entity';
 import { ProductSchema } from './modules/catalog/entities/product.entity';
 import { ProductVariantSchema } from './modules/catalog/entities/product-variant.entity';
 import { StockItemEntitySchema } from './modules/inventory/infrastructure/persistence/stock-item.entity';
@@ -22,6 +23,7 @@ export const entities = [
   OutboxMessageSchema,
   PaymentEntitySchema,
   ProductImageSchema,
+  ProductSalesSchema,
   ProductSchema,
   ProductVariantSchema,
   StockItemEntitySchema,

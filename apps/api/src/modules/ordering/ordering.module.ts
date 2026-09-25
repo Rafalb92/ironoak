@@ -31,6 +31,7 @@ import { AdminOrderQueryService } from './application/services/admin-order-query
 import { CUSTOMER_LOOKUP } from './application/ports/customer-lookup.port';
 import { IdentityCustomerLookup } from './infrastructure/customer/identity-customer-lookup';
 import { AdminOrderQueryController } from './infrastructure/http/admin-order-query.controller';
+import { OrderPaidSalesListener } from '../catalog/listeners/order-paid-sales.listener';
 
 @Module({
   imports: [CatalogModule, IdentityModule, CartModule], // ← jawna zależność między kontekstami
@@ -66,6 +67,7 @@ import { AdminOrderQueryController } from './infrastructure/http/admin-order-que
     CancelOrderBySystemUseCase,
     PaymentSucceededListener,
     OrderQueryService,
+    OrderPaidSalesListener,
   ],
   controllers: [
     PlaceOrderController,

@@ -100,7 +100,7 @@ export class Order extends AggregateRoot {
     }
     this._status = OrderStatus.PAID;
     this.touch();
-    this.addDomainEvent(new OrderPaidEvent(this._id));
+    this.addDomainEvent(new OrderPaidEvent(this._id, this._lines));
   }
 
   startFulfillment(): void {

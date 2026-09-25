@@ -30,7 +30,11 @@ function formatterFor(currency: string, fractionDigits: 0 | 2): Intl.NumberForma
   return formatter;
 }
 
-export function formatPrice(cents: number, currency = 'USD', { trimZeros = false }: FormatPriceOptions = {}): string {
+export function formatPrice(
+  cents: number,
+  currency = 'USD',
+  { trimZeros = false }: FormatPriceOptions = {},
+): string {
   const fractionDigits = trimZeros && cents % 100 === 0 ? 0 : 2;
   return formatterFor(currency, fractionDigits).format(cents / 100);
 }

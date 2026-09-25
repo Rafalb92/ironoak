@@ -1,5 +1,5 @@
 @host = http://localhost:3000
-@variantId = 3e5aa699-3e88-4c0b-aae4-9cf1cf7ceb61
+@variantId = 08b0dcfa-1639-4149-a20d-6496cf669849
 POST {{host}}/auth/register
 Content-Type: application/json
 
@@ -26,7 +26,7 @@ DELETE {{host}}/cart
 POST {{host}}/cart/items
 Content-Type: application/json
 
-{ "productVariantId": "{{variantId}}", "quantity": 2 }
+{ "productVariantId": "{{variantId}}", "quantity": 4 }
 
 ###
 POST {{host}}/checkout
@@ -35,13 +35,13 @@ Content-Type: application/json
 { "deliveryAddress": { "street": "Main Street", "buildingNumber": "123", "city": "New York", "postalCode": "10001", "country": "US" } }
 
 ### --- weź orderId ---
-@orderId = c99abaa9-e050-4762-b6a7-a78a3573e820
+@orderId = 4e7f19d0-cc3f-47c1-8507-31d16e295df7
 
 ### 2. zainicjuj płatność → dostajesz checkoutUrl
 POST {{host}}/orders/{{orderId}}/pay
 
 ### --- weź sessionId z URL-a ---
-@sessionId = fake_9d9a6992-ffb7-458f-8fae-bad2e4da7679
+@sessionId = cs_test_a1UwjkgzTyRlirY4DUXZwb6pWKZQRciTJhAWFxgkHu8x1nvzeJESWTp1Ld
 
 ### 3. druga próba — powinna zwrócić TEN SAM url (idempotencja)
 POST {{host}}/orders/{{orderId}}/pay

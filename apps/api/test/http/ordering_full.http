@@ -1,5 +1,5 @@
 @host = http://localhost:3000
-@variantId = e0fa09d5-f34d-4827-93f1-7f8e2a2d2499
+@variantId = c094104e-d17a-4a92-960b-85ed0d7cdb23
 
 ### 1. login (ustawia cookies)
 POST {{host}}/auth/login
@@ -11,18 +11,20 @@ Content-Type: application/json
 GET {{host}}/auth/me
 ### 2.1. Lista produktów
 GET {{host}}/products
+### 2.1. Lista produktów bestsellers
+GET {{host}}/products?sort=bestselling&limit=3
 
 ### 3. dodaj 3 sztuki do koszyka
 POST {{host}}/cart/items
 Content-Type: application/json
 
-{ "productVariantId": "{{variantId}}", "quantity": 88 }
+{ "productVariantId": "{{variantId}}", "quantity": 1 }
 
 ### 4. podejrzyj koszyk (ceny z katalogu, na żywo)
-GET {{host}}/cart
+GET  {{host}}/cart
 
 ### 5. checkout — składa zamówienie i czyści koszyk
-POST {{host}}/cart/checkout
+POST {{host}}/checkout
 Content-Type: application/json
 
 {
@@ -42,7 +44,7 @@ GET {{host}}/cart
 GET {{host}}/orders
 
 ### --- ustaw orderId z odpowiedzi wyżej ---
-@orderId = c99abaa9-e050-4762-b6a7-a78a3573e820
+@orderId = fec736a8-281c-49e3-9871-68166a6c80f3
 
 ### 8. szczegóły zamówienia (status PENDING_PAYMENT)
 GET {{host}}/orders/{{orderId}}

@@ -7,6 +7,7 @@ import {
 } from './entities/product-variant.entity';
 import { ProductImageSchema } from './entities/product-image.entity';
 import { CategorySchema } from './entities/category.entity';
+import { ProductSalesSchema } from './entities/product-sales.entity';
 import type { ProductQuery } from '@ironoak/contracts';
 import {
   STOCK_LOOKUP,
@@ -20,6 +21,11 @@ export interface VariantAvailability {
   lowStock: boolean;
 }
 
+interface ProductPage {
+  products: IProduct[];
+  total: number;
+}
+
 @Injectable()
 export class CatalogService {
   constructor(
@@ -28,9 +34,9 @@ export class CatalogService {
   ) {}
 
   /**
-   * Mapuje surowy stan magazynowy na to, co widzi klient.
-   * Celowo nie ujawnia dokładnej liczby — wystarczy limit zamówienia
-   * i sygnał o niskim stanie.
+   * Maps raw stock to what the customer sees.
+   * Deliberately hides the exact count — an order limit and a low-stock
+   * signal are enough.
    */
   private async availabilityFor(
     variantIds: string[],
@@ -65,7 +71,7 @@ export class CatalogService {
   }
 
   async findProducts(query: ProductQuery) {
-    // --- 1. zbuduj filtr na WARIANTACH (bo tam są cena, waga, materiał) ---
+    // --- 1. filter on VARIANTS (price, weight and material live there) ---
     const variantWhere: FilterQuery<IProductVariant> = { active: true };
 
     if (query.material) variantWhere.material = query.material;
@@ -86,7 +92,7 @@ export class CatalogService {
       };
     }
 
-    // --- 2. filtr na PRODUKTACH ---
+    // --- 2. filter on PRODUCTS ---
     const productWhere: FilterQuery<IProduct> = { active: true };
 
     if (query.category) {
@@ -102,8 +108,8 @@ export class CatalogService {
       productWhere.name = { $ilike: `%${query.search}%` };
     }
 
-    // jeśli są filtry wariantowe — zawęź produkty do tych, które mają pasujący wariant
-    const hasVariantFilters = Object.keys(variantWhere).length > 1; // >1 bo 'active' zawsze jest
+    // with variant filters — narrow products to those having a matching variant
+    const hasVariantFilters = Object.keys(variantWhere).length > 1; // >1 because 'active' is always set
     if (hasVariantFilters) {
       const matching = await this.em.find(ProductVariantSchema, variantWhere, {
         fields: ['product'],
@@ -115,19 +121,13 @@ export class CatalogService {
       productWhere.id = { $in: productIds };
     }
 
-    // --- 3. pobierz produkty z paginacją ---
-    const [products, total] = await this.em.findAndCount(
-      ProductSchema,
-      productWhere,
-      {
-        orderBy: this.buildOrderBy(query.sort),
-        limit: query.limit,
-        offset: (query.page - 1) * query.limit,
-        populate: ['category'],
-      },
-    );
+    // --- 3. fetch one page of products ---
+    const { products, total } =
+      query.sort === 'bestselling'
+        ? await this.findPageBySales(productWhere, query)
+        : await this.findPage(productWhere, query);
 
-    // --- 4. dociągnij warianty i zdjęcia dla znalezionych produktów (zamiast populate) ---
+    // --- 4. load variants and images for the page (instead of populate) ---
     const productIds = products.map((p) => p.id);
     const [variants, images] = await Promise.all([
       this.em.find(ProductVariantSchema, {
@@ -144,18 +144,18 @@ export class CatalogService {
     const variantIds = variants.map((v) => v.id);
     const availability = await this.availabilityFor(variantIds);
 
-    // wariant jest widoczny tylko wtedy, gdy jest aktywny I dostępny
+    // a variant is visible only when it is active AND available
     const purchasable = variants.filter(
       (v) => availability.get(v.id)?.inStock ?? false,
     );
 
-    // produkt znika z listingu, gdy nie ma żadnego wariantu do kupienia
+    // a product disappears from the listing when no variant can be bought
     const productIdsWithStock = new Set(purchasable.map((v) => v.product.id));
     const visibleProducts = products.filter((p) =>
       productIdsWithStock.has(p.id),
     );
 
-    // --- 5. zmapuj na DTO ---
+    // --- 5. map to DTO ---
     return {
       items: visibleProducts.map((p) => ({
         id: p.id,
@@ -200,6 +200,50 @@ export class CatalogService {
     };
   }
 
+  private async findPage(
+    where: FilterQuery<IProduct>,
+    query: ProductQuery,
+  ): Promise<ProductPage> {
+    const [products, total] = await this.em.findAndCount(ProductSchema, where, {
+      orderBy: this.buildOrderBy(query.sort),
+      limit: query.limit,
+      offset: (query.page - 1) * query.limit,
+      populate: ['category'],
+    });
+    return { products, total };
+  }
+
+  /**
+   * Ranks by units sold (read model, ADR-0014); unsold products follow,
+   * oldest first. Ranking happens in memory: the filters are a FilterQuery,
+   * and sorting by an unrelated table would require raw SQL for every filter.
+   * Fine for a catalog of hundreds of products — see ADR-0014 for the limit.
+   */
+  private async findPageBySales(
+    where: FilterQuery<IProduct>,
+    query: ProductQuery,
+  ): Promise<ProductPage> {
+    const candidates = await this.em.find(ProductSchema, where);
+    if (candidates.length === 0) return { products: [], total: 0 };
+
+    const sales = await this.em.find(ProductSalesSchema, {
+      productId: { $in: candidates.map((p) => p.id) },
+    });
+    const sold = new Map(sales.map((s) => [s.productId, s.unitsSold]));
+
+    const ranked = [...candidates].sort(
+      (a, b) =>
+        (sold.get(b.id) ?? 0) - (sold.get(a.id) ?? 0) ||
+        a.createdAt.getTime() - b.createdAt.getTime(),
+    );
+
+    const offset = (query.page - 1) * query.limit;
+    const products = ranked.slice(offset, offset + query.limit);
+    await this.em.populate(products, ['category']);
+
+    return { products, total: candidates.length };
+  }
+
   async findBySlug(slug: string) {
     const product = await this.em.findOne(
       ProductSchema,
@@ -226,7 +270,7 @@ export class CatalogService {
       slug: product.slug,
       description: product.description,
       category: { name: product.category.name, slug: product.category.slug },
-      // czy cokolwiek da się kupić — front pokaże "Out of stock"
+      // anything purchasable at all — the storefront shows "Out of stock" otherwise
       inStock: variants.some((v) => availability.get(v.id)?.inStock ?? false),
       variants: variants.map((v) => {
         const a = availability.get(v.id) ?? {
