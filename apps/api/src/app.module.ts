@@ -12,6 +12,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { OutboxModule } from './shared-infra/outbox/outbox.module';
 import { RedisModule } from './shared-infra/redis/redis.module';
+import { StorageModule } from './shared-infra/storage/storage.module';
 import { CartModule } from './modules/cart/cart.module';
 import { TokenModule } from './shared-infra/auth/token.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
@@ -60,6 +61,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
       },
     }),
     RedisModule,
+    StorageModule,
     IdentityModule,
     CatalogModule,
     OrderingModule,

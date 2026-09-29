@@ -216,13 +216,46 @@ export const adminProductDetailSchema = z.object({
 
 export const imageRoleSchema = z.enum(['HERO', 'DETAIL', 'LIFESTYLE']);
 
-export const createImageSchema = z.object({
-  url: z.string().url(),
-  alt: z.string().min(1).max(200),
-  role: imageRoleSchema,
-  position: z.number().int().nonnegative().default(0),
-  variantId: z.uuid().nullable().optional(),
+// --- product image uploads ---
+export const PRODUCT_IMAGE_CONTENT_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/avif',
+] as const;
+export type ProductImageContentType = (typeof PRODUCT_IMAGE_CONTENT_TYPES)[number];
+
+export const PRODUCT_IMAGE_MAX_BYTES = 10 * 1024 * 1024;
+
+export const createImageUploadSchema = z.object({
+  contentType: z.enum(PRODUCT_IMAGE_CONTENT_TYPES),
+  size: z.number().int().positive().max(PRODUCT_IMAGE_MAX_BYTES, 'Image must be 10 MB or smaller'),
 });
+export type CreateImageUploadInput = z.infer<typeof createImageUploadSchema>;
+
+export const imageUploadTicketSchema = z.object({
+  uploadKey: z.string(),
+  uploadUrl: z.url(),
+  /** must be sent with the PUT — part of the signature */
+  headers: z.record(z.string(), z.string()),
+  expiresAt: z.coerce.date(),
+});
+export type ImageUploadTicket = z.infer<typeof imageUploadTicketSchema>;
+
+// an image comes either from an external URL or from a completed upload
+export const createImageSchema = z
+  .object({
+    url: z.url().optional(),
+    uploadKey: z.string().min(1).optional(),
+    alt: z.string().min(1).max(200),
+    role: imageRoleSchema,
+    position: z.number().int().nonnegative().default(0),
+    variantId: z.uuid().nullable().optional(),
+  })
+  .refine((input) => Boolean(input.url) !== Boolean(input.uploadKey), {
+    message: 'Provide either url or uploadKey',
+    path: ['url'],
+  });
 export type CreateImageInput = z.infer<typeof createImageSchema>;
 
 export const updateImageSchema = z.object({
@@ -234,7 +267,6 @@ export const updateImageSchema = z.object({
 export type UpdateImageInput = z.infer<typeof updateImageSchema>;
 
 export const imageIdResultSchema = z.object({ imageId: z.uuid() });
-
 
 export type AdminProductDetail = z.infer<typeof adminProductDetailSchema>;
 

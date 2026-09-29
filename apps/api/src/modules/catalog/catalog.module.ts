@@ -11,6 +11,7 @@ import { STOCK_LOOKUP } from './application/ports/stock-lookup.port';
 import { RolesGuard } from '../../shared/guards/roles.guard';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { AdminImageController } from './admin-image.controller';
+import { ProductMediaService } from './product-media.service';
 
 @Module({
   imports: [InventoryModule],
@@ -30,6 +31,7 @@ import { AdminImageController } from './admin-image.controller';
     },
     JwtAuthGuard,
     RolesGuard,
+    ProductMediaService,
   ],
   exports: [CatalogService, STOCK_LOOKUP],
 })

@@ -30,6 +30,8 @@
     "db:entities": "mikro-orm discovery:export --path \"src/**/*.entity.ts\" --out src/entities.generated.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1141.0",
+    "@aws-sdk/s3-request-presigner": "^3.1141.0",
     "@ironoak/contracts": "workspace:*",
     "@mikro-orm/core": "^7.1.4",
     "@mikro-orm/decorators": "^7.1.4",

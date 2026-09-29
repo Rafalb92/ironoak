@@ -22,19 +22,21 @@ import type {
   CreateImageInput,
 } from '@ironoak/contracts';
 import { ProductImageSchema } from './entities/product-image.entity';
+import { ProductMediaService } from './product-media.service';
 
 @Injectable()
 export class AdminCatalogService {
   constructor(
     private readonly em: EntityManager,
     @Inject(STOCK_LOOKUP) private readonly stockLookup: StockLookup,
+    private readonly media: ProductMediaService,
   ) {}
 
   async addImage(productId: string, dto: CreateImageInput) {
     const product = await this.em.findOne(ProductSchema, { id: productId });
     if (!product) throw new NotFoundException('Product not found');
 
-    // wariant musi należeć do tego produktu
+    // a variant must belong to this product
     let variant = null;
     if (dto.variantId) {
       variant = await this.em.findOne(ProductVariantSchema, {
@@ -46,18 +48,30 @@ export class AdminCatalogService {
       }
     }
 
-    const image = this.em.create(ProductImageSchema, {
-      id: randomUUID(),
-      product,
-      variant,
-      url: dto.url,
-      alt: dto.alt,
-      role: dto.role,
-      position: dto.position,
-    });
+    // an external URL, or a completed upload moved to permanent storage
+    const storageKey = dto.uploadKey
+      ? await this.media.promoteUpload(productId, dto.uploadKey)
+      : null;
 
-    await this.em.flush();
-    return { imageId: image.id };
+    try {
+      const image = this.em.create(ProductImageSchema, {
+        id: randomUUID(),
+        product,
+        variant,
+        url: storageKey ? null : (dto.url ?? null),
+        storageKey,
+        alt: dto.alt,
+        role: dto.role,
+        position: dto.position,
+      });
+
+      await this.em.flush();
+      return { imageId: image.id };
+    } catch (error) {
+      // the file already left tmp/, so no lifecycle rule would ever clean it up
+      if (storageKey) await this.media.deleteQuietly(storageKey);
+      throw error;
+    }
   }
 
   async updateImage(imageId: string, dto: UpdateImageInput) {
@@ -90,9 +104,15 @@ export class AdminCatalogService {
     const image = await this.em.findOne(ProductImageSchema, { id: imageId });
     if (!image) throw new NotFoundException('Image not found');
 
-    // twarde usunięcie — zdjęcie nie jest częścią historii zamówień
+    const storageKey = image.storageKey;
+
+    // hard delete — images are not part of order history
     this.em.remove(image);
     await this.em.flush();
+
+    // file after the row: a failed delete leaves a harmless orphan, never a broken image
+    if (storageKey) await this.media.deleteQuietly(storageKey);
+
     return { imageId, deleted: true };
   }
 
@@ -156,7 +176,7 @@ export class AdminCatalogService {
       }),
       images: images.map((i) => ({
         id: i.id,
-        url: i.url,
+        url: this.media.urlFor(i),
         alt: i.alt,
         role: i.role,
         position: i.position,

@@ -10,7 +10,10 @@ export const ProductImageSchema = defineEntity({
     product: () => p.manyToOne(ProductSchema),
     variant: () => p.manyToOne(ProductVariantSchema).nullable(),
 
-    url: p.string(),
+    // exactly one source: an external URL or a key in object storage
+    url: p.string().nullable(),
+    storageKey: p.string().nullable(),
+
     alt: p.string(),
     role: p.string(), // 'HERO' | 'DETAIL' | 'LIFESTYLE'
     position: p.integer().default(0),

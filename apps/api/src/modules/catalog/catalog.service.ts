@@ -14,6 +14,7 @@ import {
   type StockLookup,
 } from './application/ports/stock-lookup.port';
 import { MAX_ORDER_QUANTITY, LOW_STOCK_THRESHOLD } from './catalog.constants';
+import { ProductMediaService } from './product-media.service';
 
 export interface VariantAvailability {
   inStock: boolean;
@@ -31,6 +32,7 @@ export class CatalogService {
   constructor(
     private readonly em: EntityManager,
     @Inject(STOCK_LOOKUP) private readonly stockLookup: StockLookup,
+    private readonly media: ProductMediaService,
   ) {}
 
   /**
@@ -188,7 +190,7 @@ export class CatalogService {
         images: images
           .filter((i) => i.product.id === p.id)
           .map((i) => ({
-            url: i.url,
+            url: this.media.urlFor(i),
             alt: i.alt,
             role: i.role,
             variantId: i.variant?.id ?? null,
@@ -294,7 +296,7 @@ export class CatalogService {
         };
       }),
       images: images.map((i) => ({
-        url: i.url,
+        url: this.media.urlFor(i),
         alt: i.alt,
         role: i.role,
         variantId: i.variant?.id ?? null,

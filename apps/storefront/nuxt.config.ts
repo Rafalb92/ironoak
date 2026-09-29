@@ -7,8 +7,8 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/': { isr: 3600 },
-    '/products': { isr: 600 },
-    '/products/**': { isr: 600 },
+    '/products': { swr: 600 },
+    '/products/**': { swr: 600 },
     '/cart': { ssr: false },
     '/checkout/**': { ssr: false },
     '/account/**': { ssr: false },
