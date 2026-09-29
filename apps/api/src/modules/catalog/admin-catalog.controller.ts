@@ -20,6 +20,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AdminCatalogService } from './admin-catalog.service';
+import { ProductMediaService } from './product-media.service';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { RolesGuard } from '../../shared/guards/roles.guard';
 import { Roles } from '../../shared/decorators/roles.decorator';
@@ -32,7 +33,9 @@ import {
   createVariantSchema,
   type UpdateProductInput as UpdateProductDto,
   updateProductSchema,
-  type CreateImageInput as CreateImageInput,
+  type CreateImageUploadInput,
+  createImageUploadSchema,
+  type CreateImageInput,
 } from '@ironoak/contracts';
 
 @ApiTags('admin')
@@ -41,7 +44,10 @@ import {
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('ADMIN')
 export class AdminCatalogController {
-  constructor(private readonly admin: AdminCatalogService) {}
+  constructor(
+    private readonly admin: AdminCatalogService,
+    private readonly media: ProductMediaService,
+  ) {}
 
   @Post(':id/images')
   @HttpCode(HttpStatus.CREATED)
@@ -51,6 +57,22 @@ export class AdminCatalogController {
     @Body(new ZodValidationPipe(createImageSchema)) dto: CreateImageInput,
   ) {
     return this.admin.addImage(id, dto);
+  }
+
+  @Post(':id/images/uploads')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Request a signed URL for a direct image upload',
+    description:
+      'Returns a short-lived URL. The client PUTs the file there with the returned headers, ' +
+      'then registers it with POST /admin/products/:id/images using uploadKey.',
+  })
+  createImageUpload(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(createImageUploadSchema))
+    dto: CreateImageUploadInput,
+  ) {
+    return this.media.createUploadTicket(id, dto);
   }
 
   @Get()
