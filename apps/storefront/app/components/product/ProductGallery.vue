@@ -110,18 +110,32 @@ function scrollToSlide(index: number) {
           :aria-pressed="index === selected"
           :aria-label="`Show image ${index + 1} of ${images.length}`"
           class="aspect-square overflow-hidden rounded-panel border-2 transition-[opacity,border-color] duration-(--duration-base) ease-lift"
-          :class="index === shown ? 'border-fg opacity-100' : 'border-transparent opacity-60 hover:opacity-100'"
+          :class="
+            index === shown
+              ? 'border-fg opacity-100'
+              : 'border-transparent opacity-60 hover:opacity-100'
+          "
           @pointerenter="onThumbEnter(index, $event)"
           @click="choose(index)"
         >
-          <ProductMedia :src="image.url" alt="" compact loading="lazy" class="size-full" />
+          <ProductMedia
+            :src="image.url"
+            alt=""
+            compact
+            loading="lazy"
+            sizes="88px"
+            class="size-full"
+          />
         </button>
       </div>
 
       <div
         ref="stage"
         class="relative aspect-square overflow-hidden rounded-panel bg-surface"
-        :class="[images.length > 1 ? 'col-start-2' : 'col-span-2', canZoom && hasImages && 'cursor-zoom-in']"
+        :class="[
+          images.length > 1 ? 'col-start-2' : 'col-span-2',
+          canZoom && hasImages && 'cursor-zoom-in',
+        ]"
         style="--zoom-x: 50%; --zoom-y: 50%"
         @pointermove="onStageMove"
         @pointerleave="onStageLeave"
@@ -140,11 +154,18 @@ function scrollToSlide(index: number) {
               :label="productName"
               :aria-hidden="index !== shown"
               :loading="index === 0 ? 'eager' : 'lazy'"
-              class="absolute inset-0 size-full transition-opacity duration-(--duration-slow) ease-iron"
+              sizes="100vw lg:55vw"
+              class="absolute inset-0 size-full transition-opacity duration-(--duration-slow) ease-(--ease-iron)"
               :class="index === shown ? 'opacity-100' : 'opacity-0'"
             />
           </template>
-          <ProductMedia v-else :src="null" :alt="productName" :label="productName" class="size-full" />
+          <ProductMedia
+            v-else
+            :src="null"
+            :alt="productName"
+            :label="productName"
+            class="size-full"
+          />
         </div>
       </div>
     </div>
@@ -158,12 +179,17 @@ function scrollToSlide(index: number) {
         @scroll.passive="onStripScroll"
       >
         <template v-if="hasImages">
-          <li v-for="(image, index) in images" :key="image.url" class="aspect-square w-full shrink-0 snap-center">
+          <li
+            v-for="(image, index) in images"
+            :key="image.url"
+            class="aspect-square w-full shrink-0 snap-center"
+          >
             <ProductMedia
               :src="image.url"
               :alt="image.alt"
               :label="productName"
               :loading="index === 0 ? 'eager' : 'lazy'"
+              sizes="100vw"
               class="size-full"
             />
           </li>

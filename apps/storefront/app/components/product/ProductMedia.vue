@@ -1,20 +1,24 @@
 <script setup lang="ts">
 import { IconBarbell } from '@tabler/icons-vue';
+import type { ComponentPublicInstance } from 'vue';
 
 const {
   src,
   alt,
   label,
   compact = false,
+  sizes = '100vw',
 } = defineProps<{
   src: string | null;
   alt: string;
   label?: string;
   compact?: boolean;
+  /** rendered width per breakpoint — used once images go through an optimising provider */
+  sizes?: string;
 }>();
 
 const failed = ref(false);
-const image = useTemplateRef<HTMLImageElement>('image');
+const image = useTemplateRef<ComponentPublicInstance>('image');
 
 watch(
   () => src,
@@ -26,16 +30,19 @@ watch(
 // An image that failed during SSR fires `error` before hydration attaches
 // the listener — the event is lost, so check the element's state instead.
 onMounted(() => {
-  if (image.value?.complete && image.value.naturalWidth === 0) failed.value = true;
+  const element = image.value?.$el as HTMLImageElement | undefined;
+  if (element?.complete && element.naturalWidth === 0) failed.value = true;
 });
 </script>
 
 <template>
-  <img
+  <NuxtImg
     v-if="src && !failed"
     ref="image"
     :src="src"
     :alt="alt"
+    :sizes="sizes"
+    format="webp"
     decoding="async"
     class="object-cover"
     @error="failed = true"

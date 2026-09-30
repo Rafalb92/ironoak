@@ -83,5 +83,7 @@ uploads silently in the browser.
 usage. The API token is scoped to a single bucket and kept out of the
 repository; a leaked token is the only realistic cost risk.
 
-**Negative — `r2.dev` is for development.** Production should serve the
-bucket through a custom domain with Cloudflare caching.
+**Negative — endpoint must not include the bucket.** The R2 dashboard shows
+the S3 API URL with the bucket name appended. Used as `STORAGE_ENDPOINT`, the
+SDK prefixes every key with the bucket name: uploads and `stat` still agree,
+but `copy` (whose source is sent separately) fails with `NoSuchKey`.
