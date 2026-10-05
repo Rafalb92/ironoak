@@ -68,11 +68,19 @@ const sortedImages = computed(() => [...product.images].sort((a, b) => a.positio
         :key="image.id"
         class="flex gap-4 border border-line p-3"
       >
-        <img
-          :src="image.url"
-          :alt="image.alt"
-          class="size-24 shrink-0 border border-line object-cover"
-        />
+                <div class="relative size-24 shrink-0">
+          <img
+            :src="image.type === 'VIDEO' ? (image.posterUrl ?? '') : image.url"
+            :alt="image.alt"
+            class="size-full border border-line object-cover"
+          />
+          <span
+            v-if="image.type === 'VIDEO'"
+            class="t-label absolute bottom-1 left-1 bg-ink/80 px-1.5 py-1 text-bone"
+          >
+            Video
+          </span>
+        </div>
 
         <div class="flex min-w-0 flex-1 flex-col justify-between gap-3 w-full">
           <div>
@@ -143,6 +151,7 @@ const sortedImages = computed(() => [...product.images].sort((a, b) => a.positio
       :product-id="product.id"
       :variants="product.variants"
       :next-position="nextPosition"
+      :allow-video="!product.images.some((image) => image.type === 'VIDEO')"
     />
   </section>
 </template>

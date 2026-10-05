@@ -1,30 +1,48 @@
 <script setup lang="ts">
 import {
   PRODUCT_IMAGE_CONTENT_TYPES,
+  PRODUCT_MEDIA_CONTENT_TYPES,
   createImageSchema,
+  mediaTypeOf,
   type AdminVariantDetail,
   type CreateImageInput,
 } from '@ironoak/contracts';
 import { useDropZone, useObjectUrl } from '@vueuse/core';
 import type { $ZodIssue } from 'zod/v4/core';
 
-const { productId, variants, nextPosition } = defineProps<{
+const {
+  productId,
+  variants,
+  nextPosition,
+  allowVideo = true,
+} = defineProps<{
   productId: string;
   variants: AdminVariantDetail[];
   nextPosition: number;
+  /** false when the product already has its one video */
+  allowVideo?: boolean;
 }>();
 
 const open = defineModel<boolean>('open', { required: true });
 
 const addImage = useAddImage();
+
 const {
-  status: uploadStatus,
-  progress: uploadProgress,
-  error: uploadError,
-  start: startUpload,
-  result: uploadResult,
-  cancel: cancelUpload,
-} = useImageUpload();
+  status: mediaStatus,
+  progress: mediaProgress,
+  error: mediaError,
+  start: startMediaUpload,
+  result: mediaResult,
+  cancel: cancelMediaUpload,
+} = useMediaUpload();
+
+const {
+  status: posterStatus,
+  error: posterError,
+  start: startPosterUpload,
+  result: posterResult,
+  cancel: cancelPosterUpload,
+} = useMediaUpload();
 
 const issues = ref<$ZodIssue[]>([]);
 
@@ -35,27 +53,48 @@ const roleId = useId();
 const variantSelectId = useId();
 
 const SHARED = '__shared__'; // Select does not accept empty values
-const ACCEPT = PRODUCT_IMAGE_CONTENT_TYPES.join(',');
+
+const accept = computed(() =>
+  (allowVideo ? PRODUCT_MEDIA_CONTENT_TYPES : PRODUCT_IMAGE_CONTENT_TYPES).join(','),
+);
 
 type Mode = 'upload' | 'url';
 const mode = ref<Mode>('upload');
 
+type Role = 'HERO' | 'DETAIL' | 'LIFESTYLE';
+
 function emptyForm() {
-  return { url: '', alt: '', role: 'DETAIL' as const, variantId: SHARED };
+  return { url: '', alt: '', role: 'DETAIL' as Role, variantId: SHARED };
 }
 
 const form = ref(emptyForm());
 
-// --- file selection: upload starts right away, while the admin fills the form ---
+// --- file selection: uploads start right away, while the admin fills the form ---
 const file = ref<File | null>(null);
 const previewUrl = useObjectUrl(file); // revoked automatically when the file changes
+const selectedType = computed(() => (file.value ? mediaTypeOf(file.value.type) : null));
+const isVideo = computed(() => selectedType.value === 'VIDEO');
+
 const missingFile = ref(false);
+const missingPoster = ref(false);
 
 function selectFile(selected: File) {
   file.value = selected;
   missingFile.value = false;
-  // errors are reflected in uploadError; nothing to handle here
-  startUpload(productId, selected).catch(() => {});
+  missingPoster.value = false;
+  cancelPosterUpload();
+
+  // a presentation video reads as a lifestyle shot, not a product detail
+  if (mediaTypeOf(selected.type) === 'VIDEO') form.value.role = 'LIFESTYLE';
+
+  // errors are reflected in mediaError; nothing to handle here
+  startMediaUpload(productId, selected, { allowVideo }).catch(() => {});
+}
+
+function onPosterCaptured(poster: File) {
+  missingPoster.value = false;
+  // a new frame replaces the previous poster upload
+  startPosterUpload(productId, poster).catch(() => {});
 }
 
 function onFileInput(event: Event) {
@@ -74,8 +113,10 @@ const { isOverDropZone } = useDropZone(dropZone, {
 });
 
 const fileErrors = computed(() => {
-  if (missingFile.value) return [{ message: 'Choose an image to upload.' }];
-  if (uploadError.value) return [{ message: uploadError.value }];
+  if (missingFile.value) return [{ message: 'Choose an image or video to upload.' }];
+  if (mediaError.value) return [{ message: mediaError.value }];
+  if (missingPoster.value) return [{ message: 'Pick a poster frame for the video.' }];
+  if (posterError.value) return [{ message: `Poster: ${posterError.value}` }];
   return [];
 });
 
@@ -96,10 +137,12 @@ function switchMode(next: Mode) {
 
 watch(open, (isOpen) => {
   if (isOpen) return;
-  // an unfinished or unsaved upload stays in tmp/ and expires on its own
-  cancelUpload();
+  // unfinished or unsaved uploads stay in tmp/ and expire on their own
+  cancelMediaUpload();
+  cancelPosterUpload();
   file.value = null;
   missingFile.value = false;
+  missingPoster.value = false;
   issues.value = [];
   mode.value = 'upload';
   form.value = emptyForm();
@@ -145,45 +188,66 @@ async function onSubmit() {
     return;
   }
 
-  // validate the rest of the form before waiting for the upload
-  const draft = createImageSchema.safeParse({ ...baseInput(), uploadKey: 'pending' });
+  if (isVideo.value && posterStatus.value === 'idle') {
+    missingPoster.value = true;
+    return;
+  }
+
+  // validate the rest of the form before waiting for the uploads
+  const draft = createImageSchema.safeParse({
+    ...baseInput(),
+    uploadKey: 'pending',
+    posterUploadKey: isVideo.value ? 'pending' : undefined,
+  });
   if (!draft.success) {
     issues.value = draft.error.issues;
     return;
   }
 
   let uploadKey: string;
+  let posterUploadKey: string | undefined;
   try {
-    uploadKey = await uploadResult();
+    [uploadKey, posterUploadKey] = await Promise.all([
+      mediaResult(),
+      isVideo.value ? posterResult() : Promise.resolve(undefined),
+    ]);
   } catch {
     return; // the reason is shown under the drop zone
   }
 
-  await submit({ ...draft.data, uploadKey });
+  await submit({ ...draft.data, uploadKey, posterUploadKey });
 }
+
+const uploading = computed(
+  () => mediaStatus.value === 'uploading' || posterStatus.value === 'uploading',
+);
 
 const submitLabel = computed(() => {
   if (addImage.isLoading.value) return 'Adding…';
-  if (mode.value === 'upload' && uploadStatus.value === 'uploading') {
-    return `Uploading… ${Math.round(uploadProgress.value * 100)}%`;
+  if (mode.value === 'upload' && uploading.value) {
+    return `Uploading… ${Math.round(mediaProgress.value * 100)}%`;
   }
-  return 'Add image';
+  return isVideo.value ? 'Add video' : 'Add image';
 });
 
 const submitDisabled = computed(
-  () => addImage.isLoading.value || (mode.value === 'upload' && uploadStatus.value === 'error'),
+  () =>
+    addImage.isLoading.value ||
+    (mode.value === 'upload' && (mediaStatus.value === 'error' || posterStatus.value === 'error')),
 );
 </script>
 
 <template>
   <Dialog v-model:open="open">
-    <DialogContent class="max-w-xl">
+    <DialogContent class="max-h-[calc(100dvh-2rem)] max-w-xl overflow-y-auto">
       <DialogHeader>
-        <DialogTitle>Add image</DialogTitle>
+        <DialogTitle>{{ isVideo ? 'Add video' : 'Add image' }}</DialogTitle>
         <DialogDescription>
           {{
             mode === 'upload'
-              ? 'Upload a file — it is sent while you fill in the details.'
+              ? allowVideo
+                ? 'Upload an image or one presentation video — it is sent while you fill in the details.'
+                : 'Upload an image — this product already has its video.'
               : 'Paste a URL from an external image host.'
           }}
         </DialogDescription>
@@ -193,39 +257,57 @@ const submitDisabled = computed(
         <FieldGroup>
           <!-- upload mode -->
           <Field v-if="mode === 'upload'" :data-invalid="fileErrors.length > 0">
-            <FieldLabel :for="fileId">Image file</FieldLabel>
+            <FieldLabel :for="fileId">{{ allowVideo ? 'Image or video' : 'Image file' }}</FieldLabel>
 
             <label
               ref="dropZone"
               :for="fileId"
-              class="flex min-h-48 cursor-pointer flex-col items-center justify-center gap-2 border border-dashed p-4 text-center transition-colors duration-(--duration-fast) ease-(--ease-lift)"
-              :class="isOverDropZone ? 'border-fg bg-raised' : 'border-line hover:border-fg'"
+              class="flex cursor-pointer flex-col items-center justify-center gap-2 border border-dashed p-4 text-center transition-colors duration-(--duration-fast) ease-(--ease-lift)"
+              :class="[
+                isOverDropZone ? 'border-fg bg-raised' : 'border-line hover:border-fg',
+                isVideo ? 'min-h-16' : 'min-h-48',
+              ]"
             >
-              <input :id="fileId" type="file" class="sr-only" :accept="ACCEPT" @change="onFileInput" />
+              <input :id="fileId" type="file" class="sr-only" :accept="accept" @change="onFileInput" />
 
-              <img v-if="previewUrl" :src="previewUrl" alt="" class="max-h-48 object-contain" />
+              <img v-if="previewUrl && !isVideo" :src="previewUrl" alt="" class="max-h-48 object-contain" />
+              <span v-else-if="isVideo" class="t-body-sm">{{ file?.name }} — click or drop to replace</span>
               <template v-else>
-                <span class="t-body-sm">Drop an image here or click to choose</span>
-                <span class="t-spec text-fg-muted">JPEG, PNG, WebP or AVIF · up to 10 MB</span>
+                <span class="t-body-sm">Drop a file here or click to choose</span>
+                <span class="t-spec text-fg-muted">
+                  JPEG, PNG, WebP or AVIF up to 10 MB<template v-if="allowVideo"> · MP4 or WebM up to 50 MB</template>
+                </span>
               </template>
             </label>
 
+            <!-- outside the label: clicks on the scrubber must not open the file picker -->
+            <ProductVideoPosterPicker v-if="file && isVideo" :file="file" @captured="onPosterCaptured" />
+
             <div
-              v-if="uploadStatus === 'uploading'"
+              v-if="mediaStatus === 'uploading'"
               role="progressbar"
               aria-label="Upload progress"
               aria-valuemin="0"
               aria-valuemax="100"
-              :aria-valuenow="Math.round(uploadProgress * 100)"
+              :aria-valuenow="Math.round(mediaProgress * 100)"
               class="h-1 w-full bg-line"
             >
-              <div class="h-full bg-fg transition-[width] duration-(--duration-fast)" :style="{ width: `${uploadProgress * 100}%` }" />
+              <div
+                class="h-full bg-fg transition-[width] duration-(--duration-fast)"
+                :style="{ width: `${mediaProgress * 100}%` }"
+              />
             </div>
-            <p v-else-if="uploadStatus === 'uploaded'" class="t-spec text-moss">Uploaded</p>
+            <p v-else-if="mediaStatus === 'uploaded'" class="t-spec text-moss">
+              {{ isVideo ? 'Video uploaded' : 'Uploaded' }}
+            </p>
 
             <FieldError :errors="fileErrors" />
 
-            <button type="button" class="t-spec w-fit text-fg-muted underline-offset-4 hover:underline" @click="switchMode('url')">
+            <button
+              type="button"
+              class="t-spec w-fit text-fg-muted underline-offset-4 hover:underline"
+              @click="switchMode('url')"
+            >
               Use an image URL instead
             </button>
           </Field>
@@ -236,7 +318,11 @@ const submitDisabled = computed(
               <FieldLabel :for="urlId">Image URL</FieldLabel>
               <Input :id="urlId" v-model="form.url" placeholder="https://…" />
               <FieldError :errors="errorsFor('url')" />
-              <button type="button" class="t-spec w-fit text-fg-muted underline-offset-4 hover:underline" @click="switchMode('upload')">
+              <button
+                type="button"
+                class="t-spec w-fit text-fg-muted underline-offset-4 hover:underline"
+                @click="switchMode('upload')"
+              >
                 Upload a file instead
               </button>
             </Field>
@@ -254,9 +340,13 @@ const submitDisabled = computed(
           </template>
 
           <Field :data-invalid="errorsFor('alt').length > 0">
-            <FieldLabel :for="altId">Alt text</FieldLabel>
-            <Input :id="altId" v-model="form.alt" placeholder="Atlas Rack in a home gym" />
-            <FieldDescription>Describes the image for screen readers and search engines.</FieldDescription>
+            <FieldLabel :for="altId">{{ isVideo ? 'Description' : 'Alt text' }}</FieldLabel>
+            <Input
+              :id="altId"
+              v-model="form.alt"
+              :placeholder="isVideo ? 'Solstice Rower — full stroke in a living room' : 'Atlas Rack in a home gym'"
+            />
+            <FieldDescription>Describes the media for screen readers and search engines.</FieldDescription>
             <FieldError :errors="errorsFor('alt')" />
           </Field>
 
@@ -273,7 +363,7 @@ const submitDisabled = computed(
                   <SelectItem value="LIFESTYLE">Lifestyle</SelectItem>
                 </SelectContent>
               </Select>
-              <FieldDescription>Hero is shown in listings.</FieldDescription>
+              <FieldDescription>Hero is shown in listings. Videos never are.</FieldDescription>
             </Field>
 
             <Field>
@@ -289,7 +379,7 @@ const submitDisabled = computed(
                   </SelectItem>
                 </SelectContent>
               </Select>
-              <FieldDescription>Variant-specific images replace shared ones when that variant is selected.</FieldDescription>
+              <FieldDescription>Variant-specific media replaces shared media when that variant is selected.</FieldDescription>
             </Field>
           </div>
         </FieldGroup>
