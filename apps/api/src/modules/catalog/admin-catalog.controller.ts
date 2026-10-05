@@ -33,9 +33,9 @@ import {
   createVariantSchema,
   type UpdateProductInput as UpdateProductDto,
   updateProductSchema,
-  type CreateImageUploadInput,
-  createImageUploadSchema,
   type CreateImageInput,
+  createMediaUploadSchema,
+  type CreateMediaUploadInput,
 } from '@ironoak/contracts';
 
 @ApiTags('admin')
@@ -62,15 +62,16 @@ export class AdminCatalogController {
   @Post(':id/images/uploads')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
-    summary: 'Request a signed URL for a direct image upload',
+    summary: 'Request a signed URL for a direct image or video upload',
     description:
       'Returns a short-lived URL. The client PUTs the file there with the returned headers, ' +
-      'then registers it with POST /admin/products/:id/images using uploadKey.',
+      'then registers it with POST /admin/products/:id/images using uploadKey ' +
+      '(and posterUploadKey for a video).',
   })
   createImageUpload(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body(new ZodValidationPipe(createImageUploadSchema))
-    dto: CreateImageUploadInput,
+    @Body(new ZodValidationPipe(createMediaUploadSchema))
+    dto: CreateMediaUploadInput,
   ) {
     return this.media.createUploadTicket(id, dto);
   }

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { orderStatusSchema } from './orders.js';
-
+import { mediaTypeSchema, type MediaType } from './catalog.js';
 // --- wejście ---
 const variantInputSchema = z.object({
   sku: z.string().min(1).max(64),
@@ -197,10 +197,11 @@ export const adminProductImageSchema = z.object({
   url: z.string(),
   alt: z.string(),
   role: z.string(),
+  type: mediaTypeSchema,
+  posterUrl: z.string().nullable(),
   position: z.number().int(),
   variantId: z.uuid().nullable(),
 });
-
 export const adminProductDetailSchema = z.object({
   id: z.uuid(),
   name: z.string(),
@@ -216,22 +217,54 @@ export const adminProductDetailSchema = z.object({
 
 export const imageRoleSchema = z.enum(['HERO', 'DETAIL', 'LIFESTYLE']);
 
-// --- product image uploads ---
+// --- product media uploads ---
 export const PRODUCT_IMAGE_CONTENT_TYPES = [
   'image/jpeg',
   'image/png',
   'image/webp',
   'image/avif',
 ] as const;
+export const PRODUCT_VIDEO_CONTENT_TYPES = ['video/mp4', 'video/webm'] as const;
+export const PRODUCT_MEDIA_CONTENT_TYPES = [
+  ...PRODUCT_IMAGE_CONTENT_TYPES,
+  ...PRODUCT_VIDEO_CONTENT_TYPES,
+] as const;
+
 export type ProductImageContentType = (typeof PRODUCT_IMAGE_CONTENT_TYPES)[number];
+export type ProductMediaContentType = (typeof PRODUCT_MEDIA_CONTENT_TYPES)[number];
 
 export const PRODUCT_IMAGE_MAX_BYTES = 10 * 1024 * 1024;
+export const PRODUCT_VIDEO_MAX_BYTES = 50 * 1024 * 1024;
 
-export const createImageUploadSchema = z.object({
-  contentType: z.enum(PRODUCT_IMAGE_CONTENT_TYPES),
-  size: z.number().int().positive().max(PRODUCT_IMAGE_MAX_BYTES, 'Image must be 10 MB or smaller'),
-});
-export type CreateImageUploadInput = z.infer<typeof createImageUploadSchema>;
+/** Media type for a content type, or null when it is not allowed. */
+export function mediaTypeOf(contentType: string): MediaType | null {
+  if ((PRODUCT_IMAGE_CONTENT_TYPES as readonly string[]).includes(contentType)) return 'IMAGE';
+  if ((PRODUCT_VIDEO_CONTENT_TYPES as readonly string[]).includes(contentType)) return 'VIDEO';
+  return null;
+}
+
+export function maxBytesFor(type: MediaType): number {
+  return type === 'VIDEO' ? PRODUCT_VIDEO_MAX_BYTES : PRODUCT_IMAGE_MAX_BYTES;
+}
+
+export const createMediaUploadSchema = z
+  .object({
+    contentType: z.enum(PRODUCT_MEDIA_CONTENT_TYPES),
+    size: z.number().int().positive(),
+  })
+  .superRefine((input, ctx) => {
+    const type = mediaTypeOf(input.contentType);
+    if (!type) return; // already rejected by the enum
+    const max = maxBytesFor(type);
+    if (input.size > max) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['size'],
+        message: `${type === 'VIDEO' ? 'Video' : 'Image'} must be ${max / 1024 / 1024} MB or smaller`,
+      });
+    }
+  });
+export type CreateMediaUploadInput = z.infer<typeof createMediaUploadSchema>;
 
 export const imageUploadTicketSchema = z.object({
   uploadKey: z.string(),
@@ -242,11 +275,12 @@ export const imageUploadTicketSchema = z.object({
 });
 export type ImageUploadTicket = z.infer<typeof imageUploadTicketSchema>;
 
-// an image comes either from an external URL or from a completed upload
+// media comes from an external URL or a completed upload; videos also need a poster upload
 export const createImageSchema = z
   .object({
     url: z.url().optional(),
     uploadKey: z.string().min(1).optional(),
+    posterUploadKey: z.string().min(1).optional(),
     alt: z.string().min(1).max(200),
     role: imageRoleSchema,
     position: z.number().int().nonnegative().default(0),
@@ -255,6 +289,10 @@ export const createImageSchema = z
   .refine((input) => Boolean(input.url) !== Boolean(input.uploadKey), {
     message: 'Provide either url or uploadKey',
     path: ['url'],
+  })
+  .refine((input) => !input.posterUploadKey || Boolean(input.uploadKey), {
+    message: 'A poster requires an uploaded video',
+    path: ['posterUploadKey'],
   });
 export type CreateImageInput = z.infer<typeof createImageSchema>;
 
@@ -267,6 +305,7 @@ export const updateImageSchema = z.object({
 export type UpdateImageInput = z.infer<typeof updateImageSchema>;
 
 export const imageIdResultSchema = z.object({ imageId: z.uuid() });
+export type ImageIdResult = z.infer<typeof imageIdResultSchema>;
 
 export type AdminProductDetail = z.infer<typeof adminProductDetailSchema>;
 

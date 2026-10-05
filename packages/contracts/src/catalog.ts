@@ -34,11 +34,17 @@ export const productVariantSchema = z.object({
 });
 export type ProductVariant = z.infer<typeof productVariantSchema>;
 
+export const mediaTypeSchema = z.enum(['IMAGE', 'VIDEO']);
+export type MediaType = z.infer<typeof mediaTypeSchema>;
+
 export const productImageSchema = z.object({
   url: z.string(),
   alt: z.string(),
   role: z.enum(['HERO', 'DETAIL', 'LIFESTYLE']),
-  variantId: z.uuid().nullable(), // null = wspólne dla produktu
+  type: mediaTypeSchema,
+  /** frame shown before a video plays; null for images */
+  posterUrl: z.string().nullable(),
+  variantId: z.uuid().nullable(), // null = shared by all variants
 });
 export type ProductImage = z.infer<typeof productImageSchema>;
 

@@ -191,6 +191,8 @@ export class CatalogService {
           .filter((i) => i.product.id === p.id)
           .map((i) => ({
             url: this.media.urlFor(i),
+            type: i.type,
+            posterUrl: this.media.posterUrlFor(i),
             alt: i.alt,
             role: i.role,
             variantId: i.variant?.id ?? null,
@@ -297,6 +299,8 @@ export class CatalogService {
       }),
       images: images.map((i) => ({
         url: this.media.urlFor(i),
+        type: i.type,
+        posterUrl: this.media.posterUrlFor(i),
         alt: i.alt,
         role: i.role,
         variantId: i.variant?.id ?? null,

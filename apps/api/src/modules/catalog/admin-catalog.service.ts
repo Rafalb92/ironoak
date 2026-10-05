@@ -3,8 +3,12 @@ import {
   Injectable,
   NotFoundException,
   Inject,
+  BadRequestException,
 } from '@nestjs/common';
-import { EntityManager } from '@mikro-orm/postgresql';
+import {
+  EntityManager,
+  UniqueConstraintViolationException,
+} from '@mikro-orm/postgresql';
 import type { StockLookup } from './application/ports/stock-lookup.port';
 import { STOCK_LOOKUP } from './application/ports/stock-lookup.port';
 import { randomUUID } from 'node:crypto';
@@ -20,6 +24,7 @@ import type {
   UpdateVariantInput as UpdateVariantDto,
   UpdateImageInput,
   CreateImageInput,
+  MediaType,
 } from '@ironoak/contracts';
 import { ProductImageSchema } from './entities/product-image.entity';
 import { ProductMediaService } from './product-media.service';
@@ -48,18 +53,41 @@ export class AdminCatalogService {
       }
     }
 
-    // an external URL, or a completed upload moved to permanent storage
-    const storageKey = dto.uploadKey
-      ? await this.media.promoteUpload(productId, dto.uploadKey)
+    // verify everything first — nothing leaves tmp/ until all rules pass
+    const media = dto.uploadKey
+      ? await this.media.verifyUpload(productId, dto.uploadKey)
       : null;
+    const poster = dto.posterUploadKey
+      ? await this.media.verifyUpload(productId, dto.posterUploadKey)
+      : null;
+    const type: MediaType = media?.type ?? 'IMAGE';
+
+    if (type === 'VIDEO') {
+      if (poster?.type !== 'IMAGE') {
+        throw new BadRequestException('A video needs a poster image');
+      }
+      const hasVideo = await this.em.count(ProductImageSchema, {
+        product: productId,
+        type: 'VIDEO',
+      });
+      if (hasVideo)
+        throw new ConflictException('This product already has a video');
+    } else if (poster) {
+      throw new BadRequestException('Only videos have a poster');
+    }
+
+    const storageKey = media ? await this.media.promote(media) : null;
+    const posterKey = poster ? await this.media.promote(poster) : null;
 
     try {
       const image = this.em.create(ProductImageSchema, {
         id: randomUUID(),
         product,
         variant,
+        type,
         url: storageKey ? null : (dto.url ?? null),
         storageKey,
+        posterKey,
         alt: dto.alt,
         role: dto.role,
         position: dto.position,
@@ -68,8 +96,14 @@ export class AdminCatalogService {
       await this.em.flush();
       return { imageId: image.id };
     } catch (error) {
-      // the file already left tmp/, so no lifecycle rule would ever clean it up
-      if (storageKey) await this.media.deleteQuietly(storageKey);
+      // promoted files have left tmp/, so no lifecycle rule would ever clean them up
+      for (const key of [storageKey, posterKey]) {
+        if (key) await this.media.deleteQuietly(key);
+      }
+      // the unique index caught a concurrent video upload the count above missed
+      if (error instanceof UniqueConstraintViolationException) {
+        throw new ConflictException('This product already has a video');
+      }
       throw error;
     }
   }
@@ -104,14 +138,16 @@ export class AdminCatalogService {
     const image = await this.em.findOne(ProductImageSchema, { id: imageId });
     if (!image) throw new NotFoundException('Image not found');
 
-    const storageKey = image.storageKey;
+    const keys = [image.storageKey, image.posterKey];
 
-    // hard delete — images are not part of order history
+    // hard delete — media is not part of order history
     this.em.remove(image);
     await this.em.flush();
 
-    // file after the row: a failed delete leaves a harmless orphan, never a broken image
-    if (storageKey) await this.media.deleteQuietly(storageKey);
+    // files after the row: a failed delete leaves a harmless orphan, never a broken image
+    for (const key of keys) {
+      if (key) await this.media.deleteQuietly(key);
+    }
 
     return { imageId, deleted: true };
   }
@@ -177,6 +213,8 @@ export class AdminCatalogService {
       images: images.map((i) => ({
         id: i.id,
         url: this.media.urlFor(i),
+        type: i.type,
+        posterUrl: this.media.posterUrlFor(i),
         alt: i.alt,
         role: i.role,
         position: i.position,
