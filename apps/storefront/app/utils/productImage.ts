@@ -3,9 +3,11 @@ import type { ProductImage, ProductListItem } from '@ironoak/contracts';
 /**
  * Image of the first variant wins; shared product images are the fallback.
  * HERO role is preferred within each group. Videos never represent a product
- * in cards or the hero — they belong to the product page gallery only.
+ * in cards, the hero or link previews — they belong to the gallery only.
  */
-export function pickPrimaryImage(product: ProductListItem): ProductImage | null {
+export function pickPrimaryImage(
+  product: Pick<ProductListItem, 'variants' | 'images'>,
+): ProductImage | null {
   const variantId = product.variants[0]?.id;
   const images = product.images.filter((image) => image.type === 'IMAGE');
 

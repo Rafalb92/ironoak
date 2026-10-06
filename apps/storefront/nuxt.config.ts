@@ -14,7 +14,12 @@ export default defineNuxtConfig({
     '/account/**': { ssr: false },
     '/login': { ssr: false },
   },
-
+  runtimeConfig: {
+    public: {
+      // absolute origin for canonical URLs and structured data; NUXT_PUBLIC_SITE_URL in production
+      siteUrl: 'http://localhost:3002',
+    },
+  },
   app: {
     head: {
       // storefront jest jasny; panel admina zostaje przy domyślnym ciemnym motywie
