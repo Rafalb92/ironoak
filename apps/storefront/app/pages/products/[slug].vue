@@ -3,6 +3,7 @@ import { useQuery } from '@pinia/colada';
 import { useIntersectionObserver } from '@vueuse/core';
 import type { ProductDetail } from '@ironoak/contracts';
 import { productDetailQuery } from '../../queries/products';
+import { useCartStore } from '../../stores/cart';
 
 // remount per product, not per ?variant change
 definePageMeta({ key: (route) => route.params.slug as string });
@@ -38,8 +39,38 @@ const stock = computed(() => {
   return { label: 'In stock, ready to ship', class: 'text-moss' };
 });
 
-function addToCart() {
-  // TODO: cart store — next step
+// --- add to cart ---
+const cart = useCartStore();
+const toast = useToast();
+
+const quantity = ref(1);
+const maxQuantity = computed(() => Math.max(1, selected.value?.maxOrderQuantity ?? 1));
+const adding = ref(false);
+
+// a different variant has its own stock limit — start again from one
+watch(
+  () => selected.value?.id,
+  () => {
+    quantity.value = 1;
+  },
+);
+
+async function addToCart() {
+  const variant = selected.value;
+  if (!variant?.inStock || adding.value) return;
+
+  adding.value = true;
+  try {
+    await cart.add(variant.id, quantity.value);
+    toast.success('Added to cart', `${product.value.name} — ${variant.name} × ${quantity.value}`, {
+      label: 'View cart',
+      onClick: () => navigateTo('/cart'),
+    });
+  } catch (error) {
+    toast.error('Could not add to cart', error instanceof Error ? error.message : undefined);
+  } finally {
+    adding.value = false;
+  }
 }
 
 // --- mobile buy bar: appears once the main button leaves the viewport ---
@@ -109,7 +140,7 @@ useHead({
       <div class="flex flex-col lg:sticky lg:top-28 lg:self-start">
         <NuxtLink
           :to="{ path: '/products', query: { category: product.category.slug } }"
-          class="t-eyebrow w-fit text-fg-muted transition-colors duration-(--duration-fast) ease-lift hover:text-fg"
+          class="t-eyebrow w-fit text-fg-muted transition-colors duration-(--duration-fast) ease-(--ease-lift) hover:text-fg"
         >
           {{ product.category.name }}
         </NuxtLink>
@@ -133,14 +164,22 @@ useHead({
           @select="select"
         />
 
-        <div ref="buyButton" class="mt-10">
+        <div ref="buyButton" class="mt-10 flex flex-wrap items-center gap-4">
+          <QuantityStepper
+            v-if="selected?.inStock"
+            v-model="quantity"
+            :max="maxQuantity"
+            :disabled="adding"
+          />
           <Button
             size="lg"
-            class="h-14 w-full rounded-pill text-base sm:w-auto sm:px-12"
-            :disabled="!selected?.inStock"
+            class="h-14 flex-1 rounded-pill text-base sm:flex-none sm:px-12"
+            :disabled="!selected?.inStock || adding"
             @click="addToCart"
           >
-            {{ selected?.inStock ? 'Add to cart' : 'Out of stock' }}
+            <template v-if="!selected?.inStock">Out of stock</template>
+            <template v-else-if="adding">Adding…</template>
+            <template v-else>Add to cart</template>
           </Button>
         </div>
       </div>
