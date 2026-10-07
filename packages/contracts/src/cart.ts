@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// --- wejście ---
+// --- input ---
 export const addItemSchema = z.object({
   productVariantId: z.uuid(),
   quantity: z.number().int().positive().max(99),
@@ -12,21 +12,34 @@ export const updateQuantitySchema = z.object({
 });
 export type UpdateQuantityInput = z.infer<typeof updateQuantitySchema>;
 
-export const mergeCartItemSchema = z.object({
+export const cartItemInputSchema = z.object({
   productVariantId: z.uuid(),
   quantity: z.number().int().positive().max(99),
 });
+export type CartItemInput = z.infer<typeof cartItemInputSchema>;
 
-export const mergeCartSchema = z.object({
-  items: z.array(mergeCartItemSchema).max(50),
+/** Raw items sent by the client — a guest cart to merge after login or to price. */
+export const cartItemsSchema = z.object({
+  items: z.array(cartItemInputSchema).max(50),
 });
+
+export const mergeCartSchema = cartItemsSchema;
 export type MergeCartInput = z.infer<typeof mergeCartSchema>;
 
-// --- wyjście ---
+export const previewCartSchema = cartItemsSchema;
+export type PreviewCartInput = z.infer<typeof previewCartSchema>;
+
+// kept for existing imports
+export const mergeCartItemSchema = cartItemInputSchema;
+
+// --- output ---
 export const cartLineSchema = z.object({
   productVariantId: z.uuid(),
   productName: z.string(),
   variantName: z.string(),
+  /** null when the variant no longer exists */
+  productSlug: z.string().nullable(),
+  imageUrl: z.string().nullable(),
   unitPrice: z.number().int(),
   quantity: z.number().int(),
   lineTotal: z.number().int(),

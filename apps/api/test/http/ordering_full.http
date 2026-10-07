@@ -14,15 +14,26 @@ GET {{host}}/products
 ### 2.1. Lista produktów bestsellers
 GET {{host}}/products?sort=bestselling&limit=3
 
+### Get Cart
+GET {{host}}/cart
+
 ### 3. dodaj 3 sztuki do koszyka
 POST {{host}}/cart/items
 Content-Type: application/json
 
 { "productVariantId": "{{variantId}}", "quantity": 1 }
 
-### 4. podejrzyj koszyk (ceny z katalogu, na żywo)
-GET  {{host}}/cart
+@variantId = 08b0dcfa-1639-4149-a20d-6496cf669849
+### 2. merge — the same items a guest cookie would hold
+POST {{host}}/cart/merge
+Content-Type: application/json
 
+{
+  "items": [
+    { "productVariantId": "{{variantId}}", "quantity": 1 },
+    { "productVariantId": "{{variantId}}", "quantity": 2 }
+  ]
+}
 ### 5. checkout — składa zamówienie i czyści koszyk
 POST {{host}}/checkout
 Content-Type: application/json

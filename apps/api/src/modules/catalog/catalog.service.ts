@@ -27,6 +27,17 @@ interface ProductPage {
   total: number;
 }
 
+export interface VariantSummary {
+  id: string;
+  name: string;
+  price: number;
+  /** false when either the variant or its product is deactivated */
+  active: boolean;
+  productName: string;
+  productSlug: string;
+  imageUrl: string | null;
+}
+
 @Injectable()
 export class CatalogService {
   constructor(
@@ -34,6 +45,49 @@ export class CatalogService {
     @Inject(STOCK_LOOKUP) private readonly stockLookup: StockLookup,
     private readonly media: ProductMediaService,
   ) {}
+
+  /**
+   * Everything a cart line shows: product and variant names, link target and
+   * a thumbnail. Image choice matches the storefront: the variant's own image,
+   * then the shared HERO, then any shared image — never a video.
+   */
+  async findVariantSummaries(ids: string[]): Promise<VariantSummary[]> {
+    if (ids.length === 0) return [];
+
+    const variants = await this.em.find(
+      ProductVariantSchema,
+      { id: { $in: ids } },
+      { populate: ['product'] },
+    );
+
+    const productIds = [...new Set(variants.map((v) => v.product.id))];
+    const images = await this.em.find(
+      ProductImageSchema,
+      { product: { $in: productIds }, type: 'IMAGE' },
+      { orderBy: { position: 'asc' } },
+    );
+
+    return variants.map((variant) => {
+      const productImages = images.filter(
+        (i) => i.product.id === variant.product.id,
+      );
+      const image =
+        productImages.find((i) => i.variant?.id === variant.id) ??
+        productImages.find((i) => !i.variant && i.role === 'HERO') ??
+        productImages.find((i) => !i.variant) ??
+        null;
+
+      return {
+        id: variant.id,
+        name: variant.name,
+        price: variant.price,
+        active: variant.active && variant.product.active,
+        productName: variant.product.name,
+        productSlug: variant.product.slug,
+        imageUrl: image ? this.media.urlFor(image) : null,
+      };
+    });
+  }
 
   /**
    * Maps raw stock to what the customer sees.
