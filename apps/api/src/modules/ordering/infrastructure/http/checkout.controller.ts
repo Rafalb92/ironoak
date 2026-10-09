@@ -14,7 +14,10 @@ import { ZodValidationPipe } from '../../../../shared/pipes/zod-validation.pipe'
 import { CartService } from '../../../cart/cart.service';
 import { PlaceOrderUseCase } from '../../application/use-cases/place-order/place-order.use-case';
 import { PlaceOrderCommand } from '../../application/use-cases/place-order/place-order.command';
-import { checkoutSchema, type CheckoutDto } from './dto/checkout.schema';
+import {
+  checkoutSchema,
+  type CheckoutInput as CheckoutDto,
+} from '@ironoak/contracts';
 
 @ApiTags('orders')
 @Controller('checkout')

@@ -170,5 +170,14 @@ export const useCartStore = defineStore('cart', () => {
     );
   }
 
-  return { cart, count, isLoading, add, update, remove, mergeGuestCart };
-});
+  // checkout is blocked until every line can actually be bought
+  const checkoutIssue = computed(() => {
+    const items = cart.value.items;
+    if (items.some((line) => !line.available)) return 'Remove unavailable items to continue.';
+    if (items.some((line) => line.exceedsStock))
+      return 'Reduce quantities that exceed stock to continue.';
+    return null;
+  });
+
+    return { cart, count, isLoading, checkoutIssue, add, update, remove, mergeGuestCart };
+})

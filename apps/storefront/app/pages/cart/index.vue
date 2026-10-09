@@ -12,13 +12,6 @@ const auth = useAuthStore();
 const lines = computed(() => cart.cart.items);
 const isEmpty = computed(() => lines.value.length === 0);
 
-// checkout is blocked until every line can actually be bought
-const blockingIssue = computed(() => {
-  if (lines.value.some((line) => !line.available)) return 'Remove unavailable items to continue.';
-  if (lines.value.some((line) => line.exceedsStock)) return 'Reduce quantities that exceed stock to continue.';
-  return null;
-});
-
 // guests sign in first and come back to checkout; the cart merges on the way
 const checkoutTo = computed(() =>
   auth.isAuthenticated ? '/checkout' : { path: '/login', query: { redirect: '/checkout' } },
@@ -72,10 +65,10 @@ const checkoutTo = computed(() =>
           </div>
         </dl>
 
-        <p v-if="blockingIssue" class="t-spec text-rust">{{ blockingIssue }}</p>
+        <p v-if="cart.checkoutIssue" class="t-spec text-rust">{{ cart.checkoutIssue }}</p>
 
         <Button
-          v-if="!blockingIssue"
+          v-if="!cart.checkoutIssue"
           as-child
           size="lg"
           class="h-14 w-full rounded-pill text-base"

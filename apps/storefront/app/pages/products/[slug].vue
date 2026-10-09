@@ -132,7 +132,6 @@ useHead({
 </script>
 
 <template>
-  <!-- single root: required for page transitions; bottom padding leaves room for the mobile buy bar -->
   <div class="flex flex-col gap-16 pb-24 md:gap-24 lg:pb-0">
     <article class="grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
       <ProductGallery :images="images" :product-name="product.name" class="min-w-0" />

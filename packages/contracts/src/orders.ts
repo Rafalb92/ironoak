@@ -11,12 +11,13 @@ export const orderStatusSchema = z.enum([
 export type OrderStatus = z.infer<typeof orderStatusSchema>;
 
 export const addressSchema = z.object({
-  street: z.string().min(1),
-  buildingNumber: z.string().min(1),
-  apartmentNumber: z.string().optional(),
-  city: z.string().min(1),
-  postalCode: z.string().min(1),
-  country: z.string().min(1),
+  street: z.string().trim().min(1, 'Enter the street').max(120),
+  buildingNumber: z.string().trim().min(1, 'Enter the building number').max(20),
+  apartmentNumber: z.string().trim().max(20).optional(),
+  city: z.string().trim().min(1, 'Enter the city').max(80),
+  postalCode: z.string().trim().min(1, 'Enter the postal code').max(12),
+  // ISO 3166-1 alpha-2, chosen from the storefront's shipping list
+  country: z.string().length(2, 'Choose a country'),
 });
 export type Address = z.infer<typeof addressSchema>;
 

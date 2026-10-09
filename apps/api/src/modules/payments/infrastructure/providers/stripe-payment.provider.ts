@@ -7,6 +7,13 @@ import type {
   PaymentWebhookEvent,
 } from '../../application/ports/payment-provider.port';
 
+function withQuery(base: string, params: Record<string, string>): string {
+  const url = new URL(base);
+  for (const [name, value] of Object.entries(params))
+    url.searchParams.set(name, value);
+  return url.toString();
+}
+
 @Injectable()
 export class StripePaymentProvider implements PaymentProvider {
   private readonly logger = new Logger(StripePaymentProvider.name);
@@ -45,8 +52,10 @@ export class StripePaymentProvider implements PaymentProvider {
       // metadata wraca w webhooku — tak wiążemy sesję z zamówieniem
       metadata: { orderId: params.orderId },
       customer_email: params.customerEmail,
-      success_url: `${this.successUrl}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: this.cancelUrl,
+      // the storefront needs the order id to poll its status after returning;
+      // {CHECKOUT_SESSION_ID} stays raw — Stripe substitutes it, URLSearchParams would encode the braces
+      success_url: `${withQuery(this.successUrl, { order: params.orderId })}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: withQuery(this.cancelUrl, { order: params.orderId }),
     });
 
     if (!session.url) {
