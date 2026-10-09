@@ -27,6 +27,7 @@ async function onSubmit() {
   isSubmitting.value = true;
   try {
     await auth.login(parsed.data);
+    await navigateTo(safeRedirect(route.query.redirect));
     const redirect = route.query.redirect as string | undefined;
     await navigateTo(redirect ?? '/');
   } catch (error) {

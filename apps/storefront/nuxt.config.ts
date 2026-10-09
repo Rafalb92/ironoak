@@ -13,6 +13,7 @@ export default defineNuxtConfig({
     '/checkout/**': { ssr: false },
     '/account/**': { ssr: false },
     '/login': { ssr: false },
+    '/register': { ssr: false },
   },
   runtimeConfig: {
     public: {

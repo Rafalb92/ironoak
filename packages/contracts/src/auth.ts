@@ -1,22 +1,19 @@
 import { z } from 'zod';
 
-// --- wejście ---
+// --- input ---
 export const loginSchema = z.object({
-  email: z.email('Nieprawidłowy adres e-mail'),
-  password: z.string().min(1, 'Hasło wymagane'),
+  email: z.email('Enter a valid email address'),
+  password: z.string().min(1, 'Enter your password'),
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 
 export const registerSchema = z.object({
-  email: z.email('Nieprawidłowy adres e-mail'),
-  password: z
-    .string()
-    .min(8, 'Hasło musi mieć min. 8 znaków')
-    .max(128, 'Hasło zbyt długie'),
+  email: z.email('Enter a valid email address'),
+  password: z.string().min(8, 'Use at least 8 characters').max(128, 'Use at most 128 characters'),
 });
 export type RegisterInput = z.infer<typeof registerSchema>;
 
-// --- wyjście ---
+// --- output ---
 export const authSuccessSchema = z.object({
   success: z.literal(true),
 });
