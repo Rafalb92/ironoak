@@ -4,3 +4,4 @@ export * from './catalog.js';
 export * from './orders.js';
 export * from './payments.js';
 export * from './admin.js';
+export * from './account.js';

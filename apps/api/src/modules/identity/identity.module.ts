@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { MyAddressesController } from './adapters/in/http/my-addresses.controller';
 import Redis from 'ioredis';
 import { PASSWORD_HASHER } from './application/ports/password-hasher.port';
 import { ConfigService } from '@nestjs/config';
@@ -21,6 +22,7 @@ import { LogoutController } from './adapters/in/http/logout.controller';
 import { RefreshTokenController } from './adapters/in/http/refresh-token.controller';
 import { LogoutUseCase } from './application/use-cases/logout/logout.use-case';
 import { CustomerQueryService } from './application/services/customer-query.service';
+import { CustomerAddressService } from './application/services/customer-address.service';
 import { AdminUserController } from './adapters/in/http/admin-user.controller';
 
 @Module({
@@ -49,6 +51,7 @@ import { AdminUserController } from './adapters/in/http/admin-user.controller';
     RefreshTokenUseCase,
     LogoutUseCase,
     CustomerQueryService,
+    CustomerAddressService,
   ],
   controllers: [
     RegisterUserController,
@@ -57,6 +60,7 @@ import { AdminUserController } from './adapters/in/http/admin-user.controller';
     LogoutController,
     RefreshTokenController,
     AdminUserController,
+    MyAddressesController,
   ],
   exports: [PASSWORD_HASHER, CustomerQueryService],
 })

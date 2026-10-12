@@ -179,5 +179,5 @@ export const useCartStore = defineStore('cart', () => {
     return null;
   });
 
-    return { cart, count, isLoading, checkoutIssue, add, update, remove, mergeGuestCart };
-})
+  return { cart, count, isLoading, checkoutIssue, add, update, remove, mergeGuestCart };
+});

@@ -3,6 +3,7 @@
 
 import { AccountSchema } from './modules/identity/domain/account.entity';
 import { CategorySchema } from './modules/catalog/entities/category.entity';
+import { CustomerAddressSchema } from './modules/identity/domain/customer-address.entity';
 import { InboxMessageEntity } from './shared-infra/inbox/inbox-message.entity';
 import { OrderEntitySchema } from './modules/ordering/infrastructure/persistence/order.entity';
 import { OutboxMessageSchema } from './shared-infra/outbox/outbox-message.entity';
@@ -18,6 +19,7 @@ import { EntityManager as DriverEntityManager } from '@mikro-orm/postgresql';
 export const entities = [
   AccountSchema,
   CategorySchema,
+  CustomerAddressSchema,
   InboxMessageEntity,
   OrderEntitySchema,
   OutboxMessageSchema,
