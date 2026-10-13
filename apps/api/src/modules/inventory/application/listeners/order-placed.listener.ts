@@ -1,10 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import {
-  EntityManager,
-  UniqueConstraintViolationException,
-} from '@mikro-orm/postgresql';
-import { InboxMessageEntity } from '../../../../shared-infra/inbox/inbox-message.entity';
+import { EntityManager } from '@mikro-orm/postgresql';
+import { runOnce } from '../../../../shared-infra/inbox/run-once';
 import { OrderEventName } from '../../../ordering/domain/events/order-event-names';
 import { ReserveStockUseCase } from '../use-cases/reserve-stock/reserve-stock.command';
 
@@ -30,26 +27,16 @@ export class InventoryOrderPlacedListener {
 
   @OnEvent(OrderEventName.PLACED, { promisify: true })
   async handle(event: IntegrationEvent): Promise<void> {
-    const handlerName = InventoryOrderPlacedListener.name;
-    const em = this.em.fork();
-
-    // idempotencja — zajmij zdarzenie zanim ruszysz logikę
-    try {
-      em.create(InboxMessageEntity, { eventId: event.eventId, handlerName });
-      await em.flush();
-    } catch (error) {
-      if (error instanceof UniqueConstraintViolationException) {
-        this.logger.debug(
-          `Event ${event.eventId} already handled by ${handlerName}, skipping`,
-        );
-        return;
-      }
-      throw error;
-    }
-
-    await this.reserveStock.execute({
-      orderId: event.payload.orderId,
-      lines: event.payload.lines,
-    });
+    await runOnce(
+      this.em,
+      event.eventId,
+      InventoryOrderPlacedListener.name,
+      this.logger,
+      () =>
+        this.reserveStock.execute({
+          orderId: event.payload.orderId,
+          lines: event.payload.lines,
+        }),
+    );
   }
 }

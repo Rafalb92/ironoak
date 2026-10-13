@@ -1,10 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import {
-  EntityManager,
-  UniqueConstraintViolationException,
-} from '@mikro-orm/postgresql';
-import { InboxMessageEntity } from '../../../../shared-infra/inbox/inbox-message.entity';
+import { EntityManager } from '@mikro-orm/postgresql';
+import { runOnce } from '../../../../shared-infra/inbox/run-once';
 import { PaymentEventName } from '../../../payments/domain/events/payment-event-names';
 import { ConfirmPaymentBySystemUseCase } from '../use-cases/confirm-payment-by-system/confirm-payment-by-system.use-case';
 
@@ -32,22 +29,12 @@ export class PaymentSucceededListener {
 
   @OnEvent(PaymentEventName.SUCCEEDED, { promisify: true })
   async handle(event: IntegrationEvent): Promise<void> {
-    const handlerName = PaymentSucceededListener.name;
-    const em = this.em.fork();
-
-    try {
-      em.create(InboxMessageEntity, { eventId: event.eventId, handlerName });
-      await em.flush();
-    } catch (error) {
-      if (error instanceof UniqueConstraintViolationException) {
-        this.logger.debug(
-          `Event ${event.eventId} already handled by ${handlerName}, skipping`,
-        );
-        return;
-      }
-      throw error;
-    }
-
-    await this.confirmPayment.execute(event.payload.orderId);
+    await runOnce(
+      this.em,
+      event.eventId,
+      PaymentSucceededListener.name,
+      this.logger,
+      () => this.confirmPayment.execute(event.payload.orderId),
+    );
   }
 }

@@ -1,12 +1,14 @@
-import {
-  EntityManager,
-  UniqueConstraintViolationException,
-} from '@mikro-orm/postgresql';
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { EntityManager } from '@mikro-orm/postgresql';
+import { runOnce } from '../../../../shared-infra/inbox/run-once';
 import { CatalogEventName } from '../../../catalog/events/catalog-event-names';
-import { InboxMessageEntity } from '../../../../shared-infra/inbox/inbox-message.entity';
 import { CreateStockItemUseCase } from '../use-cases/create-stock/create-stock.use-case';
+
+interface IntegrationEvent {
+  eventId: string;
+  payload: { productVariantId: string; initialStock: number };
+}
 
 @Injectable()
 export class InventoryVariantCreatedListener {
@@ -18,24 +20,17 @@ export class InventoryVariantCreatedListener {
   ) {}
 
   @OnEvent(CatalogEventName.VARIANT_CREATED, { promisify: true })
-  async handle(event: {
-    eventId: string;
-    payload: { productVariantId: string; initialStock: number };
-  }): Promise<void> {
-    const handlerName = InventoryVariantCreatedListener.name;
-    const em = this.em.fork();
-
-    try {
-      em.create(InboxMessageEntity, { eventId: event.eventId, handlerName });
-      await em.flush();
-    } catch (error) {
-      if (error instanceof UniqueConstraintViolationException) return;
-      throw error;
-    }
-
-    await this.createStockItem.execute(
-      event.payload.productVariantId,
-      event.payload.initialStock,
+  async handle(event: IntegrationEvent): Promise<void> {
+    await runOnce(
+      this.em,
+      event.eventId,
+      InventoryVariantCreatedListener.name,
+      this.logger,
+      () =>
+        this.createStockItem.execute(
+          event.payload.productVariantId,
+          event.payload.initialStock,
+        ),
     );
   }
 }
