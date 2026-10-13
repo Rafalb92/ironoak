@@ -5,12 +5,14 @@ import { Money } from '../../../../shared-kernel/domain/value-objects/money.vo';
 import type { IOrderEntity, OrderLineData, AddressData } from './order.entity';
 
 export class OrderMapper {
-  // === AGREGAT → ENCJA (zapis) ===
+  // === AGGREGATE → ENTITY (write) ===
   static toPersistence(order: Order): Omit<IOrderEntity, never> {
     return {
       id: order.id,
       customerId: order.customerId,
       status: order.status,
+      shippingMethod: order.shippingMethodCode,
+      shippingAmount: order.shippingCost.amount,
       totalAmount: order.totalAmount.amount,
       currency: order.totalAmount.currency,
       deliveryAddress: this.addressToData(order.deliveryAddress),
@@ -20,21 +22,24 @@ export class OrderMapper {
     };
   }
 
-  // === ENCJA → AGREGAT (odczyt) — używa restore(), NIE create()! ===
+  // === ENTITY → AGGREGATE (read) — uses restore(), NOT create() ===
   static toDomain(entity: IOrderEntity): Order {
+    const currency = entity.currency as 'USD';
     return Order.restore({
       id: entity.id,
       customerId: entity.customerId,
       status: entity.status as OrderStatus,
-      totalAmount: Money.of(entity.totalAmount, entity.currency as 'USD'),
       deliveryAddress: this.dataToAddress(entity.deliveryAddress),
+      shippingMethodCode: entity.shippingMethod,
+      shippingCost: Money.of(entity.shippingAmount, currency),
+      totalAmount: Money.of(entity.totalAmount, currency),
       lines: entity.lines.map((data) => this.dataToLine(data)),
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     });
   }
 
-  // --- pomocnicze: VO ↔ dane ---
+  // --- helpers: value objects ↔ data ---
   private static lineToData(line: OrderLine): OrderLineData {
     return {
       productVariantId: line.productVariantId,
@@ -67,7 +72,7 @@ export class OrderMapper {
   private static dataToAddress(data: AddressData): Address {
     return Address.of({
       ...data,
-      apartmentNumber: data.apartmentNumber ?? undefined, // null → undefined na wejściu do VO
+      apartmentNumber: data.apartmentNumber ?? undefined, // null → undefined into the VO
     });
   }
 }

@@ -7,6 +7,7 @@ import {
 import { Order } from '../../../domain/order.aggregate';
 import { OrderLine } from '../../../domain/value-objects/order-line.vo';
 import { Address } from '../../../domain/value-objects/address.vo';
+import { ShippingMethod } from '../../../domain/value-objects/shipping-method.vo';
 import {
   ORDER_REPOSITORY,
   type OrderRepository,
@@ -52,12 +53,12 @@ export class PlaceOrderUseCase {
       });
     });
 
-    const deliveryAddress = Address.of(command.deliveryAddress);
-
     const order = Order.create({
       customerId: command.customerId,
       lines,
-      deliveryAddress,
+      deliveryAddress: Address.of(command.deliveryAddress),
+      // the price comes from the domain's catalogue, never from the client
+      shippingMethod: ShippingMethod.of(command.shippingMethod),
     });
 
     await this.orders.save(order);

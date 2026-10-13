@@ -32,6 +32,7 @@ import { CUSTOMER_LOOKUP } from './application/ports/customer-lookup.port';
 import { IdentityCustomerLookup } from './infrastructure/customer/identity-customer-lookup';
 import { AdminOrderQueryController } from './infrastructure/http/admin-order-query.controller';
 import { OrderPaidSalesListener } from '../catalog/listeners/order-paid-sales.listener';
+import { ShippingMethodsController } from './infrastructure/http/shipping-methods.controller';
 
 @Module({
   imports: [CatalogModule, IdentityModule, CartModule], // ← jawna zależność między kontekstami
@@ -75,6 +76,7 @@ import { OrderPaidSalesListener } from '../catalog/listeners/order-paid-sales.li
     OrderAdminController,
     CheckoutController,
     AdminOrderQueryController,
+    ShippingMethodsController,
   ],
   exports: [OrderQueryService],
 })

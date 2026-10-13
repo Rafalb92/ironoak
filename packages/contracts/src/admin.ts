@@ -78,12 +78,14 @@ export const adminOrderDetailSchema = z.object({
   status: orderStatusSchema,
   totalAmount: z.number().int(),
   currency: z.string(),
-  lines: z.array(z.object({
-    productVariantId: z.uuid(),
-    productName: z.string(),
-    unitPriceAmount: z.number().int(),
-    quantity: z.number().int(),
-  })),
+  lines: z.array(
+    z.object({
+      productVariantId: z.uuid(),
+      productName: z.string(),
+      unitPriceAmount: z.number().int(),
+      quantity: z.number().int(),
+    }),
+  ),
   deliveryAddress: z.object({
     street: z.string(),
     buildingNumber: z.string(),
@@ -92,6 +94,8 @@ export const adminOrderDetailSchema = z.object({
     postalCode: z.string(),
     country: z.string(),
   }),
+  shippingMethod: z.string(),
+  shippingAmount: z.number().int(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });

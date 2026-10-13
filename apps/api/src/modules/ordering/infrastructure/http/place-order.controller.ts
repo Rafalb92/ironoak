@@ -10,9 +10,8 @@ import { PlaceOrderUseCase } from '../../application/use-cases/place-order/place
 import { PlaceOrderCommand } from '../../application/use-cases/place-order/place-order.command';
 import { ZodValidationPipe } from '../../../../shared/pipes/zod-validation.pipe';
 import { CurrentUser } from '../../../../shared/decorators/current-user.decorator';
-
-import { type PlaceOrderDto, placeOrderSchema } from './dto/place-order.schema';
 import { JwtAuthGuard } from '../../../../shared/guards/jwt-auth.guard';
+import { type PlaceOrderDto, placeOrderSchema } from '@ironoak/contracts';
 
 @Controller('orders')
 export class PlaceOrderController {
@@ -26,7 +25,15 @@ export class PlaceOrderController {
     @CurrentUser() user: { userId: string },
   ): Promise<{ orderId: string }> {
     return this.placeOrder.execute(
-      new PlaceOrderCommand(user.userId, dto.lines, dto.deliveryAddress),
+      new PlaceOrderCommand(
+        user.userId,
+        dto.lines.map((i) => ({
+          productVariantId: i.productVariantId,
+          quantity: i.quantity,
+        })),
+        dto.deliveryAddress,
+        dto.shippingMethod,
+      ),
     );
   }
 }

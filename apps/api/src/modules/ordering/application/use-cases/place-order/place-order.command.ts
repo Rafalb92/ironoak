@@ -17,5 +17,6 @@ export class PlaceOrderCommand {
     public readonly customerId: string,
     public readonly lines: PlaceOrderLineInput[],
     public readonly deliveryAddress: PlaceOrderAddressInput,
+    public readonly shippingMethod: string,
   ) {}
 }

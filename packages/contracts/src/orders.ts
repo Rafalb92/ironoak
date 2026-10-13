@@ -21,13 +21,30 @@ export const addressSchema = z.object({
 });
 export type Address = z.infer<typeof addressSchema>;
 
+export const shippingMethodCodeSchema = z.enum(['STANDARD', 'WHITE_GLOVE']);
+export type ShippingMethodCode = z.infer<typeof shippingMethodCodeSchema>;
+
+export const shippingOptionSchema = z.object({
+  code: shippingMethodCodeSchema,
+  name: z.string(),
+  description: z.string(),
+  estimate: z.string(),
+  price: z.number().int(),
+  currency: z.string(),
+});
+export type ShippingOption = z.infer<typeof shippingOptionSchema>;
+
+export const shippingOptionListSchema = z.array(shippingOptionSchema);
+
 export const checkoutSchema = z.object({
   deliveryAddress: addressSchema,
+  // default keeps older clients (and .http files) working
+  shippingMethod: shippingMethodCodeSchema.default('STANDARD'),
 });
 export type CheckoutInput = z.infer<typeof checkoutSchema>;
 
 export const orderSummarySchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   status: orderStatusSchema,
   totalAmount: z.number().int(),
   currency: z.string(),
@@ -37,7 +54,7 @@ export const orderSummarySchema = z.object({
 export type OrderSummary = z.infer<typeof orderSummarySchema>;
 
 export const orderLineSchema = z.object({
-  productVariantId: z.string().uuid(),
+  productVariantId: z.uuid(),
   productName: z.string(),
   unitPrice: z.number().int(),
   quantity: z.number().int(),
@@ -45,8 +62,11 @@ export const orderLineSchema = z.object({
 });
 
 export const orderDetailSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   status: orderStatusSchema,
+  subtotalAmount: z.number().int(),
+  shippingMethod: z.object({ code: z.string(), name: z.string() }),
+  shippingAmount: z.number().int(),
   totalAmount: z.number().int(),
   currency: z.string(),
   lines: z.array(orderLineSchema),
@@ -55,3 +75,26 @@ export const orderDetailSchema = z.object({
   updatedAt: z.coerce.date(),
 });
 export type OrderDetail = z.infer<typeof orderDetailSchema>;
+
+export const placeOrderSchema = z.object({
+  lines: z
+    .array(
+      z.object({
+        productVariantId: z.string().uuid(),
+        quantity: z.number().int().positive(),
+      }),
+    )
+    .min(1, 'Order must contain at least one line'),
+  deliveryAddress: z.object({
+    street: z.string().min(1),
+    buildingNumber: z.string().min(1),
+    apartmentNumber: z.string().optional(),
+    city: z.string().min(1),
+    postalCode: z.string().min(1),
+    country: z.string().min(1),
+  }),
+  // default keeps older clients (and .http files) working
+  shippingMethod: shippingMethodCodeSchema.default('STANDARD'),
+});
+
+export type PlaceOrderDto = z.infer<typeof placeOrderSchema>;

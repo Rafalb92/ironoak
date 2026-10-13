@@ -94,6 +94,7 @@ export class CheckoutController {
           quantity: i.quantity,
         })),
         dto.deliveryAddress,
+        dto.shippingMethod,
       ),
     );
 

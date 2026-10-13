@@ -27,6 +27,13 @@ export class InvalidAddressError extends DomainError {
     super(message);
   }
 }
+export class InvalidShippingMethodError extends DomainError {
+  readonly code = 'UNKNOWN_SHIPPING_METHOD';
+  readonly httpStatus = DomainErrorStatus.BAD_REQUEST;
+  constructor(message: string) {
+    super(message);
+  }
+}
 
 export class InvalidOrderLineError extends DomainError {
   readonly code = 'ORDER_LINE_INVALID';

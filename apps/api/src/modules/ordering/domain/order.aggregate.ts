@@ -3,6 +3,7 @@ import { AggregateRoot } from '../../../shared-kernel/domain/aggregate-root.base
 import { Money } from '../../../shared-kernel/domain/value-objects/money.vo';
 import { Address } from './value-objects/address.vo';
 import { OrderLine } from './value-objects/order-line.vo';
+import { ShippingMethod } from './value-objects/shipping-method.vo';
 import { OrderPlacedEvent } from './events/order-placed.event';
 import { OrderPaidEvent } from './events/order-paid.event';
 import { OrderShippedEvent } from './events/order-shipped.event';
@@ -25,6 +26,7 @@ export interface CreateOrderProps {
   customerId: string;
   lines: OrderLine[];
   deliveryAddress: Address;
+  shippingMethod: ShippingMethod;
 }
 
 export class Order extends AggregateRoot {
@@ -32,17 +34,20 @@ export class Order extends AggregateRoot {
   private _customerId!: string;
   private _lines!: OrderLine[];
   private _status!: OrderStatus;
-  private _totalAmount!: Money;
   private _deliveryAddress!: Address;
+  // snapshot, like line prices: a later price change never rewrites a placed order
+  private _shippingMethodCode!: string;
+  private _shippingCost!: Money;
+  private _totalAmount!: Money;
   private _createdAt!: Date;
   private _updatedAt!: Date;
 
-  // prywatny — tworzenie tylko przez fabrykę create() lub restore()
+  // private — created only through create() or restore()
   private constructor() {
     super();
   }
 
-  // === TWORZENIE NOWEGO ZAMÓWIENIA ===
+  // === PLACING A NEW ORDER ===
   static create(props: CreateOrderProps): Order {
     if (props.lines.length === 0) {
       throw new EmptyOrderError();
@@ -53,8 +58,10 @@ export class Order extends AggregateRoot {
     order._customerId = props.customerId;
     order._lines = [...props.lines];
     order._deliveryAddress = props.deliveryAddress;
+    order._shippingMethodCode = props.shippingMethod.code;
+    order._shippingCost = props.shippingMethod.price;
     order._status = OrderStatus.PENDING_PAYMENT;
-    order._totalAmount = order.calculateTotal(); // LICZONY, nie podany
+    order._totalAmount = order.calculateTotal(); // CALCULATED, never given
     order._createdAt = new Date();
     order._updatedAt = new Date();
 
@@ -67,14 +74,16 @@ export class Order extends AggregateRoot {
     return order;
   }
 
-  // === ODTWORZENIE Z BAZY (bez zdarzeń, bez walidacji tworzenia) ===
+  // === RESTORING FROM STORAGE (no events, no creation rules) ===
   static restore(props: {
     id: string;
     customerId: string;
     lines: OrderLine[];
     status: OrderStatus;
-    totalAmount: Money;
     deliveryAddress: Address;
+    shippingMethodCode: string;
+    shippingCost: Money;
+    totalAmount: Money;
     createdAt: Date;
     updatedAt: Date;
   }): Order {
@@ -83,14 +92,16 @@ export class Order extends AggregateRoot {
     order._customerId = props.customerId;
     order._lines = [...props.lines];
     order._status = props.status;
-    order._totalAmount = props.totalAmount;
     order._deliveryAddress = props.deliveryAddress;
+    order._shippingMethodCode = props.shippingMethodCode;
+    order._shippingCost = props.shippingCost;
+    order._totalAmount = props.totalAmount;
     order._createdAt = props.createdAt;
     order._updatedAt = props.updatedAt;
     return order;
   }
 
-  // === METODY-PRZEJŚCIA (maszyna stanów) ===
+  // === TRANSITIONS (state machine) ===
   confirmPayment(): void {
     if (this._status !== OrderStatus.PENDING_PAYMENT) {
       throw new InvalidOrderTransitionError(
@@ -143,19 +154,18 @@ export class Order extends AggregateRoot {
     );
   }
 
-  // === POMOCNICZE ===
+  // === HELPERS ===
+
+  // invariant: total = lines + shipping — this is what the customer pays
   private calculateTotal(): Money {
-    return this._lines.reduce(
-      (sum, line) => sum.add(line.lineTotal),
-      Money.of(0, 'USD'),
-    );
+    return this.subtotal.add(this._shippingCost);
   }
 
   private touch(): void {
     this._updatedAt = new Date();
   }
 
-  // === GETTERY (tylko odczyt — brak setterów!) ===
+  // === READ-ONLY ACCESS (no setters) ===
   get id(): string {
     return this._id;
   }
@@ -167,6 +177,19 @@ export class Order extends AggregateRoot {
   }
   get status(): OrderStatus {
     return this._status;
+  }
+  /** lines only, before shipping */
+  get subtotal(): Money {
+    return this._lines.reduce(
+      (sum, line) => sum.add(line.lineTotal),
+      Money.of(0, 'USD'),
+    );
+  }
+  get shippingMethodCode(): string {
+    return this._shippingMethodCode;
+  }
+  get shippingCost(): Money {
+    return this._shippingCost;
   }
   get totalAmount(): Money {
     return this._totalAmount;

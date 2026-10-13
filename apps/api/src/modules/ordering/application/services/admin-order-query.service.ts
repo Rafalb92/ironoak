@@ -76,6 +76,8 @@ export class AdminOrderQueryService {
         customerEmail: emailByCustomer.get(o.customerId) ?? null,
         status: o.status,
         totalAmount: o.totalAmount,
+        shippingMethod: o.shippingMethod,
+        shippingAmount: o.shippingAmount,
         currency: o.currency,
         itemCount: (o.lines as Array<{ quantity: number }>).reduce(
           (sum, line) => sum + line.quantity,
@@ -100,6 +102,8 @@ export class AdminOrderQueryService {
       customerId: order.customerId,
       customerEmail: customer?.email ?? null,
       status: order.status,
+      shippingMethod: order.shippingMethod,
+      shippingAmount: order.shippingAmount,
       totalAmount: order.totalAmount,
       currency: order.currency,
       lines: order.lines,
