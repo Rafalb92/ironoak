@@ -7,7 +7,7 @@ import { CustomerAddressSchema } from './modules/identity/domain/customer-addres
 import { InboxMessageEntity } from './shared-infra/inbox/inbox-message.entity';
 import { OrderEntitySchema } from './modules/ordering/infrastructure/persistence/order.entity';
 import { OutboxMessageSchema } from './shared-infra/outbox/outbox-message.entity';
-import { PaymentEntitySchema } from './modules/payments/infrastructure/persistence/payment.entity';
+import { PaymentEntitySchema } from './modules/payments/adapters/out/persistence/payment.entity';
 import { ProductImageSchema } from './modules/catalog/entities/product-image.entity';
 import { ProductSalesSchema } from './modules/catalog/entities/product-sales.entity';
 import { ProductSchema } from './modules/catalog/entities/product.entity';

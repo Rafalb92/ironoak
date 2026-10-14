@@ -3,7 +3,7 @@ import type {
   PaymentProvider,
   CheckoutSession,
   PaymentWebhookEvent,
-} from '../../application/ports/payment-provider.port';
+} from '../../../application/ports/payment-provider.port';
 
 export class FakePaymentProvider implements PaymentProvider {
   async createCheckoutSession(_: {

@@ -5,7 +5,7 @@ import type {
   PaymentProvider,
   CheckoutSession,
   PaymentWebhookEvent,
-} from '../../application/ports/payment-provider.port';
+} from '../../../application/ports/payment-provider.port';
 
 function withQuery(base: string, params: Record<string, string>): string {
   const url = new URL(base);

@@ -1,5 +1,5 @@
-import { Payment, PaymentStatus } from '../../domain/payment.aggregate';
-import { Money } from '../../../../shared-kernel/domain/value-objects/money.vo';
+import { Payment, PaymentStatus } from '../../../domain/payment.aggregate';
+import { Money } from '../../../../../shared-kernel/domain/value-objects/money.vo';
 import type { IPaymentEntity } from './payment.entity';
 
 export class PaymentMapper {

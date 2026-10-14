@@ -9,8 +9,8 @@ import {
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { ApiExcludeController } from '@nestjs/swagger';
-import { HandlePaymentWebhookUseCase } from '../../application/use-cases/handle-payment-webhook/handle-payment-webhook.use-case';
-import { ZodValidationPipe } from '../../../../shared/pipes/zod-validation.pipe';
+import { HandlePaymentWebhookUseCase } from '../../../application/use-cases/handle-payment-webhook/handle-payment-webhook.use-case';
+import { ZodValidationPipe } from '../../../../../shared/pipes/zod-validation.pipe';
 import { PaymentSimulationEnabledGuard } from './payment-simulation-enabled.guard';
 import {
   simulatePaymentSchema,

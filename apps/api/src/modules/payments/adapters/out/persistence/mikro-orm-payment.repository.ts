@@ -1,10 +1,10 @@
 import { EntityManager } from '@mikro-orm/postgresql';
 
-import { Payment } from '../../domain/payment.aggregate';
+import { Payment } from '../../../domain/payment.aggregate';
 import { PaymentEntitySchema } from './payment.entity';
 import { PaymentMapper } from './payment.mapper';
-import type { PaymentRepository } from '../../application/ports/payment.repository.port';
-import { OutboxWriter } from '../../../../shared-infra/outbox/outbox-writer';
+import type { PaymentRepository } from '../../../application/ports/payment.repository.port';
+import { OutboxWriter } from '../../../../../shared-infra/outbox/outbox-writer';
 
 export class MikroOrmPaymentRepository implements PaymentRepository {
   constructor(private readonly em: EntityManager) {}

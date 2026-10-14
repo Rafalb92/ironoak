@@ -13,12 +13,12 @@ import {
   PAYMENT_PROVIDER,
   PaymentWebhookEvent,
   type PaymentProvider,
-} from '../../application/ports/payment-provider.port';
-import { HandlePaymentWebhookUseCase } from '../../application/use-cases/handle-payment-webhook/handle-payment-webhook.use-case';
+} from '../../../application/ports/payment-provider.port';
+import { HandlePaymentWebhookUseCase } from '../../../application/use-cases/handle-payment-webhook/handle-payment-webhook.use-case';
 import { EntityManager } from '@mikro-orm/postgresql';
 import { UniqueConstraintViolationException } from '@mikro-orm/core';
-import { InboxMessageEntity } from '../../../../shared-infra/inbox/inbox-message.entity';
-import { UnsupportedWebhookEventError } from '../providers/stripe-payment.provider';
+import { InboxMessageEntity } from '../../../../../shared-infra/inbox/inbox-message.entity';
+import { UnsupportedWebhookEventError } from '../../out/payment/stripe-payment.provider';
 import { ApiExcludeEndpoint, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { WebhookReceived } from '@ironoak/contracts';
 
