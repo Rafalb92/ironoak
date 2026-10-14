@@ -18,6 +18,8 @@ alternatives and the consequences — including the costs.
 | [0011](0011-hybrid-attribute-model.md)             | Hybrid attribute model for product variants              | Accepted |
 | [0012](0012-webhook-as-payment-source-of-truth.md) | Webhook as the only source of truth for payment status   | Accepted |
 | [0013](0013-mikroorm-defineentity.md)              | MikroORM with defineEntity, no inverse relation sides    | Accepted |
+| [0014](0014-sales-ranking-read-model.md)           | Sales ranking as an event-fed read model in Catalog      | Accepted |
+| [0015](0015-object-storage-product-media.md)       | Object storage for product media via presigned uploads   | Accepted |
 | [0016](0016-module-folder-layout.md)               | Ports-and-adapters folder layout for rich-domain modules | Accepted |
 
 ## Format
