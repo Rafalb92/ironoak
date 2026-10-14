@@ -1,4 +1,4 @@
-import { StockItem } from '../../domain/stock-item.aggregate';
+import { StockItem } from '../../../domain/stock-item.aggregate';
 import { IStockItemEntity } from './stock-item.entity';
 
 export class StockItemMapper {

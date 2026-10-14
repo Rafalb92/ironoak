@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
 import { STOCK_ITEM_REPOSITORY } from './application/ports/stock-item.repository.port';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { MikroOrmStockItemRepository } from './infrastructure/persistence/mikro-orm.stock-item.repository';
+import { MikroOrmStockItemRepository } from './adapters/out/persistence/mikro-orm.stock-item.repository';
 import { ReserveStockUseCase } from './application/use-cases/reserve-stock/reserve-stock.command';
 import { ReleaseStockUseCase } from './application/use-cases/release-stock/release-stock.use-case';
 import { ShipStockUseCase } from './application/use-cases/ship-stock/ship-stock.use-case';
-import { InventoryOrderPlacedListener } from './application/listeners/order-placed.listener';
-import { InventoryOrderCancelledListener } from './application/listeners/order-cancelled.listener';
-import { InventoryOrderShippedListener } from './application/listeners/order-shipped.listener';
+import { InventoryOrderPlacedListener } from './adapters/in/events/order-placed.listener';
+import { InventoryOrderCancelledListener } from './adapters/in/events/order-cancelled.listener';
+import { InventoryOrderShippedListener } from './adapters/in/events/order-shipped.listener';
 import { AdjustStockUseCase } from './application/use-cases/adjust-stock/adjust-stock.use-case';
 import { CreateStockItemUseCase } from './application/use-cases/create-stock/create-stock.use-case';
-import { InventoryVariantCreatedListener } from './application/listeners/variant-created.listener';
+import { InventoryVariantCreatedListener } from './adapters/in/events/variant-created.listener';
 import { StockQueryService } from './application/services/stock-query.service';
 
 @Module({

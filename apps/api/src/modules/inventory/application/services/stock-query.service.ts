@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { StockItemEntitySchema } from '../../infrastructure/persistence/stock-item.entity';
+import { StockItemEntitySchema } from '../../adapters/out/persistence/stock-item.entity';
 
 export interface StockLevel {
   productVariantId: string;

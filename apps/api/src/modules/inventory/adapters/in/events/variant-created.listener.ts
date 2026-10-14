@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { runOnce } from '../../../../shared-infra/inbox/run-once';
-import { CatalogEventName } from '../../../catalog/events/catalog-event-names';
-import { CreateStockItemUseCase } from '../use-cases/create-stock/create-stock.use-case';
+import { runOnce } from '../../../../../shared-infra/inbox/run-once';
+import { CatalogEventName } from '../../../../catalog/events/catalog-event-names';
+import { CreateStockItemUseCase } from '../../../application/use-cases/create-stock/create-stock.use-case';
 
 interface IntegrationEvent {
   eventId: string;

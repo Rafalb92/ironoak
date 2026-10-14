@@ -2,7 +2,7 @@ import type { EntityManager } from '@mikro-orm/postgresql';
 import { Seeder } from '@mikro-orm/seeder';
 import { ProductVariantSchema } from '../modules/catalog/entities/product-variant.entity';
 import { randomUUID } from 'crypto';
-import { StockItemEntitySchema } from '../modules/inventory/infrastructure/persistence/stock-item.entity';
+import { StockItemEntitySchema } from '../modules/inventory/adapters/out/persistence/stock-item.entity';
 
 export class InventorySeeder extends Seeder {
   async run(em: EntityManager): Promise<void> {

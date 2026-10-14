@@ -1,6 +1,6 @@
 import { EntityManager, LockMode } from '@mikro-orm/postgresql';
-import { StockItemRepository } from '../../application/ports/stock-item.repository.port';
-import { StockItem } from '../../domain/stock-item.aggregate';
+import { StockItemRepository } from '../../../application/ports/stock-item.repository.port';
+import { StockItem } from '../../../domain/stock-item.aggregate';
 import { StockItemMapper } from './stock-item.mapper';
 import { StockItemEntitySchema } from './stock-item.entity';
 

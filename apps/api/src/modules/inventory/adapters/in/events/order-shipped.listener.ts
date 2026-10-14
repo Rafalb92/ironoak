@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { runOnce } from '../../../../shared-infra/inbox/run-once';
-import { OrderEventName } from '../../../ordering/domain/events/order-event-names';
-import { ReleaseStockUseCase } from '../use-cases/release-stock/release-stock.use-case';
+import { runOnce } from '../../../../../shared-infra/inbox/run-once';
+import { OrderEventName } from '../../../../ordering/domain/events/order-event-names';
+import { ShipStockUseCase } from '../../../application/use-cases/ship-stock/ship-stock.use-case';
 
 interface IntegrationEvent {
   eventId: string;
@@ -12,29 +12,28 @@ interface IntegrationEvent {
   occurredAt: Date;
   payload: {
     orderId: string;
-    reason: string;
     lines: Array<{ productVariantId: string; quantity: number }>;
   };
 }
 
 @Injectable()
-export class InventoryOrderCancelledListener {
-  private readonly logger = new Logger(InventoryOrderCancelledListener.name);
+export class InventoryOrderShippedListener {
+  private readonly logger = new Logger(InventoryOrderShippedListener.name);
 
   constructor(
     private readonly em: EntityManager,
-    private readonly releaseStock: ReleaseStockUseCase,
+    private readonly shipStock: ShipStockUseCase,
   ) {}
 
-  @OnEvent(OrderEventName.CANCELLED, { promisify: true })
+  @OnEvent(OrderEventName.SHIPPED, { promisify: true })
   async handle(event: IntegrationEvent): Promise<void> {
     await runOnce(
       this.em,
       event.eventId,
-      InventoryOrderCancelledListener.name,
+      InventoryOrderShippedListener.name,
       this.logger,
       () =>
-        this.releaseStock.execute({
+        this.shipStock.execute({
           orderId: event.payload.orderId,
           lines: event.payload.lines,
         }),
