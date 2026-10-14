@@ -1,6 +1,7 @@
 import { Order, OrderStatus } from './order.aggregate';
 import { OrderLine } from './value-objects/order-line.vo';
 import { Address } from './value-objects/address.vo';
+import { ShippingMethod } from './value-objects/shipping-method.vo';
 import { Money } from '../../../shared-kernel/domain/value-objects/money.vo';
 import {
   EmptyOrderError,
@@ -25,11 +26,14 @@ const aLine = (price = 1000, qty = 2) =>
     quantity: qty,
   });
 
+const aStandardShipping = () => ShippingMethod.of('STANDARD');
+
 const anOrder = () =>
   Order.create({
     customerId: 'customer-1',
     lines: [aLine()],
     deliveryAddress: anAddress(),
+    shippingMethod: aStandardShipping(),
   });
 
 describe('Order aggregate', () => {
@@ -45,6 +49,7 @@ describe('Order aggregate', () => {
           customerId: 'customer-1',
           lines: [],
           deliveryAddress: anAddress(),
+          shippingMethod: aStandardShipping(),
         }),
       ).toThrow(EmptyOrderError);
     });
@@ -59,6 +64,7 @@ describe('Order aggregate', () => {
         customerId: 'customer-1',
         lines: [aLine(1000, 2), aLine(500, 3)], // 2000 + 1500
         deliveryAddress: anAddress(),
+        shippingMethod: aStandardShipping(),
       });
       expect(order.totalAmount.amount).toBe(3500);
     });
@@ -68,6 +74,42 @@ describe('Order aggregate', () => {
       const events = order.pullDomainEvents();
       expect(events).toHaveLength(1);
       expect(events[0].eventName).toBe('order.placed');
+    });
+  });
+
+  describe('shipping', () => {
+    it('adds the shipping cost to the sum of line totals', () => {
+      const order = Order.create({
+        customerId: 'customer-1',
+        lines: [aLine(1000, 2), aLine(500, 3)], // 2000 + 1500
+        deliveryAddress: anAddress(),
+        shippingMethod: ShippingMethod.of('WHITE_GLOVE'),
+      });
+      expect(order.subtotal.amount).toBe(3500);
+      expect(order.shippingMethodCode).toBe('WHITE_GLOVE');
+      expect(order.shippingCost.amount).toBe(14900);
+      expect(order.totalAmount.amount).toBe(3500 + 14900);
+    });
+
+    it('keeps the stored shipping cost when restoring an order (snapshot)', () => {
+      // placed when white-glove delivery cost 9900, before the price changed
+      const order = Order.restore({
+        id: 'order-1',
+        customerId: 'customer-1',
+        lines: [aLine(1000, 2)],
+        status: OrderStatus.PAID,
+        deliveryAddress: anAddress(),
+        shippingMethodCode: 'WHITE_GLOVE',
+        shippingCost: Money.of(9900, 'USD'),
+        totalAmount: Money.of(2000 + 9900, 'USD'),
+        createdAt: new Date('2026-01-01'),
+        updatedAt: new Date('2026-01-01'),
+      });
+      expect(order.shippingCost.amount).toBe(9900);
+      expect(order.shippingCost.amount).not.toBe(
+        ShippingMethod.of('WHITE_GLOVE').price.amount,
+      );
+      expect(order.totalAmount.amount).toBe(11900);
     });
   });
 
