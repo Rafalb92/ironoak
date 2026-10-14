@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { runOnce } from '../../../../shared-infra/inbox/run-once';
-import { InventoryEventName } from '../../../inventory/domain/events/inventory-event-names';
-import { CancelOrderBySystemUseCase } from '../use-cases/cancel-order-by-system/cancel-order-by-system.use-case';
+import { runOnce } from '../../../../../shared-infra/inbox/run-once';
+import { InventoryEventName } from '../../../../inventory/domain/events/inventory-event-names';
+import { CancelOrderBySystemUseCase } from '../../../application/use-cases/cancel-order-by-system/cancel-order-by-system.use-case';
 
 interface IntegrationEvent {
   eventId: string;

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { CatalogService } from '../../../catalog/catalog.service';
-import { Money } from '../../../../shared-kernel/domain/value-objects/money.vo';
+import { CatalogService } from '../../../../catalog/catalog.service';
+import { Money } from '../../../../../shared-kernel/domain/value-objects/money.vo';
 import type {
   CatalogGateway,
   ProductSnapshot,
-} from '../../application/ports/catalog-gateway.port';
+} from '../../../application/ports/catalog-gateway.port';
 
 /**
  * Anti-corruption layer: Catalog's read model → Ordering's snapshot.

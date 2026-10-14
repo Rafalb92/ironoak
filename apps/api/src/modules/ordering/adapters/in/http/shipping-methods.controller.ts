@@ -1,7 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { ShippingOption } from '@ironoak/contracts';
-import { ShippingMethod } from '../../domain/value-objects/shipping-method.vo';
+import { ShippingMethod } from '../../../domain/value-objects/shipping-method.vo';
 
 /** Public: guests see delivery options and prices before signing in. */
 @ApiTags('orders')

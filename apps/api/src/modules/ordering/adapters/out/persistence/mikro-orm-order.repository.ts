@@ -1,10 +1,10 @@
 import { EntityManager } from '@mikro-orm/postgresql';
 
-import { Order } from '../../domain/order.aggregate';
+import { Order } from '../../../domain/order.aggregate';
 import { OrderEntitySchema } from './order.entity';
 import { OrderMapper } from './order.mapper';
-import type { OrderRepository } from '../../application/ports/order.repository.port';
-import { OutboxWriter } from '../../../../shared-infra/outbox/outbox-writer';
+import type { OrderRepository } from '../../../application/ports/order.repository.port';
+import { OutboxWriter } from '../../../../../shared-infra/outbox/outbox-writer';
 
 export class MikroOrmOrderRepository implements OrderRepository {
   constructor(private readonly em: EntityManager) {}

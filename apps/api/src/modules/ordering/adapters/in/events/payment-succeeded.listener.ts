@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { EntityManager } from '@mikro-orm/postgresql';
-import { runOnce } from '../../../../shared-infra/inbox/run-once';
-import { PaymentEventName } from '../../../payments/domain/events/payment-event-names';
-import { ConfirmPaymentBySystemUseCase } from '../use-cases/confirm-payment-by-system/confirm-payment-by-system.use-case';
+import { runOnce } from '../../../../../shared-infra/inbox/run-once';
+import { PaymentEventName } from '../../../../payments/domain/events/payment-event-names';
+import { ConfirmPaymentBySystemUseCase } from '../../../application/use-cases/confirm-payment-by-system/confirm-payment-by-system.use-case';
 
 interface IntegrationEvent {
   eventId: string;

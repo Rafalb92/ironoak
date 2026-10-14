@@ -3,7 +3,7 @@ import { EntityManager, type FilterQuery } from '@mikro-orm/postgresql';
 import {
   OrderEntitySchema,
   type IOrderEntity,
-} from '../../infrastructure/persistence/order.entity';
+} from '../../adapters/out/persistence/order.entity';
 import {
   CUSTOMER_LOOKUP,
   type CustomerLookup,

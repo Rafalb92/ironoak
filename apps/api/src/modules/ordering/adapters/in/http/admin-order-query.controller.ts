@@ -6,11 +6,11 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ZodValidationPipe } from '../../../../shared/pipes/zod-validation.pipe';
+import { ZodValidationPipe } from '../../../../../shared/pipes/zod-validation.pipe';
 
-import { JwtAuthGuard } from '../../../../shared/guards/jwt-auth.guard';
-import { RolesGuard } from '../../../../shared/guards/roles.guard';
-import { Roles } from '../../../../shared/decorators/roles.decorator';
+import { JwtAuthGuard } from '../../../../../shared/guards/jwt-auth.guard';
+import { RolesGuard } from '../../../../../shared/guards/roles.guard';
+import { Roles } from '../../../../../shared/decorators/roles.decorator';
 import {
   ApiCookieAuth,
   ApiOperation,
@@ -19,7 +19,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { AdminOrderQueryService } from '../../application/services/admin-order-query.service';
+import { AdminOrderQueryService } from '../../../application/services/admin-order-query.service';
 import {
   type AdminOrderQuery,
   adminOrderQuerySchema,

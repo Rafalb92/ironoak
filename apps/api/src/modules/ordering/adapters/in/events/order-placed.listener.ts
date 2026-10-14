@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { OrderEventName } from '../../domain/events/order-event-names';
+import { OrderEventName } from '../../../domain/events/order-event-names';
 import {
   EntityManager,
   UniqueConstraintViolationException,
 } from '@mikro-orm/postgresql';
-import { InboxMessageEntity } from '../../../../shared-infra/inbox/inbox-message.entity';
+import { InboxMessageEntity } from '../../../../../shared-infra/inbox/inbox-message.entity';
 interface IntegrationEvent {
   eventId: string;
   aggregateId: string;

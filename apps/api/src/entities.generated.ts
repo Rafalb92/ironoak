@@ -5,7 +5,7 @@ import { AccountSchema } from './modules/identity/domain/account.entity';
 import { CategorySchema } from './modules/catalog/entities/category.entity';
 import { CustomerAddressSchema } from './modules/identity/domain/customer-address.entity';
 import { InboxMessageEntity } from './shared-infra/inbox/inbox-message.entity';
-import { OrderEntitySchema } from './modules/ordering/infrastructure/persistence/order.entity';
+import { OrderEntitySchema } from './modules/ordering/adapters/out/persistence/order.entity';
 import { OutboxMessageSchema } from './shared-infra/outbox/outbox-message.entity';
 import { PaymentEntitySchema } from './modules/payments/adapters/out/persistence/payment.entity';
 import { ProductImageSchema } from './modules/catalog/entities/product-image.entity';

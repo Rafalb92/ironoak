@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CustomerQueryService } from '../../../identity/application/services/customer-query.service';
+import { CustomerQueryService } from '../../../../identity/application/services/customer-query.service';
 import type {
   CustomerLookup,
   Customer,
-} from '../../application/ports/customer-lookup.port';
+} from '../../../application/ports/customer-lookup.port';
 
 @Injectable()
 export class IdentityCustomerLookup implements CustomerLookup {
