@@ -19,6 +19,15 @@ alternatives and the consequences — including the costs.
 | [0012](0012-webhook-as-payment-source-of-truth.md) | Webhook as the only source of truth for payment status | Accepted |
 | [0013](0013-mikroorm-defineentity.md)              | MikroORM with defineEntity, no inverse relation sides  | Accepted |
 
+## Module layout
+
+Rich-domain modules in `apps/api` (identity, ordering, payments, inventory) use ports and adapters:
+`domain/`, `application/` (ports, use cases, read services) and `adapters/`.
+`adapters/in` holds what drives the application (HTTP controllers, event listeners);
+`adapters/out` holds what the application drives through ports (persistence, port implementations).
+Catalog and cart are deliberately flat CRUD/service modules.
+See [ADR-0016](docs/adr/0016-module-folder-layout.md) and [ADR-0003](docs/adr/0003-selective-ddd-depth.md).
+
 ## Format
 
 ```markdown
