@@ -67,7 +67,8 @@ export class OrderController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Cancel my order',
-    description: 'Allowed only from PENDING_PAYMENT or PAID.',
+    description:
+      'Allowed only while the order is awaiting payment. Paid orders are cancelled by support.',
   })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiBody({

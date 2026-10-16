@@ -57,6 +57,7 @@ export const orderSummarySchema = z.object({
   itemCount: z.number().int(),
   createdAt: z.coerce.date(),
 });
+export const orderSummaryListSchema = z.array(orderSummarySchema);
 export type OrderSummary = z.infer<typeof orderSummarySchema>;
 
 export const orderLineSchema = z.object({
