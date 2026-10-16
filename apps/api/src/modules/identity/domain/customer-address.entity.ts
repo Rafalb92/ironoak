@@ -11,7 +11,8 @@ export const CustomerAddressSchema = defineEntity({
   properties: {
     id: p.uuid().primary().defaultRaw('gen_random_uuid()'),
     user: () => p.manyToOne(UserSchema).deleteRule('cascade'),
-
+    recipientName: p.string().nullable(),
+    phone: p.string().nullable(),
     street: p.string(),
     buildingNumber: p.string(),
     apartmentNumber: p.string().nullable(),

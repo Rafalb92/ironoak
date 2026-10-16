@@ -16,7 +16,28 @@ import {
 
 const MAX_ADDRESSES = 5;
 
-type AddressFields = Omit<CreateSavedAddressInput, 'isDefault'>;
+/** Input shape: new entries always have recipient and phone, older ones may not. */
+interface AddressInput {
+  recipientName?: string | null;
+  phone?: string | null;
+  street: string;
+  buildingNumber: string;
+  apartmentNumber?: string | null;
+  city: string;
+  postalCode: string;
+  country: string;
+}
+
+interface NormalizedAddress {
+  recipientName: string | null;
+  phone: string | null;
+  street: string;
+  buildingNumber: string;
+  apartmentNumber: string | null;
+  city: string;
+  postalCode: string;
+  country: string;
+}
 
 /**
  * Address book: plain CRUD with three rules — one default per customer,
@@ -86,8 +107,10 @@ export class CustomerAddressService {
     const { isDefault, ...changes } = input;
 
     if (Object.keys(changes).length > 0) {
-      const merged = this.normalize({ ...this.fieldsOf(address), ...changes });
-      this.em.assign(address, merged);
+      this.em.assign(
+        address,
+        this.normalize({ ...this.fieldsOf(address), ...changes }),
+      );
     }
 
     if (isDefault && !address.isDefault) {
@@ -152,12 +175,10 @@ export class CustomerAddressService {
     return address;
   }
 
-  private normalize(input: AddressFields): Required<
-    Omit<AddressFields, 'apartmentNumber'>
-  > & {
-    apartmentNumber: string | null;
-  } {
+  private normalize(input: AddressInput): NormalizedAddress {
     return {
+      recipientName: input.recipientName?.trim() || null,
+      phone: input.phone?.trim() || null,
       street: input.street.trim(),
       buildingNumber: input.buildingNumber.trim(),
       apartmentNumber: input.apartmentNumber?.trim() || null,
@@ -167,24 +188,32 @@ export class CustomerAddressService {
     };
   }
 
-  private fieldsOf(address: ICustomerAddress): AddressFields {
+  private fieldsOf(address: ICustomerAddress): AddressInput {
     return {
+      recipientName: address.recipientName ?? null,
+      phone: address.phone ?? null,
       street: address.street,
       buildingNumber: address.buildingNumber,
-      apartmentNumber: address.apartmentNumber ?? undefined,
+      apartmentNumber: address.apartmentNumber ?? null,
       city: address.city,
       postalCode: address.postalCode,
       country: address.country,
     };
   }
 
+  /** The same place for a different person is a different entry. */
   private sameAddress(
     address: ICustomerAddress,
-    fields: ReturnType<CustomerAddressService['normalize']>,
+    fields: NormalizedAddress,
   ): boolean {
     const same = (a: string | null | undefined, b: string | null) =>
       (a ?? '').toLowerCase() === (b ?? '').toLowerCase();
+    const digits = (value: string | null | undefined) =>
+      (value ?? '').replace(/\D/g, '');
+
     return (
+      same(address.recipientName, fields.recipientName) &&
+      digits(address.phone) === digits(fields.phone) &&
       same(address.street, fields.street) &&
       same(address.buildingNumber, fields.buildingNumber) &&
       same(address.apartmentNumber, fields.apartmentNumber) &&
@@ -197,6 +226,8 @@ export class CustomerAddressService {
   private toDto(address: ICustomerAddress): SavedAddress {
     return {
       id: address.id,
+      recipientName: address.recipientName ?? null,
+      phone: address.phone ?? null,
       street: address.street,
       buildingNumber: address.buildingNumber,
       apartmentNumber: address.apartmentNumber ?? null,

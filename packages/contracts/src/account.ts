@@ -14,6 +14,9 @@ export type UpdateSavedAddressInput = z.infer<typeof updateSavedAddressSchema>;
 export const savedAddressSchema = addressSchema.extend({
   id: z.uuid(),
   apartmentNumber: z.string().nullable(),
+  // null on entries saved before recipient and phone were collected
+  recipientName: z.string().nullable(),
+  phone: z.string().nullable(),
   isDefault: z.boolean(),
 });
 export type SavedAddress = z.infer<typeof savedAddressSchema>;

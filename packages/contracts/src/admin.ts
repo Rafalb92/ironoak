@@ -86,6 +86,8 @@ export const adminOrderDetailSchema = z.object({
       quantity: z.number().int(),
     }),
   ),
+  recipientName: z.string().nullable(),
+  phone: z.string().nullable(),
   deliveryAddress: z.object({
     street: z.string(),
     buildingNumber: z.string(),

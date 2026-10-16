@@ -4,6 +4,8 @@ export interface PlaceOrderLineInput {
 }
 
 export interface PlaceOrderAddressInput {
+  recipientName: string;
+  phone: string;
   street: string;
   buildingNumber: string;
   apartmentNumber?: string;

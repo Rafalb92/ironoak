@@ -11,6 +11,12 @@ export const orderStatusSchema = z.enum([
 export type OrderStatus = z.infer<typeof orderStatusSchema>;
 
 export const addressSchema = z.object({
+  recipientName: z.string().trim().min(2, "Enter the recipient's full name").max(100),
+  // loose on purpose: national formats differ too much for a strict pattern
+  phone: z
+    .string()
+    .trim()
+    .regex(/^\+?[\d\s()-]{7,20}$/, 'Enter a phone number, e.g. +1 555 010 0199'),
   street: z.string().trim().min(1, 'Enter the street').max(120),
   buildingNumber: z.string().trim().min(1, 'Enter the building number').max(20),
   apartmentNumber: z.string().trim().max(20).optional(),
@@ -70,7 +76,11 @@ export const orderDetailSchema = z.object({
   totalAmount: z.number().int(),
   currency: z.string(),
   lines: z.array(orderLineSchema),
-  deliveryAddress: addressSchema.extend({ apartmentNumber: z.string().nullable() }),
+  deliveryAddress: addressSchema.extend({
+    apartmentNumber: z.string().nullable(),
+    recipientName: z.string().nullable(),
+    phone: z.string().nullable(),
+  }),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });
@@ -80,21 +90,17 @@ export const placeOrderSchema = z.object({
   lines: z
     .array(
       z.object({
-        productVariantId: z.string().uuid(),
+        productVariantId: z.uuid(),
         quantity: z.number().int().positive(),
       }),
     )
     .min(1, 'Order must contain at least one line'),
-  deliveryAddress: z.object({
-    street: z.string().min(1),
-    buildingNumber: z.string().min(1),
-    apartmentNumber: z.string().optional(),
-    city: z.string().min(1),
-    postalCode: z.string().min(1),
-    country: z.string().min(1),
-  }),
+  // the same address rules as checkout — one definition for both entry points
+  deliveryAddress: addressSchema,
   // default keeps older clients (and .http files) working
   shippingMethod: shippingMethodCodeSchema.default('STANDARD'),
 });
 
 export type PlaceOrderDto = z.infer<typeof placeOrderSchema>;
+
+

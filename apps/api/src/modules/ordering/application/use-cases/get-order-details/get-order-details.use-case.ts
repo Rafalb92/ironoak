@@ -38,6 +38,8 @@ export class GetOrderDetailsUseCase {
         lineTotal: line.lineTotal.amount,
       })),
       deliveryAddress: {
+        recipientName: order.deliveryAddress.recipientName,
+        phone: order.deliveryAddress.phone,
         street: order.deliveryAddress.street,
         buildingNumber: order.deliveryAddress.buildingNumber,
         apartmentNumber: order.deliveryAddress.apartmentNumber,

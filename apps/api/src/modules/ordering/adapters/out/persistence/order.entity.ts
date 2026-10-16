@@ -10,6 +10,9 @@ export interface OrderLineData {
 
 // shape of the address in JSONB
 export interface AddressData {
+  // absent on orders placed before they were collected
+  recipientName?: string | null;
+  phone?: string | null;
   street: string;
   buildingNumber: string;
   apartmentNumber: string | null;

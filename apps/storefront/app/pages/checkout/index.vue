@@ -49,6 +49,9 @@ const hasSaved = computed(() => savedAddresses.value.length > 0);
 // a failed address book load falls back to the form — checkout must still work
 const addressesLoading = computed(() => addressesQuery.isPending.value && !addressesQuery.error.value);
 
+// entries saved before recipient and phone were collected cannot ship
+const isComplete = (address: SavedAddress) => Boolean(address.recipientName && address.phone);
+
 const NEW_ADDRESS = 'new';
 const choice = ref<string>(NEW_ADDRESS);
 const choiceTouched = ref(false);
@@ -60,8 +63,9 @@ const saveTouched = ref(false);
 watch(
   savedAddresses,
   (addresses) => {
-    if (!choiceTouched.value && addresses.length > 0) {
-      choice.value = (addresses.find((address) => address.isDefault) ?? addresses[0]!).id;
+    const complete = addresses.filter(isComplete);
+    if (!choiceTouched.value && complete.length > 0) {
+      choice.value = (complete.find((address) => address.isDefault) ?? complete[0]!).id;
     }
     // with addresses already saved, a new one is more likely a one-off (work, a friend)
     if (!saveTouched.value) saveAddress.value = addresses.length === 0;
@@ -71,6 +75,8 @@ watch(
 
 function toAddress(saved: SavedAddress): Address {
   return {
+    recipientName: saved.recipientName ?? '',
+    phone: saved.phone ?? '',
     street: saved.street,
     buildingNumber: saved.buildingNumber,
     apartmentNumber: saved.apartmentNumber ?? undefined,
@@ -84,6 +90,8 @@ function toAddress(saved: SavedAddress): Address {
 const { handleSubmit, isSubmitting } = useForm({
   validationSchema: toFormSchema(addressSchema),
   initialValues: {
+    recipientName: '',
+    phone: '',
     street: '',
     buildingNumber: '',
     apartmentNumber: '',
@@ -94,6 +102,8 @@ const { handleSubmit, isSubmitting } = useForm({
 });
 
 const ids = {
+  recipientName: useId(),
+  phone: useId(),
   street: useId(),
   buildingNumber: useId(),
   apartmentNumber: useId(),
@@ -182,7 +192,7 @@ async function submitCheckout(event: Event) {
   }
   // a saved address was validated when it was saved — send it as it is
   const saved = savedAddresses.value.find((address) => address.id === choice.value);
-  if (saved) await placeOrder(toAddress(saved));
+  if (saved && isComplete(saved)) await placeOrder(toAddress(saved));
 }
 
 const busy = computed(() => placing.value || isSubmitting.value);
@@ -190,6 +200,7 @@ const busy = computed(() => placing.value || isSubmitting.value);
 // shared card styling for address and delivery options
 const optionCard =
   'flex cursor-pointer items-start gap-4 rounded-panel border border-line p-5 transition-colors duration-(--duration-fast) ease-(--ease-lift) hover:border-fg has-[:checked]:border-fg has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-(--focus-ring)';
+const disabledCard = 'flex items-start gap-4 rounded-panel border border-dashed border-line p-5 opacity-60';
 </script>
 
 <template>
@@ -243,21 +254,34 @@ const optionCard =
               <legend class="t-label text-fg-muted">Delivery address</legend>
 
               <div class="mt-6 flex flex-col gap-3">
-                <label v-for="address in savedAddresses" :key="address.id" :class="optionCard">
-                  <input
-                    v-model="choice"
-                    type="radio"
-                    name="delivery-address"
-                    :value="address.id"
-                    class="mt-1 size-4 accent-fg focus-visible:outline-none"
-                    @change="choiceTouched = true"
-                  />
-                  <span class="min-w-0 flex-1">
-                    <span class="t-body-md block">{{ addressLines(address)[0] }}</span>
-                    <span class="t-spec mt-1 block text-fg-muted">{{ addressLines(address)[1] }}</span>
-                  </span>
-                  <span v-if="address.isDefault" class="t-label text-fg-muted">Default</span>
-                </label>
+                <template v-for="address in savedAddresses" :key="address.id">
+                  <label v-if="isComplete(address)" :class="optionCard">
+                    <input
+                      v-model="choice"
+                      type="radio"
+                      name="delivery-address"
+                      :value="address.id"
+                      class="mt-1 size-4 accent-fg focus-visible:outline-none"
+                      @change="choiceTouched = true"
+                    />
+                    <span class="min-w-0 flex-1">
+                      <span class="t-body-md block font-semibold">{{ address.recipientName }}</span>
+                      <span class="t-body-md mt-1 block">{{ addressLines(address)[0] }}</span>
+                      <span class="t-spec mt-1 block text-fg-muted">{{ addressLines(address)[1] }}</span>
+                      <span class="t-spec mt-1 block text-fg-muted">{{ address.phone }}</span>
+                    </span>
+                    <span v-if="address.isDefault" class="t-label text-fg-muted">Default</span>
+                  </label>
+
+                  <!-- saved before recipient and phone existed: shown, but cannot ship -->
+                  <div v-else :class="disabledCard">
+                    <span class="min-w-0 flex-1">
+                      <span class="t-body-md block">{{ addressLines(address)[0] }}</span>
+                      <span class="t-spec mt-1 block text-fg-muted">{{ addressLines(address)[1] }}</span>
+                      <span class="t-spec mt-2 block text-rust">Missing recipient or phone</span>
+                    </span>
+                  </div>
+                </template>
 
                 <label :class="[optionCard, 'items-center']">
                   <input
@@ -278,6 +302,32 @@ const optionCard =
             <!-- new address -->
             <div v-if="choice === NEW_ADDRESS" :class="hasSaved ? 'mt-8' : 'mt-6'">
               <FieldGroup class="grid gap-6 sm:grid-cols-2">
+                <VeeField v-slot="{ componentField, errors }" name="recipientName">
+                  <Field :data-invalid="!!errors.length">
+                    <FieldLabel :for="ids.recipientName">Full name</FieldLabel>
+                    <Input :id="ids.recipientName" v-bind="componentField" autocomplete="name" class="h-12" :aria-invalid="!!errors.length" />
+                    <FieldError v-if="errors.length" :errors="errors" />
+                  </Field>
+                </VeeField>
+
+                <VeeField v-slot="{ componentField, errors }" name="phone">
+                  <Field :data-invalid="!!errors.length">
+                    <FieldLabel :for="ids.phone">Phone</FieldLabel>
+                    <Input
+                      :id="ids.phone"
+                      v-bind="componentField"
+                      type="tel"
+                      inputmode="tel"
+                      autocomplete="tel"
+                      placeholder="+1 555 010 0199"
+                      class="h-12"
+                      :aria-invalid="!!errors.length"
+                    />
+                    <FieldDescription>For the delivery crew to arrange a time.</FieldDescription>
+                    <FieldError v-if="errors.length" :errors="errors" />
+                  </Field>
+                </VeeField>
+
                 <VeeField v-slot="{ componentField, errors }" name="street">
                   <Field class="sm:col-span-2" :data-invalid="!!errors.length">
                     <FieldLabel :for="ids.street">Street</FieldLabel>

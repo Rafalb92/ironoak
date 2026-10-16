@@ -60,6 +60,8 @@ export class OrderMapper {
 
   private static addressToData(address: Address): AddressData {
     return {
+      recipientName: address.recipientName,
+      phone: address.phone,
       street: address.street,
       buildingNumber: address.buildingNumber,
       apartmentNumber: address.apartmentNumber,
@@ -69,10 +71,8 @@ export class OrderMapper {
     };
   }
 
+  // restore, not of: stored orders may predate recipient and phone
   private static dataToAddress(data: AddressData): Address {
-    return Address.of({
-      ...data,
-      apartmentNumber: data.apartmentNumber ?? undefined, // null → undefined into the VO
-    });
+    return Address.restore(data);
   }
 }

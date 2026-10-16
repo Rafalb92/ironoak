@@ -107,7 +107,11 @@ export class AdminOrderQueryService {
       totalAmount: order.totalAmount,
       currency: order.currency,
       lines: order.lines,
-      deliveryAddress: order.deliveryAddress,
+      deliveryAddress: {
+        ...order.deliveryAddress,
+        recipientName: order.deliveryAddress.recipientName ?? null,
+        phone: order.deliveryAddress.phone ?? null,
+      },
       createdAt: order.createdAt,
       updatedAt: order.updatedAt,
     };
