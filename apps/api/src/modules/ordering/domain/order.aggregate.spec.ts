@@ -41,13 +41,13 @@ const anOrder = () =>
   });
 
 describe('Order aggregate', () => {
-  describe('tworzenie', () => {
-    it('tworzy zamówienie w stanie PENDING_PAYMENT', () => {
+  describe('creation', () => {
+    it('creates the order in PENDING_PAYMENT', () => {
       const order = anOrder();
       expect(order.status).toBe(OrderStatus.PENDING_PAYMENT);
     });
 
-    it('odrzuca zamówienie bez pozycji', () => {
+    it('rejects an order without lines', () => {
       expect(() =>
         Order.create({
           customerId: 'customer-1',
@@ -58,12 +58,12 @@ describe('Order aggregate', () => {
       ).toThrow(EmptyOrderError);
     });
 
-    it('liczy total jako sumę pozycji (1000 x 2 = 2000)', () => {
+    it('computes the total as the sum of lines (1000 x 2 = 2000)', () => {
       const order = anOrder();
       expect(order.totalAmount.amount).toBe(2000);
     });
 
-    it('liczy total z wielu pozycji', () => {
+    it('computes the total from multiple lines', () => {
       const order = Order.create({
         customerId: 'customer-1',
         lines: [aLine(1000, 2), aLine(500, 3)], // 2000 + 1500
@@ -73,7 +73,7 @@ describe('Order aggregate', () => {
       expect(order.totalAmount.amount).toBe(3500);
     });
 
-    it('rejestruje zdarzenie OrderPlaced przy utworzeniu', () => {
+    it('records an OrderPlaced event on creation', () => {
       const order = anOrder();
       const events = order.pullDomainEvents();
       expect(events).toHaveLength(1);
@@ -141,8 +141,8 @@ describe('Order aggregate', () => {
     });
   });
 
-  describe('maszyna stanów — przejścia dozwolone', () => {
-    it('przechodzi pełną ścieżkę: pending → paid → fulfilling → shipped → delivered', () => {
+  describe('state machine — allowed transitions', () => {
+    it('walks the full path: pending → paid → fulfilling → shipped → delivered', () => {
       const order = anOrder();
       order.confirmPayment();
       expect(order.status).toBe(OrderStatus.PAID);
@@ -154,7 +154,7 @@ describe('Order aggregate', () => {
       expect(order.status).toBe(OrderStatus.DELIVERED);
     });
 
-    it('confirmPayment rejestruje zdarzenie order.paid', () => {
+    it('confirmPayment records an order.paid event', () => {
       const order = anOrder();
       order.pullDomainEvents(); // wyczyść OrderPlaced
       order.confirmPayment();
@@ -163,45 +163,45 @@ describe('Order aggregate', () => {
     });
   });
 
-  describe('maszyna stanów — przejścia ZAKAZANE (niezmienniki)', () => {
-    it('nie można wysłać niezapłaconego zamówienia', () => {
+  describe('state machine — FORBIDDEN transitions (invariants)', () => {
+    it('cannot ship an unpaid order', () => {
       const order = anOrder(); // PENDING_PAYMENT
       expect(() => order.ship()).toThrow(InvalidOrderTransitionError);
     });
 
-    it('nie można potwierdzić płatności dwa razy', () => {
+    it('cannot confirm payment twice', () => {
       const order = anOrder();
       order.confirmPayment();
       expect(() => order.confirmPayment()).toThrow();
     });
 
-    it('nie można rozpocząć realizacji bez opłacenia', () => {
+    it('cannot start fulfillment before payment', () => {
       const order = anOrder(); // PENDING_PAYMENT
       expect(() => order.startFulfillment()).toThrow();
     });
 
-    it('nie można dostarczyć niewysłanego', () => {
+    it('cannot deliver an order that has not shipped', () => {
       const order = anOrder();
       order.confirmPayment();
       expect(() => order.markDelivered()).toThrow();
     });
   });
 
-  describe('anulowanie', () => {
-    it('można anulować zamówienie oczekujące na płatność', () => {
+  describe('cancellation', () => {
+    it('can cancel an order awaiting payment', () => {
       const order = anOrder();
       order.cancel('customer request');
       expect(order.status).toBe(OrderStatus.CANCELLED);
     });
 
-    it('można anulować zamówienie opłacone', () => {
+    it('can cancel a paid order', () => {
       const order = anOrder();
       order.confirmPayment();
       order.cancel('out of stock');
       expect(order.status).toBe(OrderStatus.CANCELLED);
     });
 
-    it('NIE można anulować dostarczonego zamówienia', () => {
+    it('CANNOT cancel a delivered order', () => {
       const order = anOrder();
       order.confirmPayment();
       order.startFulfillment();
@@ -210,7 +210,7 @@ describe('Order aggregate', () => {
       expect(() => order.cancel('too late')).toThrow();
     });
 
-    it('anulowanie rejestruje zdarzenie z powodem', () => {
+    it('cancellation records an event with the reason', () => {
       const order = anOrder();
       order.pullDomainEvents();
       order.cancel('customer request');
