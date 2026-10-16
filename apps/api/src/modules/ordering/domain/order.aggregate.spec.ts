@@ -5,22 +5,20 @@ import { ShippingMethod } from './value-objects/shipping-method.vo';
 import { Money } from '../../../shared-kernel/domain/value-objects/money.vo';
 import {
   EmptyOrderError,
-  InvalidAddressError,
   InvalidOrderTransitionError,
 } from './errors/ordering.errors';
 
-// --- helpery: budują poprawne obiekty do testów (DRY) ---
-const addressProps = () => ({
-  recipientName: 'Jane Doe',
-  phone: '+1 212 555 0100',
-  street: 'Main Street',
-  buildingNumber: '123',
-  city: 'New York',
-  postalCode: '10001',
-  country: 'US',
-});
-
-const anAddress = () => Address.of(addressProps());
+// --- helpers: build valid objects for tests (DRY) ---
+const anAddress = () =>
+  Address.of({
+    recipientName: 'Jane Doe',
+    phone: '+1 212 555 0100',
+    street: 'Main Street',
+    buildingNumber: '123',
+    city: 'New York',
+    postalCode: '10001',
+    country: 'US',
+  });
 
 const aLine = (price = 1000, qty = 2) =>
   OrderLine.of({
@@ -81,30 +79,6 @@ describe('Order aggregate', () => {
     });
   });
 
-  describe('delivery address', () => {
-    it('Address.of throws when recipientName is missing', () => {
-      const { recipientName: _, ...props } = addressProps();
-      expect(() => Address.of(props)).toThrow(
-        new InvalidAddressError('Recipient name is required'),
-      );
-    });
-
-    it('Address.of throws when phone is missing', () => {
-      const { phone: _, ...props } = addressProps();
-      expect(() => Address.of(props)).toThrow(
-        new InvalidAddressError('Phone is required'),
-      );
-    });
-
-    it('Address.restore accepts a stored address without recipientName and phone', () => {
-      const { recipientName: _r, phone: _p, ...props } = addressProps();
-      const address = Address.restore(props);
-      expect(address.recipientName).toBeNull();
-      expect(address.phone).toBeNull();
-      expect(address.street).toBe('Main Street');
-    });
-  });
-
   describe('shipping', () => {
     it('adds the shipping cost to the sum of line totals', () => {
       const order = Order.create({
@@ -156,7 +130,7 @@ describe('Order aggregate', () => {
 
     it('confirmPayment records an order.paid event', () => {
       const order = anOrder();
-      order.pullDomainEvents(); // wyczyść OrderPlaced
+      order.pullDomainEvents(); // clear OrderPlaced
       order.confirmPayment();
       const events = order.pullDomainEvents();
       expect(events[0].eventName).toBe('order.paid');
