@@ -5,18 +5,22 @@ import { ShippingMethod } from './value-objects/shipping-method.vo';
 import { Money } from '../../../shared-kernel/domain/value-objects/money.vo';
 import {
   EmptyOrderError,
+  InvalidAddressError,
   InvalidOrderTransitionError,
 } from './errors/ordering.errors';
 
 // --- helpery: budują poprawne obiekty do testów (DRY) ---
-const anAddress = () =>
-  Address.of({
-    street: 'Main Street',
-    buildingNumber: '123',
-    city: 'New York',
-    postalCode: '10001',
-    country: 'US',
-  });
+const addressProps = () => ({
+  recipientName: 'Jane Doe',
+  phone: '+1 212 555 0100',
+  street: 'Main Street',
+  buildingNumber: '123',
+  city: 'New York',
+  postalCode: '10001',
+  country: 'US',
+});
+
+const anAddress = () => Address.of(addressProps());
 
 const aLine = (price = 1000, qty = 2) =>
   OrderLine.of({
@@ -74,6 +78,30 @@ describe('Order aggregate', () => {
       const events = order.pullDomainEvents();
       expect(events).toHaveLength(1);
       expect(events[0].eventName).toBe('order.placed');
+    });
+  });
+
+  describe('delivery address', () => {
+    it('Address.of throws when recipientName is missing', () => {
+      const { recipientName: _, ...props } = addressProps();
+      expect(() => Address.of(props)).toThrow(
+        new InvalidAddressError('Recipient name is required'),
+      );
+    });
+
+    it('Address.of throws when phone is missing', () => {
+      const { phone: _, ...props } = addressProps();
+      expect(() => Address.of(props)).toThrow(
+        new InvalidAddressError('Phone is required'),
+      );
+    });
+
+    it('Address.restore accepts a stored address without recipientName and phone', () => {
+      const { recipientName: _r, phone: _p, ...props } = addressProps();
+      const address = Address.restore(props);
+      expect(address.recipientName).toBeNull();
+      expect(address.phone).toBeNull();
+      expect(address.street).toBe('Main Street');
     });
   });
 

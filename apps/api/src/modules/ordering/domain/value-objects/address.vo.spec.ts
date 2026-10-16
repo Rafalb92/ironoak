@@ -4,6 +4,8 @@ describe('Address', () => {
   describe('tworzenie', () => {
     it('tworzy poprawny adres', () => {
       const address = Address.of({
+        recipientName: 'Jane Doe',
+        phone: '+1 212 555 0100',
         street: 'Main Street',
         buildingNumber: '123',
         city: 'New York',
@@ -20,6 +22,8 @@ describe('Address', () => {
     it('odrzuca adres z brakującymi danymi', () => {
       expect(() =>
         Address.of({
+          recipientName: 'Jane Doe',
+          phone: '+1 212 555 0100',
           street: '',
           buildingNumber: '123',
           city: 'New York',
@@ -31,6 +35,8 @@ describe('Address', () => {
 
     it('akceptuje brak numeru mieszkania', () => {
       const address = Address.of({
+        recipientName: 'Jane Doe',
+        phone: '+1 212 555 0100',
         street: 'Main Street',
         buildingNumber: '123',
         city: 'New York',
