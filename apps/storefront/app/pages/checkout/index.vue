@@ -47,7 +47,9 @@ const addressesQuery = useQuery(savedAddressesQuery);
 const savedAddresses = computed(() => addressesQuery.data.value ?? []);
 const hasSaved = computed(() => savedAddresses.value.length > 0);
 // a failed address book load falls back to the form — checkout must still work
-const addressesLoading = computed(() => addressesQuery.isPending.value && !addressesQuery.error.value);
+const addressesLoading = computed(
+  () => addressesQuery.isPending.value && !addressesQuery.error.value,
+);
 
 // entries saved before recipient and phone were collected cannot ship
 const isComplete = (address: SavedAddress) => Boolean(address.recipientName && address.phone);
@@ -102,14 +104,6 @@ const { handleSubmit, isSubmitting } = useForm({
 });
 
 const ids = {
-  recipientName: useId(),
-  phone: useId(),
-  street: useId(),
-  buildingNumber: useId(),
-  apartmentNumber: useId(),
-  city: useId(),
-  postalCode: useId(),
-  country: useId(),
   save: useId(),
 };
 
@@ -200,7 +194,8 @@ const busy = computed(() => placing.value || isSubmitting.value);
 // shared card styling for address and delivery options
 const optionCard =
   'flex cursor-pointer items-start gap-4 rounded-panel border border-line p-5 transition-colors duration-(--duration-fast) ease-(--ease-lift) hover:border-fg has-[:checked]:border-fg has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-(--focus-ring)';
-const disabledCard = 'flex items-start gap-4 rounded-panel border border-dashed border-line p-5 opacity-60';
+const disabledCard =
+  'flex items-start gap-4 rounded-panel border border-dashed border-line p-5 opacity-60';
 </script>
 
 <template>
@@ -208,29 +203,45 @@ const disabledCard = 'flex items-start gap-4 rounded-panel border border-dashed 
     <h1 class="t-section">Checkout</h1>
 
     <!-- order placed: the form never comes back, only payment can be retried -->
-    <section v-if="placedOrderId" class="flex flex-col items-start gap-4 rounded-panel bg-surface p-8 md:p-12">
+    <section
+      v-if="placedOrderId"
+      class="flex flex-col items-start gap-4 rounded-panel bg-surface p-8 md:p-12"
+    >
       <template v-if="paymentFailed">
         <p class="t-body-lead">Your order is placed, but the payment could not start.</p>
         <p class="t-body-md max-w-prose text-fg-secondary">
           Nothing has been charged and your order is kept. Try again in a moment.
         </p>
-        <Button size="lg" class="h-12 rounded-pill px-8" :disabled="paying" @click="pay(placedOrderId)">
+        <Button
+          size="lg"
+          class="h-12 rounded-pill px-8"
+          :disabled="paying"
+          @click="pay(placedOrderId)"
+        >
           {{ paying ? 'Starting payment…' : 'Retry payment' }}
         </Button>
       </template>
       <p v-else class="t-body-lead">Redirecting to secure payment…</p>
     </section>
 
-    <p v-else-if="lines.length === 0 && cart.isLoading" class="t-body-md text-fg-muted">Loading your cart…</p>
+    <p v-else-if="lines.length === 0 && cart.isLoading" class="t-body-md text-fg-muted">
+      Loading your cart…
+    </p>
 
-    <section v-else-if="lines.length === 0" class="flex flex-col items-start gap-6 rounded-panel bg-surface p-8 md:p-12">
+    <section
+      v-else-if="lines.length === 0"
+      class="flex flex-col items-start gap-6 rounded-panel bg-surface p-8 md:p-12"
+    >
       <p class="t-body-lead">Your cart is empty.</p>
       <Button as-child size="lg" class="h-12 rounded-pill px-8">
         <NuxtLink to="/products">Browse products</NuxtLink>
       </Button>
     </section>
 
-    <section v-else-if="cart.checkoutIssue" class="flex flex-col items-start gap-6 rounded-panel bg-surface p-8 md:p-12">
+    <section
+      v-else-if="cart.checkoutIssue"
+      class="flex flex-col items-start gap-6 rounded-panel bg-surface p-8 md:p-12"
+    >
       <p class="t-body-lead">{{ cart.checkoutIssue }}</p>
       <Button as-child size="lg" class="h-12 rounded-pill px-8">
         <NuxtLink to="/cart">Review your cart</NuxtLink>
@@ -238,7 +249,12 @@ const disabledCard = 'flex items-start gap-4 rounded-panel border border-dashed 
     </section>
 
     <div v-else class="grid gap-10 lg:grid-cols-[1fr_22rem] lg:gap-16">
-      <form id="checkout-form" novalidate class="flex flex-col gap-12" @submit.prevent="submitCheckout">
+      <form
+        id="checkout-form"
+        novalidate
+        class="flex flex-col gap-12"
+        @submit.prevent="submitCheckout"
+      >
         <!-- ===== delivery address ===== -->
         <div>
           <!-- skeleton while the address book loads: no flash of an empty form -->
@@ -267,7 +283,9 @@ const disabledCard = 'flex items-start gap-4 rounded-panel border border-dashed 
                     <span class="min-w-0 flex-1">
                       <span class="t-body-md block font-semibold">{{ address.recipientName }}</span>
                       <span class="t-body-md mt-1 block">{{ addressLines(address)[0] }}</span>
-                      <span class="t-spec mt-1 block text-fg-muted">{{ addressLines(address)[1] }}</span>
+                      <span class="t-spec mt-1 block text-fg-muted">{{
+                        addressLines(address)[1]
+                      }}</span>
                       <span class="t-spec mt-1 block text-fg-muted">{{ address.phone }}</span>
                     </span>
                     <span v-if="address.isDefault" class="t-label text-fg-muted">Default</span>
@@ -277,8 +295,13 @@ const disabledCard = 'flex items-start gap-4 rounded-panel border border-dashed 
                   <div v-else :class="disabledCard">
                     <span class="min-w-0 flex-1">
                       <span class="t-body-md block">{{ addressLines(address)[0] }}</span>
-                      <span class="t-spec mt-1 block text-fg-muted">{{ addressLines(address)[1] }}</span>
-                      <span class="t-spec mt-2 block text-rust">Missing recipient or phone</span>
+                      <span class="t-spec mt-1 block text-fg-muted">{{
+                        addressLines(address)[1]
+                      }}</span>
+                     <span class="t-spec mt-2 block text-rust">
+                        Missing recipient or phone —
+                        <NuxtLink to="/account/addresses" class="underline underline-offset-4">complete it in your account</NuxtLink>
+                      </span>
                     </span>
                   </div>
                 </template>
@@ -301,95 +324,18 @@ const disabledCard = 'flex items-start gap-4 rounded-panel border border-dashed 
 
             <!-- new address -->
             <div v-if="choice === NEW_ADDRESS" :class="hasSaved ? 'mt-8' : 'mt-6'">
-              <FieldGroup class="grid gap-6 sm:grid-cols-2">
-                <VeeField v-slot="{ componentField, errors }" name="recipientName">
-                  <Field :data-invalid="!!errors.length">
-                    <FieldLabel :for="ids.recipientName">Full name</FieldLabel>
-                    <Input :id="ids.recipientName" v-bind="componentField" autocomplete="name" class="h-12" :aria-invalid="!!errors.length" />
-                    <FieldError v-if="errors.length" :errors="errors" />
-                  </Field>
-                </VeeField>
-
-                <VeeField v-slot="{ componentField, errors }" name="phone">
-                  <Field :data-invalid="!!errors.length">
-                    <FieldLabel :for="ids.phone">Phone</FieldLabel>
-                    <Input
-                      :id="ids.phone"
-                      v-bind="componentField"
-                      type="tel"
-                      inputmode="tel"
-                      autocomplete="tel"
-                      placeholder="+1 555 010 0199"
-                      class="h-12"
-                      :aria-invalid="!!errors.length"
-                    />
-                    <FieldDescription>For the delivery crew to arrange a time.</FieldDescription>
-                    <FieldError v-if="errors.length" :errors="errors" />
-                  </Field>
-                </VeeField>
-
-                <VeeField v-slot="{ componentField, errors }" name="street">
-                  <Field class="sm:col-span-2" :data-invalid="!!errors.length">
-                    <FieldLabel :for="ids.street">Street</FieldLabel>
-                    <Input :id="ids.street" v-bind="componentField" autocomplete="address-line1" class="h-12" :aria-invalid="!!errors.length" />
-                    <FieldError v-if="errors.length" :errors="errors" />
-                  </Field>
-                </VeeField>
-
-                <VeeField v-slot="{ componentField, errors }" name="buildingNumber">
-                  <Field :data-invalid="!!errors.length">
-                    <FieldLabel :for="ids.buildingNumber">Building number</FieldLabel>
-                    <Input :id="ids.buildingNumber" v-bind="componentField" class="h-12" :aria-invalid="!!errors.length" />
-                    <FieldError v-if="errors.length" :errors="errors" />
-                  </Field>
-                </VeeField>
-
-                <VeeField v-slot="{ componentField, errors }" name="apartmentNumber">
-                  <Field :data-invalid="!!errors.length">
-                    <FieldLabel :for="ids.apartmentNumber">Apartment <span class="text-fg-muted">(optional)</span></FieldLabel>
-                    <Input :id="ids.apartmentNumber" v-bind="componentField" autocomplete="address-line2" class="h-12" :aria-invalid="!!errors.length" />
-                    <FieldError v-if="errors.length" :errors="errors" />
-                  </Field>
-                </VeeField>
-
-                <VeeField v-slot="{ componentField, errors }" name="postalCode">
-                  <Field :data-invalid="!!errors.length">
-                    <FieldLabel :for="ids.postalCode">Postal code</FieldLabel>
-                    <Input :id="ids.postalCode" v-bind="componentField" autocomplete="postal-code" class="h-12" :aria-invalid="!!errors.length" />
-                    <FieldError v-if="errors.length" :errors="errors" />
-                  </Field>
-                </VeeField>
-
-                <VeeField v-slot="{ componentField, errors }" name="city">
-                  <Field :data-invalid="!!errors.length">
-                    <FieldLabel :for="ids.city">City</FieldLabel>
-                    <Input :id="ids.city" v-bind="componentField" autocomplete="address-level2" class="h-12" :aria-invalid="!!errors.length" />
-                    <FieldError v-if="errors.length" :errors="errors" />
-                  </Field>
-                </VeeField>
-
-                <VeeField v-slot="{ componentField, errors }" name="country">
-                  <Field class="sm:col-span-2" :data-invalid="!!errors.length">
-                    <FieldLabel :for="ids.country">Country</FieldLabel>
-                    <Select v-bind="componentField">
-                      <SelectTrigger :id="ids.country" class="h-12 w-full" :aria-invalid="!!errors.length">
-                        <SelectValue placeholder="Choose a country" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem v-for="country in SHIPPING_COUNTRIES" :key="country.code" :value="country.code">
-                          {{ country.name }}
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FieldError v-if="errors.length" :errors="errors" />
-                  </Field>
-                </VeeField>
-
+              <AddressFormFields>
                 <Field orientation="horizontal" class="sm:col-span-2">
-                  <Checkbox :id="ids.save" v-model="saveAddress" @update:model-value="saveTouched = true" />
-                  <FieldLabel :for="ids.save" class="font-normal">Save this address for next time</FieldLabel>
+                  <Checkbox
+                    :id="ids.save"
+                    v-model="saveAddress"
+                    @update:model-value="saveTouched = true"
+                  />
+                  <FieldLabel :for="ids.save" class="font-normal"
+                    >Save this address for next time</FieldLabel
+                  >
                 </Field>
-              </FieldGroup>
+              </AddressFormFields>
             </div>
           </template>
         </div>
@@ -398,7 +344,11 @@ const disabledCard = 'flex items-start gap-4 rounded-panel border border-dashed 
         <fieldset>
           <legend class="t-label text-fg-muted">Delivery method</legend>
 
-          <div v-if="shippingQuery.isPending.value" aria-hidden="true" class="mt-6 flex flex-col gap-3">
+          <div
+            v-if="shippingQuery.isPending.value"
+            aria-hidden="true"
+            class="mt-6 flex flex-col gap-3"
+          >
             <div class="h-24 animate-pulse rounded-panel bg-surface" />
             <div class="h-24 animate-pulse rounded-panel bg-surface" />
           </div>
@@ -432,23 +382,33 @@ const disabledCard = 'flex items-start gap-4 rounded-panel border border-dashed 
         <h2 id="checkout-summary-title" class="t-label text-fg-muted">Order summary</h2>
 
         <ul class="divide-y divide-line">
-          <li v-for="line in lines" :key="line.productVariantId" class="flex justify-between gap-4 py-3 first:pt-0">
+          <li
+            v-for="line in lines"
+            :key="line.productVariantId"
+            class="flex justify-between gap-4 py-3 first:pt-0"
+          >
             <div class="min-w-0">
               <p class="truncate text-sm font-semibold">{{ line.productName }}</p>
               <p class="t-spec text-fg-muted">{{ line.variantName }} · × {{ line.quantity }}</p>
             </div>
-            <p class="t-spec shrink-0">{{ formatPrice(line.lineTotal, 'USD', { trimZeros: true }) }}</p>
+            <p class="t-spec shrink-0">
+              {{ formatPrice(line.lineTotal, 'USD', { trimZeros: true }) }}
+            </p>
           </li>
         </ul>
 
         <dl class="flex flex-col gap-3 border-t border-line pt-3">
           <div class="flex items-baseline justify-between">
             <dt class="t-body-sm">Subtotal</dt>
-            <dd class="t-spec">{{ formatPrice(cart.cart.totalAmount, 'USD', { trimZeros: true }) }}</dd>
+            <dd class="t-spec">
+              {{ formatPrice(cart.cart.totalAmount, 'USD', { trimZeros: true }) }}
+            </dd>
           </div>
           <div class="flex items-baseline justify-between gap-4">
             <dt class="t-body-sm">{{ selectedShipping?.name ?? 'Shipping' }}</dt>
-            <dd class="t-spec" :class="shippingAmount === 0 ? 'text-moss' : ''">{{ priceLabel(shippingAmount) }}</dd>
+            <dd class="t-spec" :class="shippingAmount === 0 ? 'text-moss' : ''">
+              {{ priceLabel(shippingAmount) }}
+            </dd>
           </div>
           <div class="flex items-baseline justify-between border-t border-line pt-3">
             <dt class="font-semibold">Total</dt>
