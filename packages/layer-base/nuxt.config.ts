@@ -20,7 +20,7 @@ export default defineNuxtConfig({
     storesDirs: [join(currentDir, './app/stores')],
   },
   image: {
-    quality: 80,
+    quality: 90,
   },
 
   css: [join(currentDir, './app/assets/css/tailwind.css')],

@@ -11,5 +11,7 @@ useSeoMeta({
     <HeroSection />
     <DiptychSection />
     <BestsellersSection />
+    <AnatomySection />
+    <ShopByMaterialSection />
   </div>
 </template>

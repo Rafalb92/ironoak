@@ -6,9 +6,6 @@ export interface NavItem {
 const NAV_ITEMS: readonly NavItem[] = [
   { to: '/', label: 'Home' },
   { to: '/products', label: 'Products' },
-  { to: '/collections', label: 'Collections' },
-  { to: '/about', label: 'About' },
-  { to: '/contact', label: 'Contact' },
 ];
 
 export function useSiteNavigation() {

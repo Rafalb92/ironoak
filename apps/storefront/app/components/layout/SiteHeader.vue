@@ -4,7 +4,6 @@ import { useWindowScroll } from '@vueuse/core';
 import { useCartStore } from '../../stores/cart';
 
 const { items, isActive } = useSiteNavigation();
-const auth = useAuthStore();
 const cart = useCartStore();
 const route = useRoute();
 
@@ -23,9 +22,6 @@ watch(
 const cartLabel = computed(
   () => `Cart, ${cart.count} ${cart.count === 1 ? 'item' : 'items'}`,
 );
-
-const accountTo = computed(() => (auth.isAuthenticated ? '/account' : '/login'));
-const accountLabel = computed(() => (auth.isAuthenticated ? 'Your account' : 'Sign in'));
 </script>
 
 <template>
@@ -33,6 +29,12 @@ const accountLabel = computed(() => (auth.isAuthenticated ? 'Your account' : 'Si
     class="sticky top-0 z-40 border-b transition-[background-color,border-color] duration-(--duration-base) ease-(--ease-lift)"
     :class="scrolled ? 'border-line-subtle bg-canvas/85 backdrop-blur-md' : 'border-transparent bg-canvas'"
   >
+    <!--
+      The header must render the same for every visitor on the server: product
+      pages are cached (swr) and shared. Anything personal (cart count) is
+      filled in after hydration; the account link needs no personalisation —
+      the auth middleware sends guests to /login and back.
+    -->
     <div class="mx-auto flex h-20 max-w-site items-center justify-between gap-4 px-4 md:px-6">
       <!-- logo -->
       <NuxtLink
@@ -85,8 +87,14 @@ const accountLabel = computed(() => (auth.isAuthenticated ? 'Your account' : 'Si
               <span
                 class="grid size-9 place-items-center rounded-pill bg-accent font-data text-sm text-accent-foreground tabular-nums"
               >
-                <template v-if="cart.count > 0">{{ cart.count }}</template>
-                <IconBarbell v-else class="size-5 -rotate-45" :stroke="1.75" aria-hidden="true" />
+                <!-- the count is personal: never in shared, cached HTML -->
+                <ClientOnly>
+                  <template v-if="cart.count > 0">{{ cart.count }}</template>
+                  <IconBarbell v-else class="size-5 -rotate-45" :stroke="1.75" aria-hidden="true" />
+                  <template #fallback>
+                    <IconBarbell class="size-5 -rotate-45" :stroke="1.75" aria-hidden="true" />
+                  </template>
+                </ClientOnly>
               </span>
             </NuxtLink>
           </HoverCardTrigger>
@@ -96,8 +104,8 @@ const accountLabel = computed(() => (auth.isAuthenticated ? 'Your account' : 'Si
         </HoverCard>
 
         <NuxtLink
-          :to="accountTo"
-          :aria-label="accountLabel"
+          to="/account"
+          aria-label="Your account"
           class="grid size-12 place-items-center rounded-pill bg-surface transition-transform duration-(--duration-fast) ease-(--ease-lift) hover:-translate-y-px"
         >
           <IconUser class="size-5" :stroke="1.75" aria-hidden="true" />
