@@ -1,6 +1,11 @@
 import { Controller, Get, Param, Query, UsePipes } from '@nestjs/common';
 import { CatalogService } from './catalog.service';
-import { productQuerySchema, type ProductQuery } from '@ironoak/contracts';
+import {
+  type ProductFacetsQuery,
+  productFacetsQuerySchema,
+  productQuerySchema,
+  type ProductQuery,
+} from '@ironoak/contracts';
 import { ZodValidationPipe } from '../../shared/pipes/zod-validation.pipe';
 import {
   ApiTags,
@@ -62,6 +67,21 @@ export class CatalogController {
   @ApiResponse({ status: 400, description: 'Invalid query parameters' })
   findAll(@Query() query: ProductQuery) {
     return this.catalog.findProducts(query);
+  }
+
+  @Get('facets')
+  @ApiOperation({
+    summary: 'Filter options for the listing',
+    description:
+      'Categories with product counts (whole catalogue), and within the given category: ' +
+      'materials with counts and price and weight ranges. Built from purchasable products only.',
+  })
+  @ApiQuery({ name: 'category', required: false, example: 'barbells' })
+  facets(
+    @Query(new ZodValidationPipe(productFacetsQuerySchema))
+    query: ProductFacetsQuery,
+  ) {
+    return this.catalog.findFacets(query.category);
   }
 
   @Get(':slug')

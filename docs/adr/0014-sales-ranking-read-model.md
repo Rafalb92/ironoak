@@ -72,6 +72,12 @@ in catalog size — negligible for hundreds of products. Revisit above a few
 thousand products by moving the listing query to SQL with a
 `LEFT JOIN catalog.product_sales`.
 
+**Update — whole listing.** The listing now filters, drops unpurchasable products,
+sorts and paginates in memory for every sort order, not only bestselling. This fixed
+two bugs: products without stock were removed after pagination (short pages, wrong
+`total`), and price sorting silently fell back to newest. The same limit applies:
+revisit above a few thousand products by moving the listing query to SQL.
+
 **Negative — no foreign key** from `product_sales` to `product`: the read
 model has no ORM relation, to avoid an inverse side and circular imports.
 Products are deactivated rather than deleted, so orphaned rows are not

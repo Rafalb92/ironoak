@@ -1,14 +1,17 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { EntityManager, type FilterQuery } from '@mikro-orm/postgresql';
+import type { ProductFacets, ProductQuery } from '@ironoak/contracts';
 import { ProductSchema, type IProduct } from './entities/product.entity';
 import {
   ProductVariantSchema,
   type IProductVariant,
 } from './entities/product-variant.entity';
-import { ProductImageSchema } from './entities/product-image.entity';
+import {
+  ProductImageSchema,
+  type IProductImage,
+} from './entities/product-image.entity';
 import { CategorySchema } from './entities/category.entity';
 import { ProductSalesSchema } from './entities/product-sales.entity';
-import type { ProductQuery } from '@ironoak/contracts';
 import {
   STOCK_LOOKUP,
   type StockLookup,
@@ -22,11 +25,6 @@ export interface VariantAvailability {
   lowStock: boolean;
 }
 
-interface ProductPage {
-  products: IProduct[];
-  total: number;
-}
-
 export interface VariantSummary {
   id: string;
   name: string;
@@ -38,6 +36,19 @@ export interface VariantSummary {
   imageUrl: string | null;
 }
 
+/** A product that can be bought: at least one active variant in stock. */
+interface PurchasableProduct {
+  product: IProduct;
+  variants: IProductVariant[];
+}
+
+interface ListingEntry extends PurchasableProduct {
+  /** lowest price among the variants matching the filters */
+  priceFrom: number;
+}
+
+const byName = (a: IProduct, b: IProduct) => a.name.localeCompare(b.name, 'en');
+
 @Injectable()
 export class CatalogService {
   constructor(
@@ -45,6 +56,43 @@ export class CatalogService {
     @Inject(STOCK_LOOKUP) private readonly stockLookup: StockLookup,
     private readonly media: ProductMediaService,
   ) {}
+
+  /**
+   * Maps raw stock to what the customer sees.
+   * Deliberately hides the exact count — an order limit and a low-stock
+   * signal are enough.
+   */
+  private async availabilityFor(
+    variantIds: string[],
+  ): Promise<Map<string, VariantAvailability>> {
+    const stock = await this.stockLookup.findForVariants(variantIds);
+
+    return new Map(
+      stock.map((s) => [
+        s.productVariantId,
+        {
+          inStock: s.available > 0,
+          maxOrderQuantity: Math.min(s.available, MAX_ORDER_QUANTITY),
+          lowStock: s.available > 0 && s.available <= LOW_STOCK_THRESHOLD,
+        },
+      ]),
+    );
+  }
+
+  async findVariantsByIds(
+    ids: string[],
+  ): Promise<{ id: string; name: string; price: number; active: boolean }[]> {
+    if (ids.length === 0) return [];
+    const variants = await this.em.find(ProductVariantSchema, {
+      id: { $in: ids },
+    });
+    return variants.map((v) => ({
+      id: v.id,
+      name: v.name,
+      price: v.price,
+      active: v.active,
+    }));
+  }
 
   /**
    * Everything a cart line shows: product and variant names, link target and
@@ -90,216 +138,116 @@ export class CatalogService {
   }
 
   /**
-   * Maps raw stock to what the customer sees.
-   * Deliberately hides the exact count — an order limit and a low-stock
-   * signal are enough.
+   * Listing: filter → drop what cannot be bought → sort → paginate, in this
+   * order, so `total` and page sizes are always truthful. Ranking happens in
+   * memory (ADR-0014): fine for a catalogue of hundreds of products.
    */
-  private async availabilityFor(
-    variantIds: string[],
-  ): Promise<Map<string, VariantAvailability>> {
-    const stock = await this.stockLookup.findForVariants(variantIds);
-
-    return new Map(
-      stock.map((s) => [
-        s.productVariantId,
-        {
-          inStock: s.available > 0,
-          maxOrderQuantity: Math.min(s.available, MAX_ORDER_QUANTITY),
-          lowStock: s.available > 0 && s.available <= LOW_STOCK_THRESHOLD,
-        },
-      ]),
-    );
-  }
-
-  async findVariantsByIds(
-    ids: string[],
-  ): Promise<{ id: string; name: string; price: number; active: boolean }[]> {
-    if (ids.length === 0) return [];
-    const variants = await this.em.find(ProductVariantSchema, {
-      id: { $in: ids },
-    });
-    return variants.map((v) => ({
-      id: v.id,
-      name: v.name,
-      price: v.price,
-      active: v.active,
-    }));
-  }
-
   async findProducts(query: ProductQuery) {
-    // --- 1. filter on VARIANTS (price, weight and material live there) ---
-    const variantWhere: FilterQuery<IProductVariant> = { active: true };
+    const where = await this.productWhere(query);
+    if (!where)
+      return { items: [], total: 0, page: query.page, limit: query.limit };
 
-    if (query.material) variantWhere.material = query.material;
-    if (query.color) variantWhere.color = query.color;
-    if (query.finish) variantWhere.finish = query.finish;
+    const { purchasable, availability } = await this.loadPurchasable(where);
 
-    if (query.minWeight !== undefined || query.maxWeight !== undefined) {
-      variantWhere.weightGrams = {
-        ...(query.minWeight !== undefined && { $gte: query.minWeight }),
-        ...(query.maxWeight !== undefined && { $lte: query.maxWeight }),
-      };
-    }
-
-    if (query.minPrice !== undefined || query.maxPrice !== undefined) {
-      variantWhere.price = {
-        ...(query.minPrice !== undefined && { $gte: query.minPrice }),
-        ...(query.maxPrice !== undefined && { $lte: query.maxPrice }),
-      };
-    }
-
-    // --- 2. filter on PRODUCTS ---
-    const productWhere: FilterQuery<IProduct> = { active: true };
-
-    if (query.category) {
-      const category = await this.em.findOne(CategorySchema, {
-        slug: query.category,
-      });
-      if (!category)
-        return { items: [], total: 0, page: query.page, limit: query.limit };
-      productWhere.category = category.id;
-    }
-
-    if (query.search) {
-      productWhere.name = { $ilike: `%${query.search}%` };
-    }
-
-    // with variant filters — narrow products to those having a matching variant
-    const hasVariantFilters = Object.keys(variantWhere).length > 1; // >1 because 'active' is always set
-    if (hasVariantFilters) {
-      const matching = await this.em.find(ProductVariantSchema, variantWhere, {
-        fields: ['product'],
-      });
-      const productIds = [...new Set(matching.map((v) => v.product.id))];
-      if (productIds.length === 0) {
-        return { items: [], total: 0, page: query.page, limit: query.limit };
-      }
-      productWhere.id = { $in: productIds };
-    }
-
-    // --- 3. fetch one page of products ---
-    const { products, total } =
-      query.sort === 'bestselling'
-        ? await this.findPageBySales(productWhere, query)
-        : await this.findPage(productWhere, query);
-
-    // --- 4. load variants and images for the page (instead of populate) ---
-    const productIds = products.map((p) => p.id);
-    const [variants, images] = await Promise.all([
-      this.em.find(ProductVariantSchema, {
-        product: { $in: productIds },
-        active: true,
-      }),
-      this.em.find(
-        ProductImageSchema,
-        { product: { $in: productIds } },
-        { orderBy: { position: 'asc' } },
-      ),
-    ]);
-
-    const variantIds = variants.map((v) => v.id);
-    const availability = await this.availabilityFor(variantIds);
-
-    // a variant is visible only when it is active AND available
-    const purchasable = variants.filter(
-      (v) => availability.get(v.id)?.inStock ?? false,
+    // a product matches when one of its PURCHASABLE variants matches every variant filter
+    const listing: ListingEntry[] = purchasable.flatMap(
+      ({ product, variants }) => {
+        const matching = variants.filter((variant) =>
+          this.matchesVariantFilters(variant, query),
+        );
+        if (matching.length === 0) return [];
+        return [
+          {
+            product,
+            variants,
+            priceFrom: Math.min(...matching.map((v) => v.price)),
+          },
+        ];
+      },
     );
 
-    // a product disappears from the listing when no variant can be bought
-    const productIdsWithStock = new Set(purchasable.map((v) => v.product.id));
-    const visibleProducts = products.filter((p) =>
-      productIdsWithStock.has(p.id),
-    );
+    const sorted = await this.sortListing(listing, query.sort);
 
-    // --- 5. map to DTO ---
+    const offset = (query.page - 1) * query.limit;
+    const page = sorted.slice(offset, offset + query.limit);
+
+    const images = page.length
+      ? await this.em.find(
+          ProductImageSchema,
+          { product: { $in: page.map((entry) => entry.product.id) } },
+          { orderBy: { position: 'asc' } },
+        )
+      : [];
+
     return {
-      items: visibleProducts.map((p) => ({
-        id: p.id,
-        name: p.name,
-        slug: p.slug,
-        description: p.description,
-        category: { name: p.category.name, slug: p.category.slug },
-        priceFrom: Math.min(
-          ...variants.filter((v) => v.product.id === p.id).map((v) => v.price),
-        ),
-        variants: purchasable
-          .filter((v) => v.product.id === p.id)
-          .map((v) => {
-            const a = availability.get(v.id)!;
-            return {
-              id: v.id,
-              sku: v.sku,
-              name: v.name,
-              price: v.price,
-              weightGrams: v.weightGrams,
-              color: v.color,
-              material: v.material,
-              finish: v.finish,
-              attributes: v.attributes,
-              inStock: a.inStock,
-              maxOrderQuantity: a.maxOrderQuantity,
-              lowStock: a.lowStock,
-            };
-          }),
-        images: images
-          .filter((i) => i.product.id === p.id)
-          .map((i) => ({
-            url: this.media.urlFor(i),
-            type: i.type,
-            posterUrl: this.media.posterUrlFor(i),
-            alt: i.alt,
-            role: i.role,
-            variantId: i.variant?.id ?? null,
-          })),
-      })),
-      total,
+      items: page.map((entry) => this.toListItem(entry, images, availability)),
+      total: sorted.length,
       page: query.page,
       limit: query.limit,
     };
   }
 
-  private async findPage(
-    where: FilterQuery<IProduct>,
-    query: ProductQuery,
-  ): Promise<ProductPage> {
-    const [products, total] = await this.em.findAndCount(ProductSchema, where, {
-      orderBy: this.buildOrderBy(query.sort),
-      limit: query.limit,
-      offset: (query.page - 1) * query.limit,
-      populate: ['category'],
-    });
-    return { products, total };
-  }
-
   /**
-   * Ranks by units sold (read model, ADR-0014); unsold products follow,
-   * oldest first. Ranking happens in memory: the filters are a FilterQuery,
-   * and sorting by an unrelated table would require raw SQL for every filter.
-   * Fine for a catalog of hundreds of products — see ADR-0014 for the limit.
+   * Filter options built from the same purchasable data as the listing, so no
+   * option leads to an empty page from the start.
    */
-  private async findPageBySales(
-    where: FilterQuery<IProduct>,
-    query: ProductQuery,
-  ): Promise<ProductPage> {
-    const candidates = await this.em.find(ProductSchema, where);
-    if (candidates.length === 0) return { products: [], total: 0 };
+  async findFacets(categorySlug?: string): Promise<ProductFacets> {
+    const { purchasable } = await this.loadPurchasable({ active: true });
 
-    const sales = await this.em.find(ProductSalesSchema, {
-      productId: { $in: candidates.map((p) => p.id) },
-    });
-    const sold = new Map(sales.map((s) => [s.productId, s.unitsSold]));
+    // categories: always the whole catalogue, so other categories stay discoverable
+    const categories = new Map<
+      string,
+      { slug: string; name: string; count: number }
+    >();
+    for (const { product } of purchasable) {
+      const { slug, name } = product.category;
+      const entry = categories.get(slug) ?? { slug, name, count: 0 };
+      entry.count += 1;
+      categories.set(slug, entry);
+    }
 
-    const ranked = [...candidates].sort(
-      (a, b) =>
-        (sold.get(b.id) ?? 0) - (sold.get(a.id) ?? 0) ||
-        a.createdAt.getTime() - b.createdAt.getTime(),
+    const scope = categorySlug
+      ? purchasable.filter(
+          ({ product }) => product.category.slug === categorySlug,
+        )
+      : purchasable;
+
+    // materials: how many products offer each one (a product counts once per material)
+    const materials = new Map<string, number>();
+    for (const { variants } of scope) {
+      for (const material of new Set(
+        variants.map((v) => v.material).filter(Boolean),
+      )) {
+        materials.set(
+          material as string,
+          (materials.get(material as string) ?? 0) + 1,
+        );
+      }
+    }
+
+    const prices = scope.flatMap(({ variants }) =>
+      variants.map((v) => v.price),
+    );
+    const weights = scope.flatMap(({ variants }) =>
+      variants
+        .map((v) => v.weightGrams)
+        .filter((w): w is number => w !== null && w !== undefined),
     );
 
-    const offset = (query.page - 1) * query.limit;
-    const products = ranked.slice(offset, offset + query.limit);
-    await this.em.populate(products, ['category']);
-
-    return { products, total: candidates.length };
+    return {
+      categories: [...categories.values()].sort((a, b) =>
+        a.name.localeCompare(b.name, 'en'),
+      ),
+      materials: [...materials]
+        .map(([value, count]) => ({ value, count }))
+        .sort((a, b) => a.value.localeCompare(b.value, 'en')),
+      price: prices.length
+        ? { min: Math.min(...prices), max: Math.max(...prices) }
+        : null,
+      weight: weights.length
+        ? { min: Math.min(...weights), max: Math.max(...weights) }
+        : null,
+    };
   }
 
   async findBySlug(slug: string) {
@@ -330,35 +278,8 @@ export class CatalogService {
       category: { name: product.category.name, slug: product.category.slug },
       // anything purchasable at all — the storefront shows "Out of stock" otherwise
       inStock: variants.some((v) => availability.get(v.id)?.inStock ?? false),
-      variants: variants.map((v) => {
-        const a = availability.get(v.id) ?? {
-          inStock: false,
-          maxOrderQuantity: 0,
-          lowStock: false,
-        };
-        return {
-          id: v.id,
-          sku: v.sku,
-          name: v.name,
-          price: v.price,
-          weightGrams: v.weightGrams,
-          color: v.color,
-          material: v.material,
-          finish: v.finish,
-          attributes: v.attributes,
-          inStock: a.inStock,
-          maxOrderQuantity: a.maxOrderQuantity,
-          lowStock: a.lowStock,
-        };
-      }),
-      images: images.map((i) => ({
-        url: this.media.urlFor(i),
-        type: i.type,
-        posterUrl: this.media.posterUrlFor(i),
-        alt: i.alt,
-        role: i.role,
-        variantId: i.variant?.id ?? null,
-      })),
+      variants: variants.map((v) => this.toVariantDto(v, availability)),
+      images: images.map((i) => this.toImageDto(i)),
     };
   }
 
@@ -366,14 +287,186 @@ export class CatalogService {
     return this.em.find(CategorySchema, {}, { orderBy: { name: 'asc' } });
   }
 
-  private buildOrderBy(sort: ProductQuery['sort']) {
+  // --- listing helpers ---
+
+  /** Product-level filters; null when the requested category does not exist. */
+  private async productWhere(
+    query: ProductQuery,
+  ): Promise<FilterQuery<IProduct> | null> {
+    const where: FilterQuery<IProduct> = { active: true };
+
+    if (query.category) {
+      const category = await this.em.findOne(CategorySchema, {
+        slug: query.category,
+      });
+      if (!category) return null;
+      where.category = category.id;
+    }
+
+    if (query.search) {
+      where.name = { $ilike: `%${query.search}%` };
+    }
+
+    return where;
+  }
+
+  /** Products with at least one active variant in stock, and only those variants. */
+  private async loadPurchasable(where: FilterQuery<IProduct>): Promise<{
+    purchasable: PurchasableProduct[];
+    availability: Map<string, VariantAvailability>;
+  }> {
+    const products = await this.em.find(ProductSchema, where, {
+      populate: ['category'],
+    });
+    if (products.length === 0)
+      return { purchasable: [], availability: new Map() };
+
+    const variants = await this.em.find(ProductVariantSchema, {
+      product: { $in: products.map((p) => p.id) },
+      active: true,
+    });
+    const availability = await this.availabilityFor(variants.map((v) => v.id));
+
+    const byProduct = new Map<string, IProductVariant[]>();
+    for (const variant of variants) {
+      if (!availability.get(variant.id)?.inStock) continue;
+      const list = byProduct.get(variant.product.id) ?? [];
+      list.push(variant);
+      byProduct.set(variant.product.id, list);
+    }
+
+    const purchasable = products.flatMap((product) => {
+      const productVariants = byProduct.get(product.id);
+      return productVariants?.length
+        ? [{ product, variants: productVariants }]
+        : [];
+    });
+
+    return { purchasable, availability };
+  }
+
+  private matchesVariantFilters(
+    variant: IProductVariant,
+    query: ProductQuery,
+  ): boolean {
+    if (query.material && variant.material !== query.material) return false;
+    if (query.color && variant.color !== query.color) return false;
+    if (query.finish && variant.finish !== query.finish) return false;
+
+    if (query.minWeight !== undefined || query.maxWeight !== undefined) {
+      const weight = variant.weightGrams;
+      if (weight === null || weight === undefined) return false;
+      if (query.minWeight !== undefined && weight < query.minWeight)
+        return false;
+      if (query.maxWeight !== undefined && weight > query.maxWeight)
+        return false;
+    }
+
+    if (query.minPrice !== undefined && variant.price < query.minPrice)
+      return false;
+    if (query.maxPrice !== undefined && variant.price > query.maxPrice)
+      return false;
+
+    return true;
+  }
+
+  private async sortListing(
+    listing: ListingEntry[],
+    sort: ProductQuery['sort'],
+  ): Promise<ListingEntry[]> {
+    const sorted = [...listing];
+
     switch (sort) {
       case 'name':
-        return { name: 'asc' as const };
+        return sorted.sort((a, b) => byName(a.product, b.product));
+
+      case 'price_asc':
+        return sorted.sort(
+          (a, b) => a.priceFrom - b.priceFrom || byName(a.product, b.product),
+        );
+
+      case 'price_desc':
+        return sorted.sort(
+          (a, b) => b.priceFrom - a.priceFrom || byName(a.product, b.product),
+        );
+
+      case 'bestselling': {
+        // units sold (ADR-0014); unsold products follow, oldest first
+        const sales = await this.em.find(ProductSalesSchema, {
+          productId: { $in: sorted.map((entry) => entry.product.id) },
+        });
+        const sold = new Map(sales.map((s) => [s.productId, s.unitsSold]));
+        return sorted.sort(
+          (a, b) =>
+            (sold.get(b.product.id) ?? 0) - (sold.get(a.product.id) ?? 0) ||
+            a.product.createdAt.getTime() - b.product.createdAt.getTime(),
+        );
+      }
+
       case 'newest':
-        return { createdAt: 'desc' as const };
       default:
-        return { createdAt: 'desc' as const };
+        return sorted.sort(
+          (a, b) =>
+            b.product.createdAt.getTime() - a.product.createdAt.getTime(),
+        );
     }
+  }
+
+  // --- DTO mapping ---
+
+  private toListItem(
+    entry: ListingEntry,
+    images: IProductImage[],
+    availability: Map<string, VariantAvailability>,
+  ) {
+    const { product } = entry;
+    return {
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      description: product.description,
+      category: { name: product.category.name, slug: product.category.slug },
+      priceFrom: entry.priceFrom,
+      variants: entry.variants.map((v) => this.toVariantDto(v, availability)),
+      images: images
+        .filter((i) => i.product.id === product.id)
+        .map((i) => this.toImageDto(i)),
+    };
+  }
+
+  private toVariantDto(
+    variant: IProductVariant,
+    availability: Map<string, VariantAvailability>,
+  ) {
+    const a = availability.get(variant.id) ?? {
+      inStock: false,
+      maxOrderQuantity: 0,
+      lowStock: false,
+    };
+    return {
+      id: variant.id,
+      sku: variant.sku,
+      name: variant.name,
+      price: variant.price,
+      weightGrams: variant.weightGrams,
+      color: variant.color,
+      material: variant.material,
+      finish: variant.finish,
+      attributes: variant.attributes,
+      inStock: a.inStock,
+      maxOrderQuantity: a.maxOrderQuantity,
+      lowStock: a.lowStock,
+    };
+  }
+
+  private toImageDto(image: IProductImage) {
+    return {
+      url: this.media.urlFor(image),
+      alt: image.alt,
+      role: image.role,
+      type: image.type,
+      posterUrl: this.media.posterUrlFor(image),
+      variantId: image.variant?.id ?? null,
+    };
   }
 }

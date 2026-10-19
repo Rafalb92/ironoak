@@ -68,6 +68,23 @@ export const productListSchema = z.object({
 });
 export type ProductList = z.infer<typeof productListSchema>;
 
+export const productFacetsQuerySchema = z.object({
+  category: z.string().optional(),
+});
+export type ProductFacetsQuery = z.infer<typeof productFacetsQuerySchema>;
+
+const rangeSchema = z.object({ min: z.number().int(), max: z.number().int() });
+
+export const productFacetsSchema = z.object({
+  /** every category with purchasable products — not narrowed by the selected one */
+  categories: z.array(z.object({ slug: z.string(), name: z.string(), count: z.number().int() })),
+  /** within the selected category (or the whole catalogue) */
+  materials: z.array(z.object({ value: z.string(), count: z.number().int() })),
+  price: rangeSchema.nullable(), // cents
+  weight: rangeSchema.nullable(), // grams
+});
+export type ProductFacets = z.infer<typeof productFacetsSchema>;
+
 export const productDetailSchema = z.object({
   id: z.uuid(),
   name: z.string(),
