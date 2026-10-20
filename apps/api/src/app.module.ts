@@ -17,6 +17,7 @@ import { CartModule } from './modules/cart/cart.module';
 import { TokenModule } from './shared-infra/auth/token.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { PaymentsModule } from './modules/payments/payments.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
     TokenModule,
     InventoryModule,
     PaymentsModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -12,6 +12,7 @@ import { ProductImageSchema } from './modules/catalog/entities/product-image.ent
 import { ProductSalesSchema } from './modules/catalog/entities/product-sales.entity';
 import { ProductSchema } from './modules/catalog/entities/product.entity';
 import { ProductVariantSchema } from './modules/catalog/entities/product-variant.entity';
+import { SentEmailSchema } from './modules/notifications/adapters/out/persistence/sent-email.entity';
 import { StockItemEntitySchema } from './modules/inventory/adapters/out/persistence/stock-item.entity';
 import { UserSchema } from './modules/identity/domain/user.entity';
 import { EntityManager as DriverEntityManager } from '@mikro-orm/postgresql';
@@ -28,6 +29,7 @@ export const entities = [
   ProductSalesSchema,
   ProductSchema,
   ProductVariantSchema,
+  SentEmailSchema,
   StockItemEntitySchema,
   UserSchema,
 ] as const;

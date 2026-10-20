@@ -33,6 +33,7 @@ import { IdentityCustomerLookup } from './adapters/out/customer/identity-custome
 import { AdminOrderQueryController } from './adapters/in/http/admin-order-query.controller';
 import { OrderPaidSalesListener } from '../catalog/listeners/order-paid-sales.listener';
 import { ShippingMethodsController } from './adapters/in/http/shipping-methods.controller';
+import { OrderDetailsQuery } from './application/services/order-details.query';
 
 @Module({
   imports: [CatalogModule, IdentityModule, CartModule], // ← jawna zależność między kontekstami
@@ -69,6 +70,7 @@ import { ShippingMethodsController } from './adapters/in/http/shipping-methods.c
     PaymentSucceededListener,
     OrderQueryService,
     OrderPaidSalesListener,
+    OrderDetailsQuery,
   ],
   controllers: [
     PlaceOrderController,
@@ -78,6 +80,6 @@ import { ShippingMethodsController } from './adapters/in/http/shipping-methods.c
     AdminOrderQueryController,
     ShippingMethodsController,
   ],
-  exports: [OrderQueryService],
+  exports: [OrderQueryService, OrderDetailsQuery],
 })
 export class OrderingModule {}
