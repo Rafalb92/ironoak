@@ -7,6 +7,13 @@ import {
 } from '../ports/email-sender.port';
 import { SentEmailSchema } from '../../adapters/out/persistence/sent-email.entity';
 
+export interface EmailKey {
+  eventId: string;
+  type: string;
+  /** links the email to an order, so the admin can list them */
+  orderId?: string;
+}
+
 /**
  * Sends one email per (event, type), recording every attempt.
  *
@@ -22,24 +29,25 @@ export class EmailDispatcher {
     @Inject(EMAIL_SENDER) private readonly sender: EmailSender,
   ) {}
 
-  async dispatch(
-    eventId: string,
-    type: string,
-    email: OutgoingEmail,
-  ): Promise<void> {
+  async dispatch(key: EmailKey, email: OutgoingEmail): Promise<void> {
     const em = this.em.fork();
 
-    let record = await em.findOne(SentEmailSchema, { eventId, type });
+    let record = await em.findOne(SentEmailSchema, {
+      eventId: key.eventId,
+      type: key.type,
+    });
     if (record?.status === 'SENT') return;
 
     if (record) {
       record.recipient = email.to;
       record.subject = email.subject;
+      record.orderId = key.orderId ?? null;
       record.status = 'PENDING';
     } else {
       record = em.create(SentEmailSchema, {
-        eventId,
-        type,
+        eventId: key.eventId,
+        type: key.type,
+        orderId: key.orderId ?? null,
         recipient: email.to,
         subject: email.subject,
         status: 'PENDING',

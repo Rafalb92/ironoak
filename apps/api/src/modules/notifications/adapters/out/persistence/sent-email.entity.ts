@@ -12,6 +12,8 @@ export const SentEmailSchema = defineEntity({
     id: p.uuid().primary().defaultRaw('gen_random_uuid()'),
     eventId: p.uuid(),
     type: p.string(), // ORDER_CONFIRMED | ORDER_SHIPPED | ORDER_CANCELLED
+    // nullable: rows logged before it existed, and future non-order emails
+    orderId: p.uuid().nullable(),
     recipient: p.string(),
     subject: p.string(),
     status: p.enum(['PENDING', 'SENT', 'FAILED']),
@@ -20,6 +22,7 @@ export const SentEmailSchema = defineEntity({
     sentAt: p.datetime().nullable(),
   },
   uniques: [{ properties: ['eventId', 'type'] }],
+  indexes: [{ properties: ['orderId'] }],
 });
 
 export interface ISentEmail extends InferEntity<typeof SentEmailSchema> {}

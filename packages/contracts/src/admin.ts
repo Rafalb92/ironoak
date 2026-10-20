@@ -86,9 +86,25 @@ export const adminOrderDetailSchema = z.object({
       quantity: z.number().int(),
     }),
   ),
-  recipientName: z.string().nullable(),
-  phone: z.string().nullable(),
+  shippingMethodName: z.string(),
+  recipientName: z
+    .string()
+    .nullish()
+    .transform((value) => value ?? null),
+  phone: z
+    .string()
+    .nullish()
+    .transform((value) => value ?? null),
   deliveryAddress: z.object({
+    // null on orders placed before recipient and phone were collected
+    recipientName: z
+      .string()
+      .nullish()
+      .transform((value) => value ?? null),
+    phone: z
+      .string()
+      .nullish()
+      .transform((value) => value ?? null),
     street: z.string(),
     buildingNumber: z.string(),
     apartmentNumber: z.string().nullable(),
@@ -309,6 +325,20 @@ export const updateImageSchema = z.object({
   variantId: z.uuid().nullable().optional(),
 });
 export type UpdateImageInput = z.infer<typeof updateImageSchema>;
+
+export const adminOrderEmailSchema = z.object({
+  id: z.uuid(),
+  type: z.string(), // ORDER_CONFIRMED | ORDER_SHIPPED | ORDER_CANCELLED
+  recipient: z.string(),
+  subject: z.string(),
+  status: z.enum(['PENDING', 'SENT', 'FAILED']),
+  error: z.string().nullable(),
+  createdAt: z.coerce.date(),
+  sentAt: z.coerce.date().nullable(),
+});
+export type AdminOrderEmail = z.infer<typeof adminOrderEmailSchema>;
+
+export const adminOrderEmailListSchema = z.array(adminOrderEmailSchema);
 
 export const imageIdResultSchema = z.object({ imageId: z.uuid() });
 export type ImageIdResult = z.infer<typeof imageIdResultSchema>;

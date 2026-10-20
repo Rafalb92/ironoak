@@ -75,6 +75,9 @@ export class OrderNotificationsService {
     }
 
     const email = render(order);
-    await this.dispatcher.dispatch(eventId, type, { to, ...email });
+    await this.dispatcher.dispatch(
+      { eventId, type, orderId: order.id },
+      { to, ...email },
+    );
   }
 }

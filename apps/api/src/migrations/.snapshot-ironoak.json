@@ -1784,6 +1784,23 @@
           "enumItems": [],
           "mappedType": "uuid"
         },
+        "order_id": {
+          "name": "order_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "uuid"
+        },
         "recipient": {
           "name": "recipient",
           "type": "varchar(255)",
@@ -1885,6 +1902,16 @@
           "keyName": "sent_email_event_id_type_unique",
           "primary": false,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "order_id"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "sent_email_order_id_index",
+          "primary": false,
+          "unique": false
         },
         {
           "columnNames": [

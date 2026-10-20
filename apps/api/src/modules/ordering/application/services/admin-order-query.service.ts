@@ -8,6 +8,7 @@ import {
   CUSTOMER_LOOKUP,
   type CustomerLookup,
 } from '../ports/customer-lookup.port';
+import { ShippingMethod } from '../../domain/value-objects/shipping-method.vo';
 
 export interface AdminOrderListParams {
   status?: string;
@@ -103,10 +104,13 @@ export class AdminOrderQueryService {
       customerEmail: customer?.email ?? null,
       status: order.status,
       shippingMethod: order.shippingMethod,
+      // display names live in the domain's catalogue, not in the admin UI
+      shippingMethodName: ShippingMethod.nameOf(order.shippingMethod),
       shippingAmount: order.shippingAmount,
       totalAmount: order.totalAmount,
       currency: order.currency,
       lines: order.lines,
+      // old orders lack these keys entirely; the contract expects null, not undefined
       deliveryAddress: {
         ...order.deliveryAddress,
         recipientName: order.deliveryAddress.recipientName ?? null,

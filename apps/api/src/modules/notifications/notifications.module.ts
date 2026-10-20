@@ -11,6 +11,8 @@ import { IdentityCustomerDirectory } from './adapters/out/identity/identity-cust
 import { EmailDispatcher } from './application/services/email-dispatcher.service';
 import { OrderNotificationsService } from './application/services/order-notifications.service';
 import { OrderEmailsListener } from './adapters/in/events/order-emails.listener';
+import { SentEmailQueryService } from './application/services/sent-email-query.service';
+import { AdminOrderEmailsController } from './adapters/in/http/admin-order-emails.controller';
 
 @Module({
   imports: [OrderingModule, IdentityModule],
@@ -33,6 +35,8 @@ import { OrderEmailsListener } from './adapters/in/events/order-emails.listener'
     EmailDispatcher,
     OrderNotificationsService,
     OrderEmailsListener,
+    SentEmailQueryService,
   ],
+  controllers: [AdminOrderEmailsController],
 })
 export class NotificationsModule {}

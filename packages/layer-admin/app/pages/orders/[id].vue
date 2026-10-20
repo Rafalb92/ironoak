@@ -9,7 +9,7 @@ const orderId = computed(() => route.params.id as string);
 const { state } = useQuery(() => adminOrderDetailQuery(orderId.value));
 const action = useOrderAction();
 
-// która akcja jest legalna z bieżącego stanu — odzwierciedla maszynę stanów agregatu
+// which action is legal from the current status — mirrors the aggregate's state machine
 const nextAction = computed<{ action: 'fulfill' | 'ship' | 'deliver'; label: string } | null>(
   () => {
     const status = state.value.data?.status as OrderStatus | undefined;
@@ -18,6 +18,11 @@ const nextAction = computed<{ action: 'fulfill' | 'ship' | 'deliver'; label: str
     if (status === 'SHIPPED') return { action: 'deliver', label: 'Mark as delivered' };
     return null;
   },
+);
+
+const subtotal = computed(
+  () =>
+    state.value.data?.lines.reduce((sum, line) => sum + line.unitPriceAmount * line.quantity, 0) ?? 0,
 );
 
 function formatDate(date: Date): string {
@@ -35,9 +40,7 @@ function formatDate(date: Date): string {
     <template v-else>
       <div class="flex items-start justify-between gap-6">
         <div class="space-y-2">
-          <NuxtLink to="/orders" class="t-eyebrow text-fg-muted hover:text-accent"
-            >← Orders</NuxtLink
-          >
+          <NuxtLink to="/orders" class="t-eyebrow text-fg-muted hover:text-accent">← Orders</NuxtLink>
           <h1 class="t-display-lg">Order {{ state.data.id.slice(0, 8) }}</h1>
           <OrderStatusBadge :status="state.data.status" />
         </div>
@@ -49,10 +52,7 @@ function formatDate(date: Date): string {
         >
           {{ action.isLoading.value ? 'Working…' : nextAction.label }}
         </Button>
-        <p
-          v-else-if="state.data.status === 'PENDING_PAYMENT'"
-          class="t-body-sm max-w-xs text-fg-muted"
-        >
+        <p v-else-if="state.data.status === 'PENDING_PAYMENT'" class="t-body-sm max-w-xs text-fg-muted">
           Waiting for payment. The status updates automatically when the provider confirms it.
         </p>
       </div>
@@ -92,18 +92,35 @@ function formatDate(date: Date): string {
               <tr
                 v-for="line in state.data.lines"
                 :key="line.productVariantId"
-                class="border-b border-line last:border-0"
+                class="border-b border-line"
               >
                 <td class="t-body-sm px-4 py-3">{{ line.productName }}</td>
-                <td class="t-price px-4 py-3 text-right">
-                  {{ formatPrice(line.unitPriceAmount) }}
-                </td>
+                <td class="t-price px-4 py-3 text-right">{{ formatPrice(line.unitPriceAmount) }}</td>
                 <td class="t-spec px-4 py-3 text-right">{{ line.quantity }}</td>
                 <td class="t-price px-4 py-3 text-right">
                   {{ formatPrice(line.unitPriceAmount * line.quantity) }}
                 </td>
               </tr>
             </tbody>
+            <!-- the order's own snapshot of shipping, not today's price list -->
+            <tfoot>
+              <tr>
+                <td colspan="3" class="t-body-sm px-4 pt-3 text-right text-fg-muted">Subtotal</td>
+                <td class="t-price px-4 pt-3 text-right">{{ formatPrice(subtotal) }}</td>
+              </tr>
+              <tr>
+                <td colspan="3" class="t-body-sm px-4 py-1 text-right text-fg-muted">
+                  {{ state.data.shippingMethodName }}
+                </td>
+                <td class="t-price px-4 py-1 text-right">
+                  {{ state.data.shippingAmount === 0 ? 'Free' : formatPrice(state.data.shippingAmount) }}
+                </td>
+              </tr>
+              <tr>
+                <td colspan="3" class="t-label px-4 pt-1 pb-3 text-right">Total</td>
+                <td class="t-price px-4 pt-1 pb-3 text-right">{{ formatPrice(state.data.totalAmount) }}</td>
+              </tr>
+            </tfoot>
           </table>
         </div>
         <p class="t-spec text-fg-muted">
@@ -111,17 +128,38 @@ function formatDate(date: Date): string {
         </p>
       </section>
 
-      <section class="space-y-2">
-        <h2 class="t-label text-fg-muted">Delivery address</h2>
-        <address class="t-body-sm not-italic text-fg-secondary">
-          {{ state.data.deliveryAddress.street }} {{ state.data.deliveryAddress.buildingNumber
-          }}<template v-if="state.data.deliveryAddress.apartmentNumber"
-            >/{{ state.data.deliveryAddress.apartmentNumber }}</template
-          ><br />
-          {{ state.data.deliveryAddress.postalCode }} {{ state.data.deliveryAddress.city }}<br />
-          {{ state.data.deliveryAddress.country }}
-        </address>
+      <section class="grid gap-6 border border-line p-5 md:grid-cols-3">
+        <div class="space-y-2">
+          <h2 class="t-label text-fg-muted">Delivery method</h2>
+          <p class="t-body-sm">{{ state.data.shippingMethodName }}</p>
+          <p
+            v-if="state.data.shippingMethod === 'WHITE_GLOVE'"
+            class="t-spec text-fg-muted"
+          >
+            Book an assembly crew — carried in and assembled on site.
+          </p>
+        </div>
+
+        <div class="space-y-2">
+          <h2 class="t-label text-fg-muted">Recipient</h2>
+          <p class="t-body-sm">{{ state.data.deliveryAddress.recipientName ?? '—' }}</p>
+          <p class="t-spec text-fg-secondary">{{ state.data.deliveryAddress.phone ?? 'No phone' }}</p>
+        </div>
+
+        <div class="space-y-2">
+          <h2 class="t-label text-fg-muted">Delivery address</h2>
+          <address class="t-body-sm not-italic text-fg-secondary">
+            {{ state.data.deliveryAddress.street }} {{ state.data.deliveryAddress.buildingNumber
+            }}<template v-if="state.data.deliveryAddress.apartmentNumber"
+              >/{{ state.data.deliveryAddress.apartmentNumber }}</template
+            ><br />
+            {{ state.data.deliveryAddress.postalCode }} {{ state.data.deliveryAddress.city }}<br />
+            {{ state.data.deliveryAddress.country }}
+          </address>
+        </div>
       </section>
+
+      <OrderEmailHistory :order-id="state.data.id" :status="state.data.status" />
     </template>
   </div>
 </template>
