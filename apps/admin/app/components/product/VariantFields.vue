@@ -20,6 +20,15 @@ const { issues = [], index = 0, showStock = true } = defineProps<{
   showStock?: boolean;
 }>();
 
+// Input takes string | number; an empty number field maps to null in the model
+function toInputValue(value: number | null): string | number {
+  return value ?? '';
+}
+
+function fromInputValue(value: string | number): number | null {
+  return value === '' ? null : Number(value);
+}
+
 const skuId = useId();
 const nameId = useId();
 const priceId = useId();
@@ -60,7 +69,8 @@ function errorsFor(field: string) {
         <FieldLabel :for="priceId">Price (USD)</FieldLabel>
         <Input
           :id="priceId"
-          v-model.number="model.priceDollars"
+          :model-value="toInputValue(model.priceDollars)"
+          @update:model-value="model.priceDollars = fromInputValue($event)"
           type="number"
           step="0.01"
           min="0"
@@ -73,7 +83,8 @@ function errorsFor(field: string) {
         <FieldLabel :for="weightId">Weight (kg)</FieldLabel>
         <Input
           :id="weightId"
-          v-model.number="model.weightKg"
+          :model-value="toInputValue(model.weightKg)"
+          @update:model-value="model.weightKg = fromInputValue($event)"
           type="number"
           step="0.1"
           min="0"

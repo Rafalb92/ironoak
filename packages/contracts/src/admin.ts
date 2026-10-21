@@ -137,6 +137,7 @@ export const adminUserListItemSchema = z.object({
   emailVerified: z.boolean(),
   createdAt: z.coerce.date(),
 });
+export type AdminUserListItem = z.infer<typeof adminUserListItemSchema>;
 
 export const adminUserListSchema = z.object({
   items: z.array(adminUserListItemSchema),

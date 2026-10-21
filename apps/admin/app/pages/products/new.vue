@@ -119,7 +119,12 @@ async function onSubmit() {
               </Button>
             </div>
 
-            <ProductVariantFields v-model="variants[index]" :issues="issues" :index="index" />
+            <ProductVariantFields
+              :model-value="variant"
+              :issues="issues"
+              :index="index"
+              @update:model-value="variants[index] = $event"
+            />
           </div>
         </div>
 
