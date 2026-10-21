@@ -20,7 +20,7 @@
  * Layers and apps are separate packages — each must be listed explicitly. */
 @source "../../components";
 @source "../../pages";
-@source "../../../../layer-admin/app";
+@source "../../../../../apps/admin/app";
 @source "../../../../../apps/storefront/app";
 
 /* The system is dark-first. Light theme is enabled by [data-theme="light"] on <html>,

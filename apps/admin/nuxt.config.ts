@@ -3,7 +3,8 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  extends: ['@ironoak/layer-base', '@ironoak/layer-admin'],
+  extends: ['@ironoak/layer-base'],
+  modules: ['@pinia/colada-nuxt'],
 
   // panel admina — brak potrzeby SSR, wszystko za auth
   ssr: false,

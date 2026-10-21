@@ -1,4 +1,4 @@
-// packages/layer-admin/app/composables/useAdminProducts.ts
+// apps/admin/app/composables/useAdminProducts.ts
 import { defineQuery, useQuery } from '@pinia/colada';
 import { adminProductListQuery } from '../queries/products';
 

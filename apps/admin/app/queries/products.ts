@@ -1,4 +1,4 @@
-// packages/layer-admin/app/queries/products.ts
+// apps/admin/app/queries/products.ts
 import { defineQueryOptions } from '@pinia/colada';
 import { type AdminProductList, type AdminProductDetail, adminProductDetailSchema } from '@ironoak/contracts';
 
