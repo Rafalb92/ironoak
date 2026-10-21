@@ -16,7 +16,8 @@ export function useOrderAction() {
 
   return useMutation({
     mutation: ({ orderId, action }: { orderId: string; action: OrderAction }) =>
-      api(`/admin/orders/${orderId}/${action}`, { method: 'POST' }),
+      // explicit response type: inferring it from Nuxt's typed routes exceeds the type depth limit
+      api<unknown>(`/admin/orders/${orderId}/${action}`, { method: 'POST' }),
 
     onSuccess: (_data, { action }) => {
       toast.success(ACTION_LABELS[action]);

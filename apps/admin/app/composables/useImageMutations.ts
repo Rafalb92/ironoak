@@ -48,7 +48,8 @@ export function useRemoveImage() {
   const toast = useToast();
 
   return useMutation({
-    mutation: (imageId: string) => api(`/admin/images/${imageId}`, { method: 'DELETE' }),
+    // explicit response type: inferring it from Nuxt's typed routes exceeds the type depth limit
+    mutation: (imageId: string) => api<unknown>(`/admin/images/${imageId}`, { method: 'DELETE' }),
     onSuccess: () => {
       toast.success('Image removed');
       cache.invalidateQueries({ key: PRODUCT_QUERY_KEYS.root });

@@ -54,7 +54,8 @@ export function useSetStock(productId: Ref<string>) {
 
   return useMutation({
     mutation: ({ variantId, quantityOnHand }: { variantId: string; quantityOnHand: number }) =>
-      api(`/admin/variants/${variantId}/stock`, {
+      // explicit response type: inferring it from Nuxt's typed routes exceeds the type depth limit
+      api<unknown>(`/admin/variants/${variantId}/stock`, {
         method: 'PATCH',
         body: { quantityOnHand },
       }),

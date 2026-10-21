@@ -46,7 +46,8 @@ export function useChangeUserRole() {
 
   return useMutation({
     mutation: ({ userId, role }: { userId: string } & ChangeRoleInput) =>
-      api(`/admin/users/${userId}/role`, { method: 'PATCH', body: { role } }),
+      // explicit response type: inferring it from Nuxt's typed routes exceeds the type depth limit
+      api<unknown>(`/admin/users/${userId}/role`, { method: 'PATCH', body: { role } }),
 
     onSuccess: (_data, { role }) => {
       toast.success(
