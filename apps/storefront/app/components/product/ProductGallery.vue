@@ -190,7 +190,7 @@ function scrollToSlide(index: number) {
                 :alt="index === selected ? image.alt : ''"
                 :label="productName"
                 :loading="index === 0 ? 'eager' : 'lazy'"
-                sizes="100vw lg:55vw"
+                sizes="lg:48vw 2xl:710px"
                 class="size-full"
               />
             </div>
@@ -224,7 +224,7 @@ function scrollToSlide(index: number) {
               :alt="image.alt"
               :label="productName"
               :loading="index === 0 ? 'eager' : 'lazy'"
-              sizes="100vw"
+              sizes="xs:100vw sm:100vw md:100vw"
               class="size-full"
             />
           </li>

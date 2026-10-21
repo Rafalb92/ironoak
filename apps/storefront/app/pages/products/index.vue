@@ -201,7 +201,7 @@ const pageLink = (page: number) => locationFor({ page }, { resetPage: false });
           :aria-busy="refreshing"
         >
           <li v-for="product in products" :key="product.id">
-            <ProductCard :product="product" />
+            <ProductCard :product="product" sizes="xs:100vw sm:50vw lg:35vw xl:25vw 2xl:350px" />
           </li>
         </ul>
 

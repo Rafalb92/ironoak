@@ -86,7 +86,7 @@ function logCoordinates(event: MouseEvent) {
         width="1200"
         height="1500"
         loading="lazy"
-        sizes="100vw lg:56vw"
+        sizes="xs:100vw sm:100vw lg:52vw 2xl:750px"
         class="aspect-4/5 w-full object-cover"
       />
 

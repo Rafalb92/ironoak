@@ -1,10 +1,16 @@
 <script setup lang="ts">
 import type { ProductListItem } from '@ironoak/contracts';
 
-const { product, rating = null } = defineProps<{
+const {
+  product,
+  rating = null,
+  sizes = 'xs:50vw lg:23vw 2xl:330px',
+} = defineProps<{
   product: ProductListItem;
   /** average rating; hidden until the product has reviews */
   rating?: number | null;
+  /** image width per breakpoint; the default fits the Bestsellers grid */
+  sizes?: string;
 }>();
 
 const image = computed(() => pickPrimaryImage(product));
@@ -24,7 +30,7 @@ const hasPriceRange = computed(() => new Set(product.variants.map((v) => v.price
         :alt="image?.alt ?? product.name"
         :label="product.name"
         loading="lazy"
-        sizes="50vw lg:25vw"
+        :sizes="sizes"
         class="size-full transition-transform duration-(--duration-slow) ease-iron group-hover:scale-[1.03]"
       />
     </div>

@@ -21,6 +21,9 @@ export default defineNuxtConfig({
   },
   image: {
     quality: 90,
+    // the image module keys an unprefixed `sizes` value to a 1px screen (1w/2w candidates);
+    // fluid values start with xs: instead, which also covers everything below sm
+    screens: { xs: 400 },
   },
 
   css: [join(currentDir, './app/assets/css/tailwind.css')],

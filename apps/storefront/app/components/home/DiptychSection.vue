@@ -51,7 +51,7 @@ function onKeydown(event: KeyboardEvent) {
           alt=""
           aria-hidden="true"
           format="webp"
-          sizes="90vw lg:60vw 2xl:900px"
+          sizes="xs:62vw 2xl:865px"
           loading="lazy"
           class="pointer-events-none absolute bottom-[10%] left-[3%] w-[62%] max-w-4xl"
         />
@@ -75,7 +75,7 @@ function onKeydown(event: KeyboardEvent) {
           alt=""
           aria-hidden="true"
           format="webp"
-          sizes="90vw lg:60vw 2xl:900px"
+          sizes="xs:36vw 2xl:500px"
           loading="lazy"
           class="pointer-events-none absolute bottom-[22%] left-[34%] w-[36%] max-w-2xl"
         />

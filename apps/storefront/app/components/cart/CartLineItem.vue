@@ -62,7 +62,7 @@ const productLink = computed(() => (line.productSlug ? `/products/${line.product
       tabindex="-1"
       aria-hidden="true"
     >
-      <ProductMedia :src="line.imageUrl" alt="" compact sizes="128px" class="size-full" />
+      <ProductMedia :src="line.imageUrl" alt="" compact sizes="96px sm:128px" class="size-full" />
     </NuxtLink>
     <div v-else class="size-24 shrink-0 overflow-hidden rounded-panel bg-surface sm:size-32">
       <ProductMedia :src="null" alt="" compact class="size-full" />

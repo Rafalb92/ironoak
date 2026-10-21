@@ -7,7 +7,7 @@ const {
   alt,
   label,
   compact = false,
-  sizes = '100vw',
+  sizes = 'xs:100vw sm:100vw md:100vw',
 } = defineProps<{
   src: string | null;
   alt: string;

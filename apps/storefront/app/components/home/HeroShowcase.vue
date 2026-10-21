@@ -32,7 +32,7 @@ function toggleFavourite(id: string) {
       :aria-hidden="index !== active"
       :loading="index === 0 ? 'eager' : 'lazy'"
       :fetchpriority="index === 0 ? 'high' : 'auto'"
-      sizes="100vw lg:45vw"
+      sizes="xs:100vw sm:100vw lg:42vw 2xl:610px"
       class="absolute inset-0 size-full transition-[opacity,scale] duration-(--duration-heavy) ease-iron"
       :class="index === active ? 'scale-100 opacity-100' : 'scale-[1.03] opacity-0'"
     />
@@ -106,7 +106,7 @@ function toggleFavourite(id: string) {
           alt=""
           compact
           loading="lazy"
-          sizes="96px"
+          sizes="64px sm:80px lg:96px"
           class="size-full"
         />
       </button>

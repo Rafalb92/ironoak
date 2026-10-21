@@ -63,7 +63,7 @@ const tiles = computed(() =>
             alt=""
             width="900"
             height="1200"
-            sizes="100vw md:33vw"
+            sizes="xs:100vw sm:100vw md:32vw 2xl:455px"
             loading="lazy"
             class="aspect-3/4 w-full object-cover transition-transform duration-(--duration-slow) ease-(--ease-lift) motion-safe:group-hover:scale-[1.03]"
           />
