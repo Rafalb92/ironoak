@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const { state, asyncStatus, page, totalPages, nextPage, prevPage } = useAdminProducts();
 const deactivate = useDeactivateProduct();
+const { canEditCatalog } = useAdminPermissions();
+const locked = computed(() => !canEditCatalog.value);
 
 function formatPrice(cents: number): string {
   return new Intl.NumberFormat('en-US', {
@@ -14,7 +16,11 @@ function formatPrice(cents: number): string {
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <h1 class="t-display-lg">Products</h1>
-      <Button as-child>
+      <!-- a link cannot be disabled, so the locked state is a plain disabled button -->
+      <DemoLock v-if="locked" :locked="locked">
+        <Button disabled>New product</Button>
+      </DemoLock>
+      <Button v-else as-child>
         <NuxtLink to="/products/new">New product</NuxtLink>
       </Button>
     </div>
@@ -70,15 +76,16 @@ function formatPrice(cents: number): string {
               </span>
             </td>
             <td class="px-4 py-3 text-right">
-              <Button
-                v-if="product.active"
-                variant="ghost"
-                size="sm"
-                :disabled="deactivate.isLoading.value"
-                @click="deactivate.mutate(product.id)"
-              >
-                Deactivate
-              </Button>
+              <DemoLock v-if="product.active" :locked="locked">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  :disabled="locked || deactivate.isLoading.value"
+                  @click="deactivate.mutate(product.id)"
+                >
+                  Deactivate
+                </Button>
+              </DemoLock>
             </td>
           </tr>
         </tbody>
