@@ -17,6 +17,7 @@ import {
   type AuthSuccess,
 } from '@ironoak/contracts';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
 const ACCESS_TTL_MS = 15 * 60 * 1000; // 15 min
 const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 dni
@@ -26,6 +27,7 @@ const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 dni
 export class LoginUserController {
   constructor(private readonly loginUser: LoginUserUseCase) {}
 
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ZodValidationPipe(loginUserSchema))

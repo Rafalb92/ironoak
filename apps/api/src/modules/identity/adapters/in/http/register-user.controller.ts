@@ -15,12 +15,14 @@ import { ZodValidationPipe } from '../../../../../shared/pipes/zod-validation.pi
 import { RegisterUserUseCase } from '../../../application/use-cases/register-user/register-user.use-case';
 import { RegisterUserCommand } from '../../../application/use-cases/register-user/register-user.command';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('auth')
 @Controller('auth')
 export class RegisterUserController {
   constructor(private readonly registerUser: RegisterUserUseCase) {}
 
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ZodValidationPipe(registerUserSchema))

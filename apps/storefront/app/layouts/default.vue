@@ -7,7 +7,7 @@
     >
       Skip to content
     </a>
-
+    <DemoBanner />
     <SiteHeader />
 
     <!-- layout owns the frame (width, gutters); each page owns its own section rhythm -->

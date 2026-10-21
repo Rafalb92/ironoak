@@ -21,10 +21,12 @@ import { InboxMessageEntity } from '../../../../../shared-infra/inbox/inbox-mess
 import { UnsupportedWebhookEventError } from '../../out/payment/stripe-payment.provider';
 import { ApiExcludeEndpoint, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { WebhookReceived } from '@ironoak/contracts';
+import { SkipThrottle } from '@nestjs/throttler';
 
 const HANDLER_NAME = 'PaymentWebhook';
 
 @ApiTags('payments')
+@SkipThrottle()
 @Controller('webhooks')
 export class PaymentWebhookController {
   constructor(

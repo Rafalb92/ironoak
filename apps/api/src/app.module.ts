@@ -9,6 +9,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { OrderingModule } from './modules/ordering/ordering.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { HealthModule } from './shared-infra/health/health.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { OutboxModule } from './shared-infra/outbox/outbox.module';
 import { RedisModule } from './shared-infra/redis/redis.module';
@@ -18,11 +19,14 @@ import { TokenModule } from './shared-infra/auth/token.module';
 import { InventoryModule } from './modules/inventory/inventory.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
     MikroOrmModule.forRoot(config),
     ConfigModule.forRoot({ isGlobal: true }),
+    ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 100 }]),
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     LoggerModule.forRoot({
@@ -72,8 +76,9 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     InventoryModule,
     PaymentsModule,
     NotificationsModule,
+    HealthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

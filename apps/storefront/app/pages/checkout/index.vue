@@ -428,6 +428,9 @@ const disabledCard =
           {{ busy ? 'Placing order…' : `Pay ${total}` }}
         </Button>
         <p class="t-spec text-center text-fg-muted">You'll pay securely on Stripe.</p>
+        <p class="t-spec rounded-milled bg-canvas px-3 py-2 text-center text-fg-secondary">
+          Test mode: card <span class="font-semibold tracking-wide">4242 4242 4242 4242</span>, any future date and CVC.
+        </p>
       </aside>
     </div>
   </div>

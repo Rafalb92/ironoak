@@ -17,7 +17,9 @@ async function bootstrap() {
   });
   const logger = app.get(Logger);
   app.useLogger(logger);
-
+  // behind a reverse proxy (Caddy in production): take the client IP from
+  // X-Forwarded-For, otherwise every request shares the proxy's IP and its rate limit
+  app.set('trust proxy', 1);
   app.enableCors({
     origin: ['http://localhost:3001', 'http://localhost:3002'],
     credentials: true, // kluczowe dla cookies
