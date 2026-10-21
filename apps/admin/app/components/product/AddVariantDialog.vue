@@ -36,7 +36,7 @@ async function onSubmit() {
   const payload = {
     sku: form.value.sku,
     name: form.value.name,
-    price: form.value.priceDollars === null ? 0 : dollarsToCents(form.value.priceDollars),
+    price: form.value.priceDollars === null ? undefined : dollarsToCents(form.value.priceDollars),
     weightGrams: form.value.weightKg === null ? null : kgToGrams(form.value.weightKg),
     color: form.value.color || null,
     material: form.value.material || null,

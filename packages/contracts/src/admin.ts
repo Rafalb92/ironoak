@@ -5,7 +5,10 @@ import { mediaTypeSchema, type MediaType } from './catalog.js';
 const variantInputSchema = z.object({
   sku: z.string().min(1).max(64),
   name: z.string().min(1).max(200),
-  price: z.number().int().positive(), // w centach
+  price: z
+    .number({ error: 'Enter a price greater than zero' })
+    .int()
+    .positive('Enter a price greater than zero'), // w centach
   weightGrams: z.number().int().nonnegative().nullable().optional(),
   color: z.string().max(100).nullable().optional(),
   material: z.string().max(100).nullable().optional(),

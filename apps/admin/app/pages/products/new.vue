@@ -57,7 +57,7 @@ async function onSubmit() {
     variants: variants.value.map((v) => ({
       sku: v.sku,
       name: v.name,
-      price: v.priceDollars === null ? 0 : dollarsToCents(v.priceDollars),
+      price: v.priceDollars === null ? undefined : dollarsToCents(v.priceDollars),
       weightGrams: v.weightKg === null ? null : kgToGrams(v.weightKg),
       color: v.color || null,
       material: v.material || null,
