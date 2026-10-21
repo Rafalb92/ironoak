@@ -20,6 +20,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { AllowDemo } from '../../../../../shared/decorators/allow-demo.decorator';
 
 // UWAGA: brak endpointu confirm-payment — był tymczasową atrapą webhooka.
 // Płatność potwierdza teraz system automatycznie (PaymentSucceededListener →
@@ -45,6 +46,7 @@ export class OrderAdminController {
   @ApiResponse({ status: 409, description: 'Order is not paid' })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiResponse({ status: 404, description: 'Order not found' })
+  @AllowDemo()
   async fulfill(@Param('id', ParseUUIDPipe) id: string) {
     await this.startFulfillment.execute(id);
     return { success: true };
@@ -59,6 +61,7 @@ export class OrderAdminController {
   })
   @ApiResponse({ status: 409, description: 'Order is not being fulfilled' })
   @ApiParam({ name: 'id', format: 'uuid' })
+  @AllowDemo()
   @ApiResponse({ status: 404, description: 'Order not found' })
   async ship(@Param('id', ParseUUIDPipe) id: string) {
     await this.shipOrder.execute(id);
@@ -73,6 +76,7 @@ export class OrderAdminController {
   })
   @ApiParam({ name: 'id', format: 'uuid' })
   @ApiResponse({ status: 404, description: 'Order not found' })
+  @AllowDemo()
   @ApiResponse({ status: 409, description: 'Order has not been shipped' })
   async deliver(@Param('id', ParseUUIDPipe) id: string) {
     await this.markDelivered.execute(id);

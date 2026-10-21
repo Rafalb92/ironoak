@@ -1,0 +1,13 @@
+@host=http://localhost:3000
+
+### demo customer
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{ "email": "demo@ironoak.dev", "password": "ironoak-demo" }
+
+### demo admin (promoted below)
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{ "email": "admin-demo@ironoak.dev", "password": "ironoak-demo" }

@@ -27,6 +27,6 @@ export type RegisterResult = z.infer<typeof registerResultSchema>;
 export const currentUserSchema = z.object({
   userId: z.uuid(),
   email: z.string(),
-  role: z.enum(['USER', 'ADMIN']),
+  role: z.enum(['USER', 'ADMIN', 'DEMO_ADMIN']),
 });
 export type CurrentUser = z.infer<typeof currentUserSchema>;

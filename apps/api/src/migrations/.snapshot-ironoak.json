@@ -1449,7 +1449,8 @@
           "collation": null,
           "enumItems": [
             "USER",
-            "ADMIN"
+            "ADMIN",
+            "DEMO_ADMIN"
           ],
           "mappedType": "enum"
         },
@@ -1496,8 +1497,8 @@
       "checks": [
         {
           "name": "user_role_check",
-          "expression": "\"role\" in ('USER', 'ADMIN')",
-          "definition": "check (\"role\" in ('USER', 'ADMIN'))",
+          "expression": "\"role\" in ('USER', 'ADMIN', 'DEMO_ADMIN')",
+          "definition": "check (\"role\" in ('USER', 'ADMIN', 'DEMO_ADMIN'))",
           "columnName": "role"
         }
       ],

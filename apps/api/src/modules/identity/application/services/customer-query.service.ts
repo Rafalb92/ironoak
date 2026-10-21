@@ -10,6 +10,7 @@ import {
   REFRESH_TOKEN_STORE,
   type RefreshTokenStore,
 } from '../ports/refresh-token-store.port';
+import type { UserRole } from '../../../../shared-infra/auth/token-service.port';
 
 export interface CustomerInfo {
   userId: string;
@@ -27,10 +28,10 @@ export class CustomerQueryService {
 
   async changeRole(params: {
     targetUserId: string;
-    newRole: 'USER' | 'ADMIN';
+    newRole: UserRole;
     actingAdminId: string;
   }): Promise<void> {
-    // admin nie degraduje sam siebie — inaczej traci dostęp do panelu
+    // an admin never demotes themselves — they would lock themselves out of the panel
     if (params.targetUserId === params.actingAdminId) {
       throw new ConflictException('You cannot change your own role');
     }
@@ -38,8 +39,10 @@ export class CustomerQueryService {
     const user = await this.em.findOne(UserSchema, { id: params.targetUserId });
     if (!user) throw new NotFoundException('User not found');
 
-    // nie zostawiaj systemu bez administratora
-    if (user.role === 'ADMIN' && params.newRole === 'USER') {
+    // leaving ADMIN for any other role — USER or DEMO_ADMIN — is a demotion;
+    // the demo admin cannot edit the catalogue or roles, so it does not count
+    const isDemotion = user.role === 'ADMIN' && params.newRole !== 'ADMIN';
+    if (isDemotion) {
       const adminCount = await this.em.count(UserSchema, { role: 'ADMIN' });
       if (adminCount <= 1) {
         throw new ConflictException('Cannot demote the last administrator');
@@ -49,7 +52,7 @@ export class CustomerQueryService {
     user.role = params.newRole;
     await this.em.flush();
 
-    // stary token niesie nieaktualną rolę — wymuś ponowne logowanie
+    // the old token carries the outdated role — force a fresh login
     await this.refreshTokenStore.removeAllForUser(params.targetUserId);
   }
 
@@ -59,7 +62,7 @@ export class CustomerQueryService {
     return users.map((u) => ({ userId: u.id, email: u.email, role: u.role }));
   }
 
-  // zwraca id klientów pasujących do frazy — do wyszukiwania w Ordering
+  /** Customer ids matching an email fragment — for order search in Ordering. */
   async findIdsByEmail(fragment: string): Promise<string[]> {
     const users = await this.em.find(
       UserSchema,

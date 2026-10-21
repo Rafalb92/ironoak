@@ -10,7 +10,8 @@ import {
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<CurrentUser | null>(null);
   const isAuthenticated = computed(() => user.value !== null);
-  const isAdmin = computed(() => user.value?.role === 'ADMIN');
+  const isAdmin = computed(() => user.value?.role === 'ADMIN' || user.value?.role === 'DEMO_ADMIN');
+  const isDemoAdmin = computed(() => user.value?.role === 'DEMO_ADMIN');
 
   const api = useApi();
   const config = useRuntimeConfig();
@@ -71,5 +72,5 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  return { user, isAuthenticated, isAdmin, fetchUser, login, register, logout };
+  return { user, isAuthenticated, isAdmin, isDemoAdmin, fetchUser, login, register, logout };
 });

@@ -7,6 +7,14 @@ const nav = [
   { to: '/orders', label: 'Orders' },
   { to: '/users', label: 'Customers' },
 ];
+
+const ROLE_LABELS: Record<string, string> = {
+  ADMIN: 'Admin',
+  DEMO_ADMIN: 'Demo admin',
+  USER: 'Customer',
+};
+
+const roleLabel = computed(() => (auth.user ? (ROLE_LABELS[auth.user.role] ?? auth.user.role) : ''));
 </script>
 
 <template>
@@ -16,7 +24,7 @@ const nav = [
         <span class="t-wordmark">IRONOAK</span>
       </div>
 
-      <nav class="flex flex-col gap-1 p-3">
+      <nav aria-label="Admin" class="flex flex-col gap-1 p-3">
         <NuxtLink
           v-for="item in nav"
           :key="item.to"
@@ -30,15 +38,19 @@ const nav = [
     </aside>
 
     <div class="flex min-w-0 flex-1 flex-col">
-    <header class="flex h-14 items-center justify-between border-b border-line px-6">
+      <header class="flex h-14 items-center justify-between border-b border-line px-6">
         <span class="t-eyebrow text-fg-muted">Admin panel</span>
         <div class="flex items-center gap-4">
-          <span class="t-spec text-fg-muted">{{ auth.user?.role }}</span>
+          <span v-if="auth.user" class="t-spec text-fg-muted">
+            {{ auth.user.email }} · {{ roleLabel }}
+          </span>
           <Button variant="ghost" size="sm" @click="auth.logout()">Sign out</Button>
         </div>
       </header>
 
-      <main class="min-w-0 flex-1 p-6">
+      <main class="min-w-0 flex-1 space-y-6 p-6">
+        <!-- explains the disabled controls once, at the top of every page -->
+        <DemoAdminNotice />
         <slot />
       </main>
     </div>

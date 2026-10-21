@@ -1,6 +1,5 @@
 export const TOKEN_SERVICE = Symbol('TOKEN_SERVICE');
-export type UserRole = 'USER' | 'ADMIN';
-
+export type UserRole = 'USER' | 'ADMIN' | 'DEMO_ADMIN';
 export interface AccessTokenPayload {
   userId: string;
   role: UserRole;

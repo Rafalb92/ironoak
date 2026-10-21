@@ -126,14 +126,14 @@ export const adminUserQuerySchema = z.object({
 export type AdminUserQuery = z.infer<typeof adminUserQuerySchema>;
 
 export const changeRoleSchema = z.object({
-  role: z.enum(['USER', 'ADMIN']),
+  role: z.enum(['USER', 'ADMIN', 'DEMO_ADMIN']),
 });
 export type ChangeRoleInput = z.infer<typeof changeRoleSchema>;
 
 export const adminUserListItemSchema = z.object({
   id: z.uuid(),
   email: z.string(),
-  role: z.enum(['USER', 'ADMIN']),
+  role: z.enum(['USER', 'ADMIN', 'DEMO_ADMIN']),
   emailVerified: z.boolean(),
   createdAt: z.coerce.date(),
 });
