@@ -21,6 +21,7 @@ alternatives and the consequences — including the costs.
 | [0014](0014-sales-ranking-read-model.md)           | Sales ranking as an event-fed read model in Catalog      | Accepted |
 | [0015](0015-object-storage-product-media.md)       | Object storage for product media via presigned uploads   | Accepted |
 | [0016](0016-module-folder-layout.md)               | Ports-and-adapters folder layout for rich-domain modules | Accepted |
+| [0017](0017-nuxt-layers-only-for-shared-code.md)   | Nuxt layers only for code with two or more consumers     | Accepted |
 
 ## Format
 
