@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { EmailStatsService } from './application/services/email-stats.service';
 import { OrderingModule } from '../ordering/ordering.module';
 import { IdentityModule } from '../identity/identity.module';
 import { EMAIL_SENDER } from './application/ports/email-sender.port';
@@ -13,6 +14,7 @@ import { OrderNotificationsService } from './application/services/order-notifica
 import { OrderEmailsListener } from './adapters/in/events/order-emails.listener';
 import { SentEmailQueryService } from './application/services/sent-email-query.service';
 import { AdminOrderEmailsController } from './adapters/in/http/admin-order-emails.controller';
+import { AdminEmailDashboardController } from './adapters/in/http/admin-email-dashboard.controller';
 
 @Module({
   imports: [OrderingModule, IdentityModule],
@@ -36,7 +38,8 @@ import { AdminOrderEmailsController } from './adapters/in/http/admin-order-email
     OrderNotificationsService,
     OrderEmailsListener,
     SentEmailQueryService,
+    EmailStatsService,
   ],
-  controllers: [AdminOrderEmailsController],
+  controllers: [AdminOrderEmailsController, AdminEmailDashboardController],
 })
 export class NotificationsModule {}

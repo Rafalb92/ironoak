@@ -377,3 +377,40 @@ export const variantDeactivatedResultSchema = z.object({
 export type VariantDeactivatedResult = z.infer<
   typeof variantDeactivatedResultSchema
 >;
+
+// --- dashboard ---
+
+export const adminDashboardOrdersSchema = z.object({
+  last30Days: z.object({
+    orders: z.number().int(),
+    revenue: z.number().int(), // cents, paid orders only
+    averageOrderValue: z.number().int(),
+  }),
+  byStatus: z.record(z.string(), z.number().int()),
+  dailyRevenue: z.array(
+    z.object({
+      day: z.coerce.date(),
+      revenue: z.number().int(),
+      orders: z.number().int(),
+    }),
+  ),
+});
+export type AdminDashboardOrders = z.infer<typeof adminDashboardOrdersSchema>;
+
+export const adminLowStockItemSchema = z.object({
+  productId: z.uuid(),
+  productName: z.string(),
+  variantId: z.uuid(),
+  variantName: z.string(),
+  sku: z.string(),
+  available: z.number().int(),
+});
+export type AdminLowStockItem = z.infer<typeof adminLowStockItemSchema>;
+export const adminLowStockListSchema = z.array(adminLowStockItemSchema);
+
+export const adminEmailStatsSchema = z.object({
+  sent: z.number().int(),
+  failed: z.number().int(),
+  pending: z.number().int(),
+});
+export type AdminEmailStats = z.infer<typeof adminEmailStatsSchema>;

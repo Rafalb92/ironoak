@@ -31,9 +31,11 @@ import { AdminOrderQueryService } from './application/services/admin-order-query
 import { CUSTOMER_LOOKUP } from './application/ports/customer-lookup.port';
 import { IdentityCustomerLookup } from './adapters/out/customer/identity-customer-lookup';
 import { AdminOrderQueryController } from './adapters/in/http/admin-order-query.controller';
+import { AdminOrderDashboardController } from './adapters/in/http/admin-order-dashboard.controller';
 import { OrderPaidSalesListener } from '../catalog/listeners/order-paid-sales.listener';
 import { ShippingMethodsController } from './adapters/in/http/shipping-methods.controller';
 import { OrderDetailsQuery } from './application/services/order-details.query';
+import { AdminOrderDashboardService } from './application/services/admin-order-dashboard.service';
 
 @Module({
   imports: [CatalogModule, IdentityModule, CartModule], // ← jawna zależność między kontekstami
@@ -54,6 +56,7 @@ import { OrderDetailsQuery } from './application/services/order-details.query';
       useClass: IdentityCustomerLookup,
     },
     AdminOrderQueryService,
+    AdminOrderDashboardService,
     PlaceOrderUseCase,
     GetMyOrdersUseCase,
     GetOrderDetailsUseCase,
@@ -79,6 +82,7 @@ import { OrderDetailsQuery } from './application/services/order-details.query';
     CheckoutController,
     AdminOrderQueryController,
     ShippingMethodsController,
+    AdminOrderDashboardController,
   ],
   exports: [OrderQueryService, OrderDetailsQuery],
 })

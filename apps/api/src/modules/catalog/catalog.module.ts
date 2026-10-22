@@ -12,6 +12,8 @@ import { RolesGuard } from '../../shared/guards/roles.guard';
 import { JwtAuthGuard } from '../../shared/guards/jwt-auth.guard';
 import { AdminImageController } from './admin-image.controller';
 import { ProductMediaService } from './product-media.service';
+import { CatalogAdminDashboardService } from './admin-dashboard.service';
+import { CatalogAdminDashboardController } from './admin-dashboard.controller';
 
 @Module({
   imports: [InventoryModule],
@@ -21,6 +23,7 @@ import { ProductMediaService } from './product-media.service';
     AdminCatalogController,
     AdminVariantController,
     AdminImageController,
+    CatalogAdminDashboardController,
   ],
   providers: [
     CatalogService,
@@ -32,6 +35,7 @@ import { ProductMediaService } from './product-media.service';
     JwtAuthGuard,
     RolesGuard,
     ProductMediaService,
+    CatalogAdminDashboardService,
   ],
   exports: [CatalogService, STOCK_LOOKUP],
 })
