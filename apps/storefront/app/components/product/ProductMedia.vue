@@ -53,7 +53,7 @@ onMounted(() => {
     :aria-label="alt || undefined"
     class="flex flex-col items-center justify-center gap-4 bg-surface text-fg-muted"
   >
-    <IconBarbell class="-rotate-45" :class="compact ? 'size-6' : 'size-16'" :stroke="1.25" aria-hidden="true" />
+    <IconBarbell class="-rotate-45" :class="compact ? 'size-6' : 'size-16'" stroke="1.25" aria-hidden="true" />
     <span v-if="label && !compact" class="t-eyebrow">{{ label }}</span>
   </div>
 </template>

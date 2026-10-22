@@ -117,8 +117,8 @@ onMounted(() => sync(active));
         class="grid size-10 place-items-center rounded-pill bg-ink/70 text-bone backdrop-blur-sm"
         @click="toggleMute"
       >
-        <IconVolumeOff v-if="muted" class="size-5" :stroke="1.75" aria-hidden="true" />
-        <IconVolume v-else class="size-5" :stroke="1.75" aria-hidden="true" />
+        <IconVolumeOff v-if="muted" class="size-5" stroke="1.75" aria-hidden="true" />
+        <IconVolume v-else class="size-5" stroke="1.75" aria-hidden="true" />
       </button>
     </div>
   </div>

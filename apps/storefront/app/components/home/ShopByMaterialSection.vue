@@ -77,7 +77,7 @@ const tiles = computed(() =>
               {{ tile.count }} {{ tile.count === 1 ? 'product' : 'products' }}
               <IconArrowRight
                 class="size-4 transition-transform duration-(--duration-fast) ease-(--ease-lift) group-hover:translate-x-0.5"
-                :stroke="1.75"
+                stroke="1.75"
                 aria-hidden="true"
               />
             </p>

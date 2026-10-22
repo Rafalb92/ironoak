@@ -168,7 +168,7 @@ function logCoordinates(event: MouseEvent) {
         Explore the Atlas Rack
         <IconArrowRight
           class="size-4 transition-transform duration-(--duration-fast) ease-(--ease-lift) group-hover:translate-x-0.5"
-          :stroke="1.75"
+          stroke="1.75"
           aria-hidden="true"
         />
       </NuxtLink>

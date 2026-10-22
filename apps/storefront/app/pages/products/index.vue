@@ -129,7 +129,7 @@ const pageLink = (page: number) => locationFor({ page }, { resetPage: false });
         <!-- toolbar -->
         <div class="flex flex-wrap items-center justify-between gap-3">
           <Button variant="outline" class="h-11 rounded-pill px-5 lg:hidden" @click="filtersOpen = true">
-            <IconAdjustmentsHorizontal class="size-4" :stroke="1.75" aria-hidden="true" />
+            <IconAdjustmentsHorizontal class="size-4" stroke="1.75" aria-hidden="true" />
             Filters
             <span v-if="chips.length" class="t-spec text-fg-muted">({{ chips.length }})</span>
           </Button>
@@ -160,7 +160,7 @@ const pageLink = (page: number) => locationFor({ page }, { resetPage: false });
             @click="update(chip.remove)"
           >
             {{ chip.label }}
-            <IconX class="size-3.5" :stroke="2" aria-hidden="true" />
+            <IconX class="size-3.5" stroke="2" aria-hidden="true" />
           </button>
           <button
             type="button"

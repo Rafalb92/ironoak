@@ -109,7 +109,7 @@ const productLink = computed(() => (line.productSlug ? `/products/${line.product
           :aria-label="`Remove ${line.productName} from the cart`"
           @click="remove"
         >
-          <IconTrash class="size-4" :stroke="1.75" aria-hidden="true" />
+          <IconTrash class="size-4" stroke="1.75" aria-hidden="true" />
           Remove
         </button>
       </div>

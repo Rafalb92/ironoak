@@ -50,7 +50,7 @@ async function signOut() {
           :disabled="signingOut"
           @click="signOut"
         >
-          <IconLogout class="size-4" :stroke="1.75" aria-hidden="true" />
+          <IconLogout class="size-4" stroke="1.75" aria-hidden="true" />
           {{ signingOut ? 'Signing out…' : 'Sign out' }}
         </button>
       </nav>

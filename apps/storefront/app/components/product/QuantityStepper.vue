@@ -32,7 +32,7 @@ function step(delta: number) {
       :disabled="disabled || atMin"
       @click="step(-1)"
     >
-      <IconMinus class="size-4" :stroke="1.75" aria-hidden="true" />
+      <IconMinus class="size-4" stroke="1.75" aria-hidden="true" />
     </button>
 
     <output class="w-10 text-center font-data tabular-nums" aria-live="polite">{{ quantity }}</output>
@@ -44,7 +44,7 @@ function step(delta: number) {
       :disabled="disabled || atMax"
       @click="step(1)"
     >
-      <IconPlus class="size-4" :stroke="1.75" aria-hidden="true" />
+      <IconPlus class="size-4" stroke="1.75" aria-hidden="true" />
     </button>
   </div>
 </template>

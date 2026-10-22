@@ -52,7 +52,7 @@ const FEATURES = [
           <!-- bg-card already resolves to bg-surface through the shadcn bridge -->
           <Card class="gap-0 rounded-panel border-0 py-6 shadow-none">
             <CardHeader class="gap-0">
-              <component :is="feature.icon" class="size-7" :stroke="1.75" aria-hidden="true" />
+              <component :is="feature.icon" class="size-7" stroke="1.75" aria-hidden="true" />
               <CardTitle class="mt-6 text-xl md:text-2xl">{{ feature.title }}</CardTitle>
               <CardDescription class="mt-3 font-data leading-relaxed">{{ feature.text }}</CardDescription>
             </CardHeader>

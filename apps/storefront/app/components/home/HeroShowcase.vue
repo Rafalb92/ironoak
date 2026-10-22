@@ -65,7 +65,7 @@ function toggleFavourite(id: string) {
           @click="toggleFavourite(current.id)"
         >
           <IconHeartFilled v-if="isFavourite" class="size-5 text-brass-bright" aria-hidden="true" />
-          <IconHeart v-else class="size-5" :stroke="1.75" aria-hidden="true" />
+          <IconHeart v-else class="size-5" stroke="1.75" aria-hidden="true" />
         </Button>
 
         <Button
@@ -74,7 +74,7 @@ function toggleFavourite(id: string) {
           class="size-10 rounded-pill bg-bone text-ink hover:bg-brass-bright"
         >
           <NuxtLink :to="`/products/${current.slug}`" :aria-label="`View ${current.name}`">
-            <IconArrowUpRight class="size-5" :stroke="1.75" aria-hidden="true" />
+            <IconArrowUpRight class="size-5" stroke="1.75" aria-hidden="true" />
           </NuxtLink>
         </Button>
       </div>

@@ -42,7 +42,7 @@ const cartLabel = computed(
         aria-label="IRONOAK — home"
         class="flex items-center gap-3 rounded-pill bg-surface py-2.5 pr-5 pl-4 transition-transform duration-(--duration-fast) ease-(--ease-lift) hover:-translate-y-px"
       >
-        <IconBarbell class="size-6 -rotate-45" :stroke="1.75" aria-hidden="true" />
+        <IconBarbell class="size-6 -rotate-45" stroke="1.75" aria-hidden="true" />
         <span class="text-lg font-semibold tracking-tight">IronOAK</span>
       </NuxtLink>
 
@@ -90,9 +90,9 @@ const cartLabel = computed(
                 <!-- the count is personal: never in shared, cached HTML -->
                 <ClientOnly>
                   <template v-if="cart.count > 0">{{ cart.count }}</template>
-                  <IconBarbell v-else class="size-5 -rotate-45" :stroke="1.75" aria-hidden="true" />
+                  <IconBarbell v-else class="size-5 -rotate-45" stroke="1.75" aria-hidden="true" />
                   <template #fallback>
-                    <IconBarbell class="size-5 -rotate-45" :stroke="1.75" aria-hidden="true" />
+                    <IconBarbell class="size-5 -rotate-45" stroke="1.75" aria-hidden="true" />
                   </template>
                 </ClientOnly>
               </span>
@@ -108,7 +108,7 @@ const cartLabel = computed(
           aria-label="Your account"
           class="grid size-12 place-items-center rounded-pill bg-surface transition-transform duration-(--duration-fast) ease-(--ease-lift) hover:-translate-y-px"
         >
-          <IconUser class="size-5" :stroke="1.75" aria-hidden="true" />
+          <IconUser class="size-5" stroke="1.75" aria-hidden="true" />
         </NuxtLink>
 
         <button
@@ -119,8 +119,8 @@ const cartLabel = computed(
           :aria-label="mobileOpen ? 'Close menu' : 'Open menu'"
           @click="mobileOpen = !mobileOpen"
         >
-          <IconX v-if="mobileOpen" class="size-5" :stroke="1.75" aria-hidden="true" />
-          <IconMenu2 v-else class="size-5" :stroke="1.75" aria-hidden="true" />
+          <IconX v-if="mobileOpen" class="size-5" stroke="1.75" aria-hidden="true" />
+          <IconMenu2 v-else class="size-5" stroke="1.75" aria-hidden="true" />
         </button>
       </div>
     </div>

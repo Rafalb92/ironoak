@@ -14,7 +14,7 @@ const filled = computed(() => Math.min(max, Math.max(0, Math.round(value))));
   <div role="img" :aria-label="`Rated ${value.toFixed(1)} out of ${max}`" class="flex items-center gap-1">
     <template v-for="index in max" :key="index">
       <IconStarFilled v-if="index <= filled" class="size-5 text-moss" aria-hidden="true" />
-      <IconStar v-else class="size-5 text-fg" :stroke="1.75" aria-hidden="true" />
+      <IconStar v-else class="size-5 text-fg" stroke="1.75" aria-hidden="true" />
     </template>
   </div>
 </template>

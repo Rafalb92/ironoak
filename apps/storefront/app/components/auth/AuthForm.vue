@@ -127,8 +127,8 @@ const onSubmit = handleSubmit(async (values) => {
                 :aria-pressed="showPassword"
                 @click="showPassword = !showPassword"
               >
-                <IconEyeOff v-if="showPassword" class="size-5" :stroke="1.75" aria-hidden="true" />
-                <IconEye v-else class="size-5" :stroke="1.75" aria-hidden="true" />
+                <IconEyeOff v-if="showPassword" class="size-5" stroke="1.75" aria-hidden="true" />
+                <IconEye v-else class="size-5" stroke="1.75" aria-hidden="true" />
               </button>
             </div>
             <FieldDescription v-if="isRegister">At least 8 characters.</FieldDescription>
