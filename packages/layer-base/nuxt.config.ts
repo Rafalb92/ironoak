@@ -9,6 +9,8 @@ const mediaHosts = (process.env.MEDIA_HOSTS ?? '')
   .filter(Boolean);
   
 export default defineNuxtConfig({
+  // `@` in a layer file means the consuming app to vue-tsc; this alias always means the layer
+  alias: { '#layer-base': join(currentDir, './app') },
   compatibilityDate: '2025-07-15',
   modules: ['shadcn-nuxt', '@pinia/nuxt', '@pinia/colada-nuxt', '@nuxt/image'],
   runtimeConfig: {

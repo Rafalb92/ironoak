@@ -9,5 +9,5 @@
 
 <script setup lang="ts">
 import 'vue-sonner/style.css'
-import { Toaster } from '@/components/ui/sonner'
+import { Toaster } from '#layer-base/components/ui/sonner'
 </script>

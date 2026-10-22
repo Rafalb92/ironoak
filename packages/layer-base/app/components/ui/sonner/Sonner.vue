@@ -2,7 +2,7 @@
 import type { ToasterProps } from "vue-sonner"
 import { IconCircleCheck, IconInfoCircle, IconLoader2, IconOctagonOff, IconAlertTriangle, IconX } from '@tabler/icons-vue'
 import { Toaster as Sonner } from "vue-sonner"
-import { cn } from "@/lib/utils"
+import { cn } from "#layer-base/lib/utils"
 
 const props = defineProps<ToasterProps>()
 </script>
