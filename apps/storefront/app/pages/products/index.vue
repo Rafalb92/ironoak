@@ -97,16 +97,6 @@ watch(
   },
 );
 
-watch(
-  () => filters.value.page,
-  () => {
-    resultsTop.value?.scrollIntoView({
-      behavior: prefersReducedMotion.value ? 'auto' : 'smooth',
-      block: 'start',
-    });
-  },
-);
-
 const pageLink = (page: number) => locationFor({ page }, { resetPage: false });
 </script>
 
